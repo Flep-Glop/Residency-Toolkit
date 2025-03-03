@@ -1,0 +1,5 @@
+Dr. {physician} requested a medical physics consultation for {patient_details} to perform a multimodality image fusion. The patient is a {patient_age}-year-old {patient_sex} with a {lesion} lesion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
+
+{fusion_type_text}
+
+The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the medical physicist, Dr. {physicist}.
