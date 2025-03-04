@@ -7,6 +7,29 @@ class QuickWriteModule:
         self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
+        # Mapping of lesions to anatomical regions for the fusion form
+        self.lesion_to_region = {
+            "oropharynx": "head and neck",
+            "brain": "brain",
+            "prostate": "pelvic",
+            "endometrium": "pelvic",
+            "thymus": "thoracic",
+            "thorax": "thoracic",
+            "brainstem": "brain",
+            "orbital": "head and neck",
+            "parotid": "head and neck",
+            "renal": "abdominal",
+            "nasal cavity": "head and neck",
+            "liver": "abdominal",
+            "lung": "thoracic",
+            "breast": "thoracic",
+            "diaphragm": "thoracic",
+            "rib": "thoracic",
+            "groin": "pelvic",
+            "larynx": "head and neck",
+            "pelvis": "pelvic"
+        }
+        
     def render_dibh_form(self):
         """Render the form for DIBH write-ups."""
         st.subheader("DIBH Write-Up Generator")
@@ -110,8 +133,15 @@ class QuickWriteModule:
             st.markdown("#### Patient Information")
             patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
             patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
-            lesion = st.text_input("Lesion", key="fusion_lesion")
+            
+            # Lesion dropdown instead of text input
+            lesion_options = sorted(list(self.lesion_to_region.keys()))
+            lesion = st.selectbox("Lesion", lesion_options, key="fusion_lesion")
+            
             patient_details = f"a {patient_age}-year-old {patient_sex} with a {lesion} lesion"
+            
+            # Get the anatomical region based on the selected lesion (hidden from user)
+            anatomical_region = self.lesion_to_region.get(lesion, "")
         
         with col2:
             # Fusion information
@@ -141,24 +171,22 @@ class QuickWriteModule:
             # Deformable text based on registration method
             deformable_text = "A deformable image registration was then performed to improve registration results. " if registration_method == "Deformable" else ""
             
-            # Anatomical region
-            common_regions = ["head and neck", "thoracic", "abdominal", "pelvic", "brain", "spinal"]
-            anatomical_region = st.selectbox("Anatomical Region", common_regions, key="fusion_region")
+            # Display the selected anatomical region (for debugging/info, can be removed later)
+            st.info(f"Anatomical Region: {anatomical_region}")
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="fusion_generate")
         
         # Check if all required fields are filled
-        required_fields = [physician, physicist, patient_age, lesion, anatomical_region]
+        required_fields = [physician, physicist, patient_age, lesion]
         all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
         
         # Show warnings for missing fields
         if generate_pressed and not all_fields_filled:
             st.error("Please fill in all required fields before generating the write-up.")
-            for i, field in enumerate([physician, physicist, patient_age, lesion, anatomical_region]):
+            for i, field in enumerate([physician, physicist, patient_age, lesion]):
                 if str(field) == "" or str(field) == "0":
-                    field_names = ["Physician Name", "Physicist Name", "Patient Age", 
-                                "Lesion", "Anatomical Region"]
+                    field_names = ["Physician Name", "Physicist Name", "Patient Age", "Lesion"]
                     st.warning(f"Missing required field: {field_names[i]}")
             return None
         
@@ -181,13 +209,8 @@ class QuickWriteModule:
                 "fusion_type_text": formatted_fusion_text
             }
             
-            # Use a custom approach instead of the template file to handle the complex fusion logic
-            write_up = f"""Dr. {physician} requested a medical physics consultation for {patient_details} to perform a multimodality image fusion. The patient is a {patient_age}-year-old {patient_sex} with a {lesion} lesion. The patient was scanned in our CT simulator in the treatment position. The CT study was then exported to the Velocity imaging registration software.
-
-    {formatted_fusion_text}
-
-    The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, Dr. {physician}, and the medical physicist, Dr. {physicist}."""
-            
+            # Use the template file for consistent formatting
+            write_up = self.template_manager.render_template("fusion", template_data)
             return write_up
         
         return None
@@ -210,6 +233,6 @@ class QuickWriteModule:
                 st.download_button(
                     label="Download as Text File",
                     data=write_up,
-                    file_name="DIBH_write_up.txt",
+                    file_name="write_up.txt",
                     mime="text/plain"
                 )
