@@ -134,14 +134,28 @@ class QuickWriteModule:
             patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
             patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
             
-            # Lesion dropdown instead of text input
+            # Lesion dropdown with "Other" option for custom entries
             lesion_options = sorted(list(self.lesion_to_region.keys()))
-            lesion = st.selectbox("Lesion", lesion_options, key="fusion_lesion")
+            lesion_options.append("Other (specify)")
+            
+            selected_lesion = st.selectbox("Lesion", lesion_options, key="fusion_lesion_selection")
+            
+            # If "Other" is selected, show text inputs for custom lesion and region
+            if selected_lesion == "Other (specify)":
+                custom_lesion = st.text_input("Custom Lesion", key="fusion_custom_lesion")
+                
+                # Dropdown for anatomical region when custom lesion is selected
+                region_options = ["head and neck", "brain", "thoracic", "abdominal", "pelvic", "spinal"]
+                custom_region = st.selectbox("Anatomical Region", region_options, key="fusion_custom_region")
+                
+                lesion = custom_lesion if custom_lesion else "unspecified"
+                anatomical_region = custom_region
+            else:
+                lesion = selected_lesion
+                # Get the anatomical region based on the selected lesion (hidden from user)
+                anatomical_region = self.lesion_to_region.get(lesion, "")
             
             patient_details = f"a {patient_age}-year-old {patient_sex} with a {lesion} lesion"
-            
-            # Get the anatomical region based on the selected lesion (hidden from user)
-            anatomical_region = self.lesion_to_region.get(lesion, "")
         
         with col2:
             # Fusion information
@@ -171,23 +185,33 @@ class QuickWriteModule:
             # Deformable text based on registration method
             deformable_text = "A deformable image registration was then performed to improve registration results. " if registration_method == "Deformable" else ""
             
-            # Display the selected anatomical region (for debugging/info, can be removed later)
-            st.info(f"Anatomical Region: {anatomical_region}")
+            # Anatomical region is now handled behind the scenes
+            # No visible indicator is shown to the user
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="fusion_generate")
         
         # Check if all required fields are filled
-        required_fields = [physician, physicist, patient_age, lesion]
-        all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
+        required_fields = [physician, physicist, patient_age]
+        # Additional validation for custom lesion
+        if selected_lesion == "Other (specify)" and not custom_lesion:
+            custom_lesion_filled = False
+        else:
+            custom_lesion_filled = True
+            
+        all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields) and custom_lesion_filled
         
         # Show warnings for missing fields
         if generate_pressed and not all_fields_filled:
             st.error("Please fill in all required fields before generating the write-up.")
-            for i, field in enumerate([physician, physicist, patient_age, lesion]):
+            for i, field in enumerate([physician, physicist, patient_age]):
                 if str(field) == "" or str(field) == "0":
-                    field_names = ["Physician Name", "Physicist Name", "Patient Age", "Lesion"]
+                    field_names = ["Physician Name", "Physicist Name", "Patient Age"]
                     st.warning(f"Missing required field: {field_names[i]}")
+            
+            # Check for custom lesion specifically
+            if selected_lesion == "Other (specify)" and not custom_lesion:
+                st.warning("Missing required field: Custom Lesion")
             return None
         
         # Generate write-up if all fields are filled and button is pressed
