@@ -1,7 +1,8 @@
 import streamlit as st
 from .templates import TemplateManager, ConfigManager
-from .fusion import FusionModule  # Import the new FusionModule
-from .prior_dose import PriorDoseModule  # Import the new PriorDoseModule
+from .fusion import FusionModule
+from .prior_dose import PriorDoseModule
+from .pacemaker import PacemakerModule
 
 class QuickWriteModule:
     def __init__(self):
@@ -10,6 +11,7 @@ class QuickWriteModule:
         self.config_manager = ConfigManager()
         self.fusion_module = FusionModule()
         self.prior_dose_module = PriorDoseModule()
+        self.pacemaker_module = PacemakerModule()
         
     def render_dibh_form(self):
         """Render the form for DIBH write-ups."""
@@ -100,6 +102,10 @@ class QuickWriteModule:
     def render_prior_dose_form(self):
         """Delegate to the PriorDoseModule for prior dose write-ups."""
         return self.prior_dose_module.render_prior_dose_form()
+    
+    def render_pacemaker_form(self):
+        """Delegate to the PacemakerModule for pacemaker write-ups."""
+        return self.pacemaker_module.render_pacemaker_form()
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""

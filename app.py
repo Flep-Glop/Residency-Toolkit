@@ -62,6 +62,9 @@ if selected_module == "Quick Write":
     elif write_up_type == "Prior Dose":
         write_up = quick_write.render_prior_dose_form()
         quick_write.display_write_up(write_up)
+    elif write_up_type == "Pacemaker":
+        write_up = quick_write.render_pacemaker_form()
+        quick_write.display_write_up(write_up)
     else:
         st.info(f"The {write_up_type} write-up type is under development.")
         
