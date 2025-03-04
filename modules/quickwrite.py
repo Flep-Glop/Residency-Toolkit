@@ -1,6 +1,7 @@
 import streamlit as st
 from .templates import TemplateManager, ConfigManager
-from .fusion import FusionModule
+from .fusion import FusionModule  # Import the new FusionModule
+from .prior_dose import PriorDoseModule  # Import the new PriorDoseModule
 
 class QuickWriteModule:
     def __init__(self):
@@ -8,29 +9,7 @@ class QuickWriteModule:
         self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         self.fusion_module = FusionModule()
-        
-        # Mapping of lesions to anatomical regions for the fusion form
-        self.lesion_to_region = {
-            "oropharynx": "head and neck",
-            "brain": "brain",
-            "prostate": "pelvic",
-            "endometrium": "pelvic",
-            "thymus": "thoracic",
-            "thorax": "thoracic",
-            "brainstem": "brain",
-            "orbital": "head and neck",
-            "parotid": "head and neck",
-            "renal": "abdominal",
-            "nasal cavity": "head and neck",
-            "liver": "abdominal",
-            "lung": "thoracic",
-            "breast": "thoracic",
-            "diaphragm": "thoracic",
-            "rib": "thoracic",
-            "groin": "pelvic",
-            "larynx": "head and neck",
-            "pelvis": "pelvic"
-        }
+        self.prior_dose_module = PriorDoseModule()
         
     def render_dibh_form(self):
         """Render the form for DIBH write-ups."""
@@ -117,6 +96,10 @@ class QuickWriteModule:
     def render_fusion_form(self):
         """Delegate to the FusionModule for enhanced fusion write-ups."""
         return self.fusion_module.render_fusion_form()
+    
+    def render_prior_dose_form(self):
+        """Delegate to the PriorDoseModule for prior dose write-ups."""
+        return self.prior_dose_module.render_prior_dose_form()
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""
