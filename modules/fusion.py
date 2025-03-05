@@ -31,25 +31,18 @@ class FusionModule:
         }
         
         # Modality options for registrations
-        self.modality_options = ["CT", "MRI", "PET/CT", "CBCT"]
+        self.modality_options = ["MRI", "PET/CT", "CT", "CBCT"]
         
         # Registration method options
         self.registration_methods = ["Rigid", "Deformable"]
         
-        # Common registration presets (modality pairs with default registration methods)
+        # Updated registration presets
         self.registration_presets = {
-            "Standard CT/MRI": [{"primary": "CT", "secondary": "MRI", "method": "Rigid"}],
-            "Standard CT/PET": [{"primary": "CT", "secondary": "PET/CT", "method": "Rigid"}],
-            "Dual Phase CT": [{"primary": "CT", "secondary": "CT", "method": "Rigid"}],
-            "CT + MRI + PET (Comprehensive)": [
-                {"primary": "CT", "secondary": "MRI", "method": "Rigid"},
-                {"primary": "CT", "secondary": "PET/CT", "method": "Rigid"}
-            ],
-            "CT/MRI (Deformable)": [{"primary": "CT", "secondary": "MRI", "method": "Deformable"}],
-            "Adaptive RT": [
-                {"primary": "CT", "secondary": "CBCT", "method": "Rigid"},
-                {"primary": "CT", "secondary": "CBCT", "method": "Deformable"}
-            ],
+            "MRI/CT": [{"primary": "CT", "secondary": "MRI", "method": "Rigid"}],
+            "PET/CT rigid": [{"primary": "CT", "secondary": "PET/CT", "method": "Rigid"}],
+            "PET/CT deformable": [{"primary": "CT", "secondary": "PET/CT", "method": "Deformable"}],
+            "CT/CT rigid": [{"primary": "CT", "secondary": "CT", "method": "Rigid"}],
+            "CT/CT deformable": [{"primary": "CT", "secondary": "CT", "method": "Deformable"}],
             "Custom": []  # For custom registration configurations
         }
     
@@ -145,7 +138,9 @@ class FusionModule:
             with st.container():
                 cols = st.columns([3, 3, 2, 1])
                 with cols[0]:
-                    new_primary = st.selectbox("Primary", ["CT"] + self.modality_options, key="new_primary")
+                    # Primary is always CT, so display text instead of dropdown
+                    st.write("**Primary**: CT")
+                    new_primary = "CT"  # Always set to CT
                 with cols[1]:
                     new_secondary = st.selectbox("Secondary", self.modality_options, key="new_secondary")
                 with cols[2]:

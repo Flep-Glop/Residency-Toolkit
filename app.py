@@ -55,22 +55,22 @@ if selected_module == "Quick Write":
     # Display the appropriate form based on selection
     if write_up_type == "DIBH":
         write_up = quick_write.render_dibh_form()
-        quick_write.display_write_up(write_up)
+        quick_write.dibh_module.display_write_up(write_up)
     elif write_up_type == "Fusion":
         write_up = quick_write.render_fusion_form()
-        quick_write.display_write_up(write_up)
+        quick_write.fusion_module.display_write_up(write_up)
     elif write_up_type == "Prior Dose":
         write_up = quick_write.render_prior_dose_form()
-        quick_write.display_write_up(write_up)
+        quick_write.prior_dose_module.display_write_up(write_up)
     elif write_up_type == "Pacemaker":
         write_up = quick_write.render_pacemaker_form()
-        quick_write.display_write_up(write_up)
+        quick_write.pacemaker_module.display_write_up(write_up)
     elif write_up_type == "SBRT":
         write_up = quick_write.render_sbrt_form()
-        quick_write.display_write_up(write_up)
+        quick_write.sbrt_module.display_write_up(write_up)
     elif write_up_type == "SRS":
         write_up = quick_write.render_srs_form()
-        quick_write.display_write_up(write_up)
+        quick_write.srs_module.display_write_up(write_up)
     else:
         st.info(f"The {write_up_type} write-up type is under development.")
         

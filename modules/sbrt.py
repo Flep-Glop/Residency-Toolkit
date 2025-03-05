@@ -13,28 +13,18 @@ class SBRTModule:
             "kidney", "prostate", "lymph node", "bone", "oligometastasis"
         ]
         
-        # Treatment machines
-        self.treatment_machines = [
-            "VersaHD", "TrueBeam", "Halcyon", "Ethos", "Radixact", "CyberKnife"
-        ]
-        
-        # Common immobilization devices
-        self.immobilization_devices = [
-            "body fix", "vac-lok bag", "wing board", "S-frame", 
-            "head and shoulder mask", "abdominal compression", "stereotactic body frame"
-        ]
-        
     def render_sbrt_form(self):
         """Render the form for SBRT write-ups."""
         st.subheader("SBRT Write-Up Generator")
         
-        # Use tabs to organize the form
-        physician_tab, patient_tab, treatment_tab, qa_tab = st.tabs([
-            "Staff Information", "Patient Information", "Treatment Details", "QA Information"
+        # Use condensed tabs to organize the form
+        basic_tab, treatment_tab = st.tabs([
+            "Basic Information", "Treatment Details"
         ])
         
-        with physician_tab:
+        with basic_tab:
             # Staff information
+            st.markdown("#### Staff Information")
             physician = st.selectbox("Physician Name", 
                                    self.config_manager.get_physicians(), 
                                    key="sbrt_physician")
@@ -42,8 +32,8 @@ class SBRTModule:
                                    self.config_manager.get_physicists(), 
                                    key="sbrt_physicist")
         
-        with patient_tab:
             # Patient information
+            st.markdown("#### Patient Information")
             col1, col2 = st.columns(2)
             
             with col1:
@@ -71,61 +61,17 @@ class SBRTModule:
                 dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=50.0, step=0.1, key="sbrt_dose")
                 fractions = st.number_input("Number of Fractions", min_value=1, max_value=10, value=5, key="sbrt_fractions")
                 
-                # Motion management
-                st.markdown("#### Motion Management")
-                motion_management = st.multiselect(
-                    "Motion Management Techniques", 
-                    ["4DCT", "Abdominal Compression", "Breath Hold", "Gating", "Tracking", "None"],
-                    default=["4DCT"],
-                    key="motion_management"
+                # Simplified motion management - just 4DCT yes/no
+                is_4dct = st.radio(
+                    "Use 4DCT for motion management?",
+                    ["Yes", "No"],
+                    key="is_4dct"
                 )
-                
-                # 4DCT specific options
-                if "4DCT" in motion_management:
-                    target_phase = st.radio(
-                        "Target Phase", 
-                        ["Maximum Intensity Projection (MIP)", "Average Intensity Projection (AIP)", "Specific Phase"],
-                        key="target_phase"
-                    )
-                    
-                    if target_phase == "Specific Phase":
-                        specific_phase = st.slider("Phase (%)", 0, 90, 50, 10, key="specific_phase")
-                        target_phase = f"{specific_phase}% phase"
             
             with col2:
-                # Equipment details
-                treatment_machine = st.selectbox("Treatment Machine", 
-                                               self.treatment_machines,
-                                               key="sbrt_machine")
+                # Target volume
+                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
                 
-                immobilization_device = st.selectbox("Immobilization Device", 
-                                                   sorted(self.immobilization_devices),
-                                                   key="sbrt_immobilization")
-                
-                # Treatment planning
-                st.markdown("#### Treatment Planning")
-                planning_technique = st.selectbox(
-                    "Planning Technique",
-                    ["VMAT", "IMRT", "3D Conformal", "Dynamic Conformal Arc"],
-                    key="planning_technique"
-                )
-                
-                # Image guidance
-                image_guidance = st.multiselect(
-                    "Image Guidance",
-                    ["kV-CBCT", "MV-CBCT", "Stereoscopic X-ray", "Surface Guidance", "Fiducial Markers"],
-                    default=["kV-CBCT"],
-                    key="image_guidance"
-                )
-                
-                if "Fiducial Markers" in image_guidance:
-                    fiducial_type = st.text_input("Fiducial Marker Type", key="fiducial_type")
-        
-        with qa_tab:
-            # QA Information
-            col1, col2 = st.columns(2)
-            
-            with col1:
                 # PTV coverage
                 ptv_coverage = st.slider("PTV Coverage (%)", 90, 100, 95, key="ptv_coverage")
                 
@@ -144,26 +90,6 @@ class SBRTModule:
                                     value=3.5, 
                                     step=0.1,
                                     key="r50")
-            
-            with col2:
-                # QA specifics
-                st.markdown("#### QA Measurements")
-                qa_performed = st.checkbox("QA Performed", value=True, key="qa_performed")
-                
-                if qa_performed:
-                    qa_method = st.selectbox(
-                        "QA Method", 
-                        ["ArcCHECK", "MapCHECK", "Portal Dosimetry", "Film", "Ion Chamber"],
-                        key="qa_method"
-                    )
-                    
-                    gamma_criteria = st.selectbox(
-                        "Gamma Analysis Criteria",
-                        ["3%/3mm", "2%/2mm", "3%/2mm", "2%/1mm"],
-                        key="gamma_criteria"
-                    )
-                    
-                    passing_rate = st.slider("Passing Rate (%)", 90, 100, 97, key="passing_rate")
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="sbrt_generate")
@@ -196,17 +122,29 @@ class SBRTModule:
         
         # If all required fields are filled and button is pressed, generate the write-up
         if generate_pressed and all_fields_filled:
-            # Format motion management text
-            motion_text = self._format_motion_management(motion_management, target_phase if "4DCT" in motion_management else None)
+            # Default values for removed form fields
+            treatment_machine = "linear accelerator"
+            immobilization_device = "custom immobilization device"
+            planning_technique = "VMAT"
             
-            # Format image guidance text
-            imaging_text = self._format_image_guidance(image_guidance, fiducial_type if "Fiducial Markers" in image_guidance else None)
-            
-            # QA text
-            if qa_performed:
-                qa_text = self._format_qa_text(qa_method, gamma_criteria, passing_rate)
+            # Format motion management text based on 4DCT selection
+            if is_4dct == "Yes":
+                motion_text = "The patient was scanned in our CT simulator in the treatment position. "
+                motion_text += "A 4D kVCT simulation scan was performed with the patient immobilized to assess respiratory motion. "
+                motion_text += "Using the 4D dataset, a Maximum Intensity Projection (MIP) CT image set was reconstructed to generate an ITV "
+                motion_text += "that encompasses the motion envelope of the target."
             else:
-                qa_text = "A quality assurance plan is scheduled to be delivered to verify the treatment plan accuracy."
+                motion_text = "The patient was scanned in our CT simulator in the treatment position without specific motion management. "
+                motion_text += "The patient was immobilized using a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning."
+            
+            # Standard image guidance text
+            imaging_text = "Patient positioning verification will be performed before each treatment fraction using "
+            imaging_text += "kilovoltage cone-beam CT to ensure accurate target localization and patient positioning."
+            
+            # Standard QA text
+            qa_text = "A quality assurance plan was developed and delivered to verify "
+            qa_text += "the accuracy of the radiation treatment plan. Measurements within the phantom were obtained "
+            qa_text += "and compared against the calculated plan, showing good agreement between the plan and measurements."
             
             # Generate the write-up
             write_up = self._generate_sbrt_write_up(
@@ -224,116 +162,36 @@ class SBRTModule:
                 ptv_coverage=ptv_coverage,
                 pitv=pitv,
                 r50=r50,
-                qa_text=qa_text
+                qa_text=qa_text,
+                target_volume=target_volume
             )
             
             return write_up
         
         return None
     
-    def _format_motion_management(self, motion_management, target_phase):
-        """Format the motion management section of the write-up."""
-        if not motion_management or "None" in motion_management:
-            return "The patient was scanned in our CT simulator in the treatment position without specific motion management."
-        
-        motion_text = "The patient was scanned in our CT simulator in the treatment position. "
-        
-        if "4DCT" in motion_management:
-            motion_text += f"A 4D kVCT simulation scan was performed with the patient immobilized to assess respiratory motion. "
-            motion_text += f"Using the 4D dataset, a {target_phase} CT image set was reconstructed to generate an ITV "
-            motion_text += "that encompasses the motion envelope of the target. "
-        
-        if "Abdominal Compression" in motion_management:
-            motion_text += "Abdominal compression was applied to restrict diaphragmatic motion and reduce target movement. "
-            
-        if "Breath Hold" in motion_management:
-            motion_text += "The patient was coached to reproducibly hold their breath during imaging and treatment to minimize respiratory motion. "
-            
-        if "Gating" in motion_management:
-            motion_text += "Respiratory gating was employed to synchronize radiation delivery with specific phases of the breathing cycle. "
-            
-        if "Tracking" in motion_management:
-            motion_text += "Real-time tumor tracking was implemented to dynamically follow target motion during treatment. "
-            
-        return motion_text
-    
-    def _format_image_guidance(self, image_guidance, fiducial_type):
-        """Format the image guidance section of the write-up."""
-        if not image_guidance:
-            return "Image guidance will be performed before each treatment fraction to ensure accurate patient positioning."
-        
-        imaging_text = "Patient positioning verification will be performed before each treatment fraction using "
-        
-        guidance_descriptions = []
-        
-        if "kV-CBCT" in image_guidance:
-            guidance_descriptions.append("kilovoltage cone-beam CT")
-            
-        if "MV-CBCT" in image_guidance:
-            guidance_descriptions.append("megavoltage cone-beam CT")
-            
-        if "Stereoscopic X-ray" in image_guidance:
-            guidance_descriptions.append("stereoscopic X-ray imaging")
-            
-        if "Surface Guidance" in image_guidance:
-            guidance_descriptions.append("optical surface monitoring")
-            
-        if "Fiducial Markers" in image_guidance:
-            if fiducial_type:
-                guidance_descriptions.append(f"{fiducial_type} fiducial markers")
-            else:
-                guidance_descriptions.append("implanted fiducial markers")
-        
-        # Format the list properly with commas and "and"
-        if len(guidance_descriptions) == 1:
-            imaging_text += guidance_descriptions[0]
-        elif len(guidance_descriptions) == 2:
-            imaging_text += f"{guidance_descriptions[0]} and {guidance_descriptions[1]}"
-        else:
-            imaging_text += ", ".join(guidance_descriptions[:-1]) + f", and {guidance_descriptions[-1]}"
-        
-        imaging_text += " to ensure accurate target localization and patient positioning."
-        
-        return imaging_text
-    
-    def _format_qa_text(self, qa_method, gamma_criteria, passing_rate):
-        """Format the QA section of the write-up."""
-        qa_text = f"A quality assurance plan was developed and delivered to a {qa_method} phantom to verify "
-        qa_text += "the accuracy of the radiation treatment plan. Measurements within the phantom were obtained "
-        qa_text += "and compared against the calculated plan using gamma analysis with "
-        qa_text += f"{gamma_criteria} criteria. The analysis showed a passing rate of {passing_rate}%, "
-        qa_text += "indicating good agreement between the plan and measurements."
-        
-        return qa_text
-    
     def _generate_sbrt_write_up(self, physician, physicist, patient_details, treatment_site, 
                               dose, fractions, treatment_machine, immobilization_device,
                               planning_technique, motion_text, imaging_text, ptv_coverage,
-                              pitv, r50, qa_text):
+                              pitv, r50, qa_text, target_volume):
         """Generate the SBRT write-up based on the inputs."""
         
         write_up = f"Dr. {physician} requested a medical physics consultation for a 4D CT simulation study "
         write_up += f"and SBRT delivery for {patient_details}. Dr. {physician} has elected to treat with a "
         write_up += "stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning "
-        write_up += f"system in conjunction with the {treatment_machine} linear accelerator equipped with the "
+        write_up += f"system in conjunction with the {treatment_machine} equipped with the "
         write_up += "kV-CBCT system.\n\n"
         
         # Motion management section
         write_up += f"{motion_text} Both the prescribing radiation oncologist and radiation oncology physicist "
         write_up += "evaluated and approved the patient setup. "
-        
-        if "4DCT" in motion_text:
-            write_up += "Dr. {physician} segmented and approved both the PTVs and OARs.\n\n"
-        else:
-            write_up += "The patient was immobilized using a customized "
-            write_up += f"{immobilization_device} to limit motion during treatment and aid in inter-fractional repositioning. "
-            write_up += "Dr. {physician} segmented and approved both the PTVs and OARs.\n\n"
+        write_up += "Dr. {physician} segmented and approved both the PTVs and OARs.\n\n"
         
         # Treatment planning section
         write_up += f"In the treatment planning system, a {planning_technique} treatment plan was developed to "
         write_up += f"conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions to the planning target volume. "
         write_up += "The treatment plan was inversely optimized such that the prescription isodose volume exactly matched "
-        write_up += "the target volume in all three spatial dimensions and that the dose fell sharply away from the target volume. "
+        write_up += f"the target volume of {target_volume:.2f} cc in all three spatial dimensions and that the dose fell sharply away from the target volume. "
         write_up += f"The treatment plan covered {ptv_coverage}% of the PTV with the prescribed isodose volume. "
         write_up += f"The PITV (Vpres iso / VPTV) was {pitv:.2f} and the R50 (Vol50% pres iso / VolPTV) was {r50:.2f}. "
         write_up += "Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.\n\n"

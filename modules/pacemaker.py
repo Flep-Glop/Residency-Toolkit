@@ -19,15 +19,25 @@ class PacemakerModule:
             "Medtronic", "Boston Scientific", "Abbott/St. Jude Medical", 
             "Biotronik", "MicroPort", "ZOLL"
         ]
+
+        # Common device models by vendor (most popular models)
+        self.device_models = {
+            "Medtronic": ["Advisa", "Azure", "Consulta", "Ensura", "Evera", "Micra", "Percepta", "Visia"],
+            "Boston Scientific": ["Essentio", "Formio", "Ingenio", "Momentum", "Resonate", "Valitude", "Vigilant"],
+            "Abbott/St. Jude Medical": ["Accent", "Allure", "Assurity", "Ellipse", "Endurity", "Fortify", "Quadra"],
+            "Biotronik": ["Acticor", "Edora", "Enitra", "Evia", "Ilesto", "Iperia", "Rivacor"],
+            "MicroPort": ["Eno", "Esprit", "Philos", "Phymos", "Placed", "Rapido"],
+            "ZOLL": ["ZOLL LifeVest", "ZOLL CRM"]
+        }
         
     def render_pacemaker_form(self):
         """Render the form for pacemaker write-ups."""
         st.subheader("Pacemaker Write-Up Generator")
         
-        # Two-column layout for efficient use of space
-        col1, col2 = st.columns(2)
+        # Create tabs for Basic Info and Treatment/Pacemaker Details
+        basic_tab, details_tab, risk_tab = st.tabs(["Basic Information", "Treatment & Pacemaker Details", "Risk Assessment"])
         
-        with col1:
+        with basic_tab:
             # Staff information
             st.markdown("#### Staff Information")
             physician = st.selectbox("Physician Name", 
@@ -43,65 +53,170 @@ class PacemakerModule:
             patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="pacemaker_sex")
             patient_details = f"a {patient_age}-year-old {patient_sex}"
         
-        with col2:
-            # Treatment information
-            st.markdown("#### Treatment Information")
-            treatment_site = st.selectbox("Treatment Site", 
-                                        self.treatment_sites, 
-                                        key="pacemaker_site")
+        with details_tab:
+            col1, col2 = st.columns(2)
             
-            dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=45.0, step=0.1, key="pacemaker_dose")
-            fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="pacemaker_fractions")
+            with col1:
+                # Treatment information
+                st.markdown("#### Treatment Information")
+                treatment_site = st.selectbox("Treatment Site", 
+                                            self.treatment_sites, 
+                                            key="pacemaker_site")
+                
+                dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=45.0, step=0.1, key="pacemaker_dose")
+                fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="pacemaker_fractions")
+                
+                # Field distance from CIED
+                st.markdown("#### Field Proximity to CIED")
+                distance_options = [
+                    "More than 10 cm from treatment field edge",
+                    "Less than 10 cm from field edge but not in direct field",
+                    "Within 3 cm of field edge",
+                    "CIED in direct beam"
+                ]
+                field_distance = st.selectbox(
+                    "Distance from treatment field to CIED",
+                    distance_options,
+                    key="field_distance"
+                )
+                
+                # Is this a neutron-producing therapy?
+                neutron_producing = st.radio(
+                    "Is this a neutron-producing therapy? (Photons >10MV, Protons, etc.)",
+                    ["No", "Yes"],
+                    key="neutron_producing"
+                )
+            
+            with col2:
+                # Pacemaker details
+                st.markdown("#### Pacemaker Information")
+                device_vendor = st.selectbox("Device Vendor", 
+                                          self.device_vendors + ["Other"],
+                                          key="device_vendor")
+                
+                if device_vendor == "Other":
+                    custom_vendor = st.text_input("Custom Vendor", key="custom_vendor")
+                    device_vendor_name = custom_vendor if custom_vendor else "the vendor"
+                    device_model_options = ["Custom"]
+                else:
+                    device_vendor_name = device_vendor
+                    device_model_options = ["Select model..."] + self.device_models.get(device_vendor, []) + ["Other"]
+                
+                # Model selection based on vendor
+                device_model_selection = st.selectbox("Device Model", device_model_options, key="device_model_selection")
+                
+                if device_model_selection == "Other" or device_model_selection == "Custom":
+                    device_model = st.text_input("Custom Model", key="custom_model")
+                else:
+                    device_model = device_model_selection if device_model_selection != "Select model..." else ""
+                
+                device_serial = st.text_input("Device Serial Number", key="device_serial")
+                
+                # Pacing dependent?
+                pacing_dependent = st.radio("Pacing Dependent?", 
+                                         ["Yes", "No", "Unknown"],
+                                         key="pacing_dependent")
+                
+                # TPS calculated doses
+                tps_max_dose = st.number_input("TPS Maximum Dose to Device (Gy)", 
+                                             min_value=0.0, 
+                                             max_value=10.0,
+                                             value=0.5,
+                                             step=0.01,
+                                             key="tps_max_dose")
+                
+                tps_mean_dose = st.number_input("TPS Mean Dose to Device (Gy)", 
+                                              min_value=0.0, 
+                                              max_value=10.0,
+                                              value=0.2,
+                                              step=0.01,
+                                              key="tps_mean_dose")
+            
+            # OSLD measurement
+            st.markdown("#### Dosimetry Measurements")
+            osld_mean_dose = st.number_input("OSLD Measured Mean Dose (Gy)", 
+                                           min_value=0.0, 
+                                           max_value=10.0,
+                                           value=0.0,
+                                           step=0.01,
+                                           key="osld_mean_dose")
         
-        # Pacemaker details
-        st.markdown("#### Pacemaker Information")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            device_vendor = st.selectbox("Device Vendor", 
-                                        self.device_vendors + ["Other"],
-                                        key="device_vendor")
-            
-            if device_vendor == "Other":
-                custom_vendor = st.text_input("Custom Vendor", key="custom_vendor")
-                device_vendor = custom_vendor if custom_vendor else "the vendor"
-            
-            device_model = st.text_input("Device Make/Model", key="device_model")
-            device_serial = st.text_input("Device Serial Number", key="device_serial")
-            
-        with col2:
-            pacing_dependent = st.radio("Pacing Dependent?", 
-                                     ["Yes", "No", "Unknown"],
-                                     key="pacing_dependent")
-            
-            # Risk level selection
-            risk_level = st.selectbox("Risk Level", 
-                                    ["Low", "Medium", "High"],
-                                    key="risk_level")
-            
-            # TPS calculated doses
-            tps_max_dose = st.number_input("TPS Maximum Dose to Device (Gy)", 
-                                         min_value=0.0, 
-                                         max_value=10.0,
-                                         value=0.5,
-                                         step=0.1,
-                                         key="tps_max_dose")
-            
-            tps_mean_dose = st.number_input("TPS Mean Dose to Device (Gy)", 
-                                          min_value=0.0, 
-                                          max_value=10.0,
-                                          value=0.2,
-                                          step=0.1,
-                                          key="tps_mean_dose")
-            
-        # OSLD measurement
-        st.markdown("#### Dosimetry Measurements")
-        osld_mean_dose = st.number_input("OSLD Measured Mean Dose (Gy)", 
-                                       min_value=0.0, 
-                                       max_value=10.0,
-                                       value=0.0,
-                                       step=0.01,
-                                       key="osld_mean_dose")
+        with risk_tab:
+            # Auto-calculate risk level based on inputs
+            if 'field_distance' in locals() and 'pacing_dependent' in locals() and 'tps_max_dose' in locals() and 'neutron_producing' in locals():
+                st.markdown("#### Risk Assessment Results")
+                
+                # Calculate max dose based on field distance if TPS dose not available
+                estimated_max_dose = tps_max_dose
+                if tps_max_dose == 0.0:
+                    if "More than 10 cm" in field_distance:
+                        estimated_max_dose = 0.5  # Estimated < 2 Gy
+                    elif "Less than 10 cm" in field_distance:
+                        estimated_max_dose = 1.5  # Estimated < 2 Gy
+                    elif "Within 3 cm" in field_distance:
+                        estimated_max_dose = 3.0  # Estimated 2-5 Gy
+                    elif "direct beam" in field_distance:
+                        estimated_max_dose = 7.0  # Estimated > 5 Gy
+                
+                # Determine dose category
+                if estimated_max_dose < 2.0:
+                    dose_category = "< 2 Gy"
+                elif 2.0 <= estimated_max_dose <= 5.0:
+                    dose_category = "2-5 Gy"
+                else:
+                    dose_category = "> 5 Gy"
+                
+                # Determine if patient is pacing dependent
+                is_pacing_dependent = pacing_dependent == "Yes"
+                
+                # Calculate risk level based on TG212 diagram
+                risk_level = self._calculate_risk_level(
+                    is_pacing_dependent=is_pacing_dependent,
+                    dose_category=dose_category,
+                    neutron_producing=neutron_producing == "Yes"
+                )
+                
+                # Display calculated parameters
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.write(f"**Estimated Max Dose to CIED**: {estimated_max_dose:.2f} Gy")
+                    st.write(f"**Dose Category**: {dose_category}")
+                    st.write(f"**Pacing Dependent**: {pacing_dependent}")
+                    st.write(f"**Neutron-Producing Therapy**: {neutron_producing}")
+                
+                with col2:
+                    # Display risk level with appropriate styling
+                    if risk_level == "Low":
+                        st.success(f"**Risk Level**: {risk_level}")
+                        st.write("**Recommendations**:")
+                        st.write("- Defibrillator available during treatment")
+                        st.write("- Heart rate monitor during treatment")
+                        st.write("- Device interrogation before treatment")
+                    elif risk_level == "Medium":
+                        st.warning(f"**Risk Level**: {risk_level}")
+                        st.write("**Recommendations**:")
+                        st.write("- Defibrillator available during treatment")
+                        st.write("- Heart rate monitor during treatment") 
+                        st.write("- Device interrogation before, during, and after treatment")
+                    else:  # High risk
+                        st.error(f"**Risk Level**: {risk_level}")
+                        st.write("**Recommendations**:")
+                        st.write("- Defibrillator available during treatment")
+                        st.write("- Heart rate monitor during treatment")
+                        st.write("- Device interrogation before and after each fraction")
+                        st.write("- Cardiologist on standby during treatment")
+                        st.write("- **Consider treatment modification to reduce risk**")
+                        
+                        # Warning for high risk
+                        st.error("⚠️ HIGH RISK CASE: Please consult with cardiologist and radiation oncologist before proceeding!")
+                
+                # Store the calculated risk level
+                if 'risk_level' not in st.session_state:
+                    st.session_state.risk_level = risk_level
+                else:
+                    st.session_state.risk_level = risk_level
+            else:
+                st.info("Please fill in the Treatment & Pacemaker Details tab first to see the risk assessment.")
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="pacemaker_generate")
@@ -109,7 +224,7 @@ class PacemakerModule:
         # Check if we have all required information and the button was pressed
         required_fields = [
             physician, physicist, patient_age, treatment_site, dose, fractions,
-            device_vendor, risk_level, tps_max_dose, tps_mean_dose
+            device_vendor_name
         ]
         all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
         
@@ -131,20 +246,21 @@ class PacemakerModule:
                 missing_fields.append("Number of Fractions")
             if not device_vendor or (device_vendor == "Other" and not custom_vendor):
                 missing_fields.append("Device Vendor")
-            if not risk_level:
-                missing_fields.append("Risk Level")
-            if tps_max_dose == 0:
-                missing_fields.append("TPS Maximum Dose")
-            if tps_mean_dose == 0:
-                missing_fields.append("TPS Mean Dose")
                 
             for field in missing_fields:
                 st.warning(f"Missing required field: {field}")
                 
             return None
         
+        # Check risk level - don't generate write-up for high risk cases
+        risk_level = st.session_state.get('risk_level', '')
+        if generate_pressed and risk_level == "High":
+            st.error("⚠️ This is a HIGH RISK case. Please consult with a cardiologist and radiation oncologist before proceeding.")
+            st.warning("A write-up is not generated for high-risk cases to ensure proper clinical review.")
+            return None
+        
         # If all required fields are filled and button is pressed, generate the write-up
-        if generate_pressed and all_fields_filled:
+        if generate_pressed and all_fields_filled and risk_level != "High":
             # Generate write-up based on inputs
             write_up = self._generate_pacemaker_write_up(
                 physician=physician,
@@ -153,11 +269,11 @@ class PacemakerModule:
                 treatment_site=treatment_site,
                 dose=dose,
                 fractions=fractions,
-                device_vendor=device_vendor,
+                device_vendor=device_vendor_name,
                 device_model=device_model,
                 device_serial=device_serial,
                 pacing_dependent=pacing_dependent,
-                risk_level=risk_level,
+                risk_level=risk_level,  # Use calculated risk level
                 tps_max_dose=tps_max_dose,
                 tps_mean_dose=tps_mean_dose,
                 osld_mean_dose=osld_mean_dose
@@ -166,6 +282,36 @@ class PacemakerModule:
             return write_up
         
         return None
+    
+    def _calculate_risk_level(self, is_pacing_dependent, dose_category, neutron_producing):
+        """Calculate the risk level based on the TG212 algorithm."""
+        # Start with default setting
+        risk_level = "Low"
+        
+        # Step 1: If neutron producing and dose > 5 Gy, it's High risk
+        if neutron_producing and dose_category == "> 5 Gy":
+            return "High"
+        
+        # Step 2: If neutron producing OR dose > 5 Gy, check pacing dependency
+        if neutron_producing or dose_category == "> 5 Gy":
+            if is_pacing_dependent:
+                return "High"
+            else:
+                return "Medium"
+        
+        # Step 3: If dose is 2-5 Gy, check pacing dependency
+        if dose_category == "2-5 Gy":
+            if is_pacing_dependent:
+                return "Medium"
+            else:
+                return "Low"
+        
+        # Step 4: If dose < 2 Gy and not neutron producing, it's Low risk
+        if dose_category == "< 2 Gy" and not neutron_producing:
+            return "Low"
+        
+        # Default fallback
+        return risk_level
     
     def _generate_pacemaker_write_up(self, physician, physicist, patient_details, 
                                    treatment_site, dose, fractions, device_vendor,
@@ -218,12 +364,6 @@ class PacemakerModule:
             write_up += "A heart rate monitor is then used to monitor for events that would require the defibrillator. "
             write_up += "The patient had their device interrogated before the start of treatment and will have it "
             write_up += "interrogated again in the middle of treatment and after the end of treatment."
-        else:  # High risk
-            write_up += f"Our dosimetry analysis puts this patient at a high risk for radiation induced cardiac complications. "
-            write_up += "A defibrillator is always available during treatment in case of emergency. "
-            write_up += "A heart rate monitor is used to monitor for events that would require the defibrillator. "
-            write_up += "The patient had their device interrogated before the start of treatment and will have it "
-            write_up += "interrogated after each treatment fraction. A cardiologist is on standby during each treatment."
         
         # OSLD measurements
         if osld_mean_dose > 0:
