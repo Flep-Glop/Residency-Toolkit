@@ -68,6 +68,9 @@ if selected_module == "Quick Write":
     elif write_up_type == "SBRT":
         write_up = quick_write.render_sbrt_form()
         quick_write.display_write_up(write_up)
+    elif write_up_type == "SRS":
+        write_up = quick_write.render_srs_form()
+        quick_write.display_write_up(write_up)
     else:
         st.info(f"The {write_up_type} write-up type is under development.")
         

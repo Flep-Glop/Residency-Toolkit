@@ -4,6 +4,7 @@ from .fusion import FusionModule
 from .prior_dose import PriorDoseModule
 from .pacemaker import PacemakerModule
 from .sbrt import SBRTModule
+from .srs import SRSModule
 
 class QuickWriteModule:
     def __init__(self):
@@ -14,6 +15,7 @@ class QuickWriteModule:
         self.prior_dose_module = PriorDoseModule()
         self.pacemaker_module = PacemakerModule()
         self.sbrt_module = SBRTModule()
+        self.srs_module = SRSModule()
         
     def render_dibh_form(self):
         """Render the form for DIBH write-ups."""
@@ -112,6 +114,10 @@ class QuickWriteModule:
     def render_sbrt_form(self):
         """Delegate to the SBRTModule for SBRT write-ups."""
         return self.sbrt_module.render_sbrt_form()
+    
+    def render_srs_form(self):
+        """Delegate to the SRSModule for SRS write-ups."""
+        return self.srs_module.render_srs_form()
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""
