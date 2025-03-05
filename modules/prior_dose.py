@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-from .templates import TemplateManager, ConfigManager
+from .templates import ConfigManager
 
 class PriorDoseModule:
     def __init__(self):

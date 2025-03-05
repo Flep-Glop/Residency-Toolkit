@@ -1,5 +1,5 @@
 import streamlit as st
-from .templates import TemplateManager, ConfigManager
+from .templates import ConfigManager
 from .fusion import FusionModule
 from .prior_dose import PriorDoseModule
 from .pacemaker import PacemakerModule
@@ -10,7 +10,6 @@ from .dibh import DIBHModule
 class QuickWriteModule:
     def __init__(self):
         """Initialize the Quick Write module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         self.dibh_module = DIBHModule()
         self.fusion_module = FusionModule()

@@ -1,5 +1,5 @@
 import streamlit as st
-from .templates import TemplateManager, ConfigManager
+from .templates import ConfigManager
 
 class SRSModule:
     def __init__(self):

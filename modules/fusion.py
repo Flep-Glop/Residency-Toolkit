@@ -1,10 +1,9 @@
 import streamlit as st
-from .templates import TemplateManager, ConfigManager
+from .templates import ConfigManager
 
 class FusionModule:
     def __init__(self):
         """Initialize the Fusion module with registration presets and modality options."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
         # Mapping of lesions to anatomical regions
@@ -192,18 +191,17 @@ class FusionModule:
             # Generate fusion description text based on the registrations
             fusion_type_text = self._generate_fusion_text(st.session_state.registrations, anatomical_region, lesion)
             
-            template_data = {
-                "physician": physician,
-                "physicist": physicist,
-                "patient_details": patient_details,
-                "patient_age": patient_age,
-                "patient_sex": patient_sex,
-                "lesion": lesion,
-                "fusion_type_text": fusion_type_text
-            }
+            # Use the in-module function to generate write-up
+            write_up = self._generate_fusion_write_up(
+                physician=physician,
+                physicist=physicist,
+                patient_details=patient_details,
+                patient_age=patient_age,
+                patient_sex=patient_sex,
+                lesion=lesion,
+                fusion_type_text=fusion_type_text
+            )
             
-            # Use the template file for consistent formatting
-            write_up = self.template_manager.render_template("fusion", template_data)
             return write_up
         
         return None
@@ -260,6 +258,21 @@ class FusionModule:
         conclusion_text = " The fused images were used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
         
         return intro_text + reg_text + conclusion_text
+    
+    def _generate_fusion_write_up(self, physician, physicist, patient_details, patient_age, patient_sex, lesion, fusion_type_text):
+        """Generate the fusion write-up based on the inputs."""
+        
+        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} to perform a multimodality image fusion. "
+        write_up += f"The patient is a {patient_age}-year-old {patient_sex} with a {lesion} lesion. "
+        write_up += "The patient was scanned in our CT simulator in the treatment position. "
+        write_up += "The CT study was then exported to the Velocity imaging registration software.\n\n"
+        
+        write_up += f"{fusion_type_text}\n\n"
+        
+        write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
+        write_up += f"Dr. {physician}, and the medical physicist, Dr. {physicist}."
+        
+        return write_up
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""

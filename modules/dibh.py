@@ -1,10 +1,9 @@
 import streamlit as st
-from .templates import TemplateManager, ConfigManager
+from .templates import ConfigManager
 
 class DIBHModule:
     def __init__(self):
         """Initialize the DIBH module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
     
     def render_dibh_form(self):
@@ -73,23 +72,55 @@ class DIBHModule:
             machine = "linear accelerator" 
             scanning_system = "C-RAD"
             
-            template_data = {
-                "physician": physician,
-                "physicist": physicist,
-                "patient_details": patient_details,
-                "treatment_site": treatment_site,
-                "breast_side": breast_side,
-                "dose": dose,
-                "fractions": fractions,
-                "machine": machine,
-                "scanning_system": scanning_system,
-                "immobilization_device": immobilization_device
-            }
+            # Generate the write-up based on the inputs
+            write_up = self._generate_dibh_write_up(
+                physician=physician,
+                physicist=physicist,
+                patient_details=patient_details,
+                treatment_site=treatment_site,
+                breast_side=breast_side,
+                dose=dose,
+                fractions=fractions,
+                machine=machine,
+                scanning_system=scanning_system,
+                immobilization_device=immobilization_device
+            )
             
-            write_up = self.template_manager.render_template("dibh", template_data)
             return write_up
         
         return None
+    
+    def _generate_dibh_write_up(self, physician, physicist, patient_details, treatment_site, 
+                              breast_side, dose, fractions, machine, scanning_system, 
+                              immobilization_device):
+        """Generate the DIBH write-up based on the inputs."""
+        
+        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} "
+        write_up += f"for a gated, {breast_side}-sided DIBH treatment. Dr. {physician} has elected "
+        write_up += f"to treat the {treatment_site} with a DIBH technique to reduce dose to the heart "
+        write_up += f"and lung and minimize breathing motion during radiation delivery using the C-RAD "
+        write_up += f"positioning and gating system in conjunction with the {machine} linear accelerator.\n\n"
+        
+        write_up += f"Days before the initial radiation delivery, the patient was simulated in the treatment "
+        write_up += f"position (head-first supine) using a {immobilization_device} to aid in immobilization "
+        write_up += f"and localization. The patient was provided instructions and coached to reproducibly "
+        write_up += f"hold their breath. Using the {scanning_system} surface scanning system, a free breathing "
+        write_up += f"and breath hold signal trace was established. The patient was then asked to reproduce "
+        write_up += f"the breath hold pattern using visual goggles. Once the patient established a consistent "
+        write_up += f"breathing pattern, a gating baseline and gating window was established. Doing so, a "
+        write_up += f"DIBH CT simulation scan was then acquired. The DIBH CT simulation scan was approved "
+        write_up += f"by the Radiation Oncologist, Dr. {physician}.\n\n"
+        
+        write_up += f"A radiation treatment plan was developed on the DIBH CT simulation to deliver a "
+        write_up += f"prescribed dose of {dose} Gy in {fractions} fractions to the {treatment_site}. "
+        write_up += f"The delivery of the DIBH gating technique on the linear accelerator will be performed "
+        write_up += f"using the C-RAD CatalystHD. The CatalystHD will be used to position the patient, "
+        write_up += f"monitor intra-fraction motion, and gate the beam delivery. Verification of the patient "
+        write_up += f"position will be validated with a DIBH kV-CBCT. Treatment plan calculations and delivery "
+        write_up += f"procedures were reviewed and approved by the prescribing radiation oncologist, Dr. {physician} "
+        write_up += f"and the radiation oncology physicist, Dr. {physicist}."
+        
+        return write_up
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""

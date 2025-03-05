@@ -1,39 +1,5 @@
 import os
-import string
 import json
-
-class TemplateManager:
-    def __init__(self, templates_dir="data/templates"):
-        """Initialize the template manager with the directory containing templates."""
-        self.templates_dir = templates_dir
-        self.templates = {}
-        self._load_templates()
-    
-    def _load_templates(self):
-        """Load all templates from the templates directory."""
-        for filename in os.listdir(self.templates_dir):
-            if filename.endswith(".txt"):
-                template_name = os.path.splitext(filename)[0]
-                file_path = os.path.join(self.templates_dir, filename)
-                with open(file_path, 'r') as file:
-                    self.templates[template_name] = file.read()
-    
-    def get_template(self, template_name):
-        """Get a template by name."""
-        return self.templates.get(template_name, "")
-    
-    def render_template(self, template_name, data):
-        """Render a template with the provided data."""
-        template = self.get_template(template_name)
-        
-        # Using string.Formatter for safe formatting
-        formatter = string.Formatter()
-        try:
-            return template.format(**data)
-        except KeyError as e:
-            return f"Error: Missing field {e} in template"
-        except Exception as e:
-            return f"Error rendering template: {e}"
 
 class ConfigManager:
     def __init__(self, config_file="data/config.json"):
