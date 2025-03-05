@@ -4,7 +4,6 @@ from .templates import ConfigManager
 class SBRTModule:
     def __init__(self):
         """Initialize the SBRT module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
         # Common treatment sites for SBRT
@@ -122,11 +121,6 @@ class SBRTModule:
         
         # If all required fields are filled and button is pressed, generate the write-up
         if generate_pressed and all_fields_filled:
-            # Default values for removed form fields
-            treatment_machine = "linear accelerator"
-            immobilization_device = "custom immobilization device"
-            planning_technique = "VMAT"
-            
             # Format motion management text based on 4DCT selection
             if is_4dct == "Yes":
                 motion_text = "The patient was scanned in our CT simulator in the treatment position. "
@@ -154,9 +148,6 @@ class SBRTModule:
                 treatment_site=treatment_site,
                 dose=dose,
                 fractions=fractions,
-                treatment_machine=treatment_machine,
-                immobilization_device=immobilization_device,
-                planning_technique=planning_technique,
                 motion_text=motion_text,
                 imaging_text=imaging_text,
                 ptv_coverage=ptv_coverage,
@@ -171,29 +162,28 @@ class SBRTModule:
         return None
     
     def _generate_sbrt_write_up(self, physician, physicist, patient_details, treatment_site, 
-                              dose, fractions, treatment_machine, immobilization_device,
-                              planning_technique, motion_text, imaging_text, ptv_coverage,
+                              dose, fractions, motion_text, imaging_text, ptv_coverage,
                               pitv, r50, qa_text, target_volume):
         """Generate the SBRT write-up based on the inputs."""
         
         write_up = f"Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. "
         write_up += f"The patient is {patient_details}. Dr. {physician} has elected to treat with a "
         write_up += "stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning "
-        write_up += f"system in conjunction with the {treatment_machine} equipped with the "
+        write_up += "system in conjunction with the linear accelerator equipped with the "
         write_up += "kV-CBCT system.\n\n"
         
         # Motion management section
         write_up += f"{motion_text} Both the prescribing radiation oncologist and radiation oncology physicist "
         write_up += "evaluated and approved the patient setup. "
-        write_up += "Dr. {physician} segmented and approved both the PTVs and OARs.\n\n"
+        write_up += f"Dr. {physician} segmented and approved both the PTVs and OARs.\n\n"
         
         # Treatment planning section
-        write_up += f"In the treatment planning system, a {planning_technique} treatment plan was developed to "
+        write_up += "In the treatment planning system, a VMAT treatment plan was developed to "
         write_up += f"conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions to the planning target volume. "
         write_up += "The treatment plan was inversely optimized such that the prescription isodose volume exactly matched "
-        write_up += f"the target volume of --- cc in all three spatial dimensions and that the dose fell sharply away from the target volume. "
-        write_up += f"The treatment plan covered --- of the PTV with the prescribed isodose volume. "
-        write_up += f"The PITV (Vpres iso / VPTV) was --- and the R50 (Vol50% pres iso / VolPTV) was ---. "
+        write_up += f"the target volume of {target_volume} cc in all three spatial dimensions and that the dose fell sharply away from the target volume. "
+        write_up += f"The treatment plan covered {ptv_coverage}% of the PTV with the prescribed isodose volume. "
+        write_up += f"The PITV (Vpres iso / VPTV) was {pitv} and the R50 (Vol50% pres iso / VolPTV) was {r50}. "
         write_up += "Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.\n\n"
         
         # Image guidance section

@@ -4,7 +4,6 @@ from .templates import ConfigManager
 class SRSModule:
     def __init__(self):
         """Initialize the SRS module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
         # Common treatment sites for SRS
@@ -14,13 +13,28 @@ class SRSModule:
             "vestibular schwannoma", "multiple brain metastases", "skull base tumor"
         ]
         
+        # Treatment delivery systems
+        self.treatment_systems = {
+            "planning_systems": ["BrainLAB Elements", "Pinnacle", "Eclipse", "RayStation"],
+            "accelerators": ["Versa HD", "TrueBeam", "Elekta Infinity", "CyberKnife"],
+            "tracking_systems": ["ExacTrac", "Vision RT", "Catalyst HD", "X-ray imaging"]
+        }
+        
+        # Immobilization devices
+        self.immobilization_devices = [
+            "rigid aquaplast head mask", 
+            "thermoplastic mask", 
+            "frameless stereotactic mask system",
+            "SRS frame"
+        ]
+        
     def render_srs_form(self):
         """Render the form for SRS write-ups."""
         st.subheader("SRS Write-Up Generator")
         
-        # Use condensed tabs to organize the form
-        basic_tab, treatment_tab = st.tabs([
-            "Basic Information", "Treatment Details"
+        # Use tabs to organize the form
+        basic_tab, treatment_tab, planning_tab = st.tabs([
+            "Basic Information", "Treatment Details", "Planning Systems"
         ])
         
         with basic_tab:
@@ -58,7 +72,10 @@ class SRSModule:
                     if custom_site_text:
                         treatment_site = custom_site_text
                 
-            patient_details = f"a {patient_age}-year-old {patient_sex} with {treatment_site}"
+                # Target volume
+                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=1.5, step=0.1, key="target_volume")
+            
+            patient_details = f"a {patient_age}-year-old {patient_sex} with a {target_volume} cc lesion located in the {treatment_site}"
         
         with treatment_tab:
             # Treatment planning details
@@ -68,26 +85,23 @@ class SRSModule:
                 # SRS vs. SRT option
                 treatment_type = st.radio(
                     "Treatment Type",
-                    ["SRS (Single Fraction)", "SRT (Multiple Fractions)", "SRS+SRT (Combined)"],
+                    ["SRS (Single Fraction)", "SRT (Multiple Fractions)"],
                     key="treatment_type"
                 )
                 
                 if treatment_type == "SRS (Single Fraction)":
                     dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=18.0, step=0.1, key="srs_dose")
                     fractions = 1
-                elif treatment_type == "SRT (Multiple Fractions)":
+                else:  # SRT (Multiple Fractions)
                     dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=25.0, step=0.1, key="srs_dose")
                     fractions = st.number_input("Number of Fractions", min_value=2, max_value=10, value=5, key="srs_fractions")
-                else:  # Combined
-                    dose_srs = st.number_input("SRS Prescription Dose (Gy)", min_value=0.0, value=18.0, step=0.1, key="srs_dose_single")
-                    dose_srt = st.number_input("SRT Prescription Dose (Gy)", min_value=0.0, value=25.0, step=0.1, key="srs_dose_multi")
-                    fractions_srt = st.number_input("SRT Number of Fractions", min_value=2, max_value=10, value=5, key="srs_fractions_multi")
-                    # For the template we'll use the SRS dose, but note both in the write-up
-                    dose = dose_srs
-                    fractions = 1
                 
-                # Target volume
-                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
+                # Image fusion options
+                include_fusion = st.checkbox("Include MRI Fusion", value=True, key="include_fusion")
+                if include_fusion:
+                    mri_sequence = st.selectbox("MRI Sequence", 
+                                              ["T1-weighted, post Gd contrast", "T2-weighted", "FLAIR", "DWI"], 
+                                              key="mri_sequence")
             
             with col2:
                 # Prescription isodose
@@ -111,20 +125,57 @@ class SRSModule:
                                                value=3.0, 
                                                step=0.1,
                                                key="gradient_index")
+                                               
+                # Maximum dose
+                max_dose = st.number_input("Maximum Dose (%)", 
+                                         min_value=100, 
+                                         max_value=200, 
+                                         value=125, 
+                                         step=1,
+                                         key="max_dose")
+        
+        with planning_tab:
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                planning_system = st.selectbox("Treatment Planning System", 
+                                            self.treatment_systems["planning_systems"],
+                                            key="planning_system")
+                
+                accelerator = st.selectbox("Linear Accelerator", 
+                                         self.treatment_systems["accelerators"],
+                                         key="accelerator")
+                
+                tracking_system = st.selectbox("Tracking/Positioning System", 
+                                            self.treatment_systems["tracking_systems"],
+                                            key="tracking_system")
+            
+            with col2:
+                immobilization_device = st.selectbox("Immobilization Device", 
+                                                   self.immobilization_devices,
+                                                   key="immobilization_device")
+                
+                ct_slice_thickness = st.number_input("CT Slice Thickness (mm)", 
+                                                  min_value=0.5, 
+                                                  max_value=3.0, 
+                                                  value=1.25, 
+                                                  step=0.25,
+                                                  key="ct_slice_thickness")
+                
+                # CT localization checkbox
+                ct_localization = st.checkbox("CT Localization in Planning System", 
+                                           value=True,
+                                           key="ct_localization")
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="srs_generate")
         
         # Check if we have all required information and the button was pressed
-        required_fields = [physician, physicist, patient_age, treatment_site]
+        required_fields = [physician, physicist, patient_age, treatment_site, dose]
         
-        # Check dose fields based on treatment type
-        if treatment_type == "SRS+SRT (Combined)":
-            required_fields.extend([dose_srs, dose_srt, fractions_srt])
-        else:
-            required_fields.append(dose)
-            if treatment_type == "SRT (Multiple Fractions)":
-                required_fields.append(fractions)
+        # Check fractions field based on treatment type
+        if treatment_type == "SRT (Multiple Fractions)":
+            required_fields.append(fractions)
         
         all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
         
@@ -140,20 +191,10 @@ class SRSModule:
                 missing_fields.append("Patient Age")
             if not treatment_site:
                 missing_fields.append("Treatment Site")
-                
-            # Check dose fields based on treatment type
-            if treatment_type == "SRS+SRT (Combined)":
-                if dose_srs == 0:
-                    missing_fields.append("SRS Prescription Dose")
-                if dose_srt == 0:
-                    missing_fields.append("SRT Prescription Dose")
-                if fractions_srt == 0:
-                    missing_fields.append("SRT Number of Fractions")
-            else:
-                if dose == 0:
-                    missing_fields.append("Prescription Dose")
-                if treatment_type == "SRT (Multiple Fractions)" and fractions == 0:
-                    missing_fields.append("Number of Fractions")
+            if dose == 0:
+                missing_fields.append("Prescription Dose")
+            if treatment_type == "SRT (Multiple Fractions)" and fractions == 0:
+                missing_fields.append("Number of Fractions")
                 
             for field in missing_fields:
                 st.warning(f"Missing required field: {field}")
@@ -162,33 +203,13 @@ class SRSModule:
         
         # If all required fields are filled and button is pressed, generate the write-up
         if generate_pressed and all_fields_filled:
-            # Default values for removed form fields
-            treatment_machine = "linear accelerator"
-            immobilization_device = "thermoplastic mask"
-            planning_technique = "VMAT"
-            
             # Format treatment type
             if treatment_type == "SRS (Single Fraction)":
                 treatment_type_text = "stereotactic radiosurgery (SRS)"
-                dose_fractions_text = f"{dose} Gy in a single fraction"
-            elif treatment_type == "SRT (Multiple Fractions)":
+                fraction_text = "single fraction"
+            else:  # SRT (Multiple Fractions)
                 treatment_type_text = "stereotactic radiotherapy (SRT)"
-                dose_fractions_text = f"{dose} Gy in {fractions} fractions"
-            else:  # Combined
-                treatment_type_text = "combined stereotactic radiosurgery (SRS) and stereotactic radiotherapy (SRT)"
-                dose_fractions_text = f"{dose_srs} Gy in a single fraction for SRS and {dose_srt} Gy in {fractions_srt} fractions for SRT"
-            
-            # Fixed image fusion text
-            fusion_text = "Image fusion was performed with T1-weighted MRI with contrast to aid in target delineation and critical structure identification."
-            
-            # Fixed image guidance text
-            imaging_text = "Patient positioning verification will be performed before treatment using kilovoltage cone-beam CT to ensure accurate target localization and patient positioning."
-            
-            # Fixed critical structure doses text
-            critical_doses_text = ""
-            
-            # Fixed QA text
-            qa_text = "A quality assurance plan was developed and delivered to verify the accuracy of the radiation treatment plan. Measurements were obtained and compared against the calculated plan, showing good agreement between the plan and measurements."
+                fraction_text = f"{fractions} fractions"
             
             # Generate the write-up
             write_up = self._generate_srs_write_up(
@@ -197,19 +218,23 @@ class SRSModule:
                 patient_details=patient_details,
                 treatment_site=treatment_site,
                 treatment_type=treatment_type_text,
-                dose_fractions_text=dose_fractions_text,
-                treatment_machine=treatment_machine,
+                fraction_text=fraction_text,
+                dose=dose,
+                fractions=fractions,
+                planning_system=planning_system,
+                accelerator=accelerator,
+                tracking_system=tracking_system,
                 immobilization_device=immobilization_device,
-                planning_technique=planning_technique,
+                ct_slice_thickness=ct_slice_thickness,
+                include_fusion=include_fusion,
+                mri_sequence=mri_sequence if include_fusion else "",
+                ct_localization=ct_localization,
                 prescription_isodose=prescription_isodose,
-                target_volume=target_volume,
                 ptv_coverage=ptv_coverage,
                 conformity_index=conformity_index,
                 gradient_index=gradient_index,
-                fusion_text=fusion_text,
-                imaging_text=imaging_text,
-                critical_doses_text=critical_doses_text,
-                qa_text=qa_text
+                max_dose=max_dose,
+                target_volume=target_volume
             )
             
             return write_up
@@ -217,38 +242,58 @@ class SRSModule:
         return None
     
     def _generate_srs_write_up(self, physician, physicist, patient_details, treatment_site, 
-                             treatment_type, dose_fractions_text, treatment_machine, 
-                             immobilization_device, planning_technique, prescription_isodose,
-                             target_volume, ptv_coverage, conformity_index, gradient_index,
-                             fusion_text, imaging_text, critical_doses_text, qa_text):
-        """Generate the SRS write-up based on the inputs."""
+                             treatment_type, fraction_text, dose, fractions, planning_system, 
+                             accelerator, tracking_system, immobilization_device, ct_slice_thickness,
+                             include_fusion, mri_sequence, ct_localization, prescription_isodose,
+                             ptv_coverage, conformity_index, gradient_index, max_dose, target_volume):
+        """Generate the SRS write-up based on the inputs, following the requested format."""
         
-        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details}. "
-        write_up += f"Dr. {physician} has elected to treat with {treatment_type} using the "
-        write_up += f"{treatment_machine} and {immobilization_device} for immobilization.\n\n"
+        # First paragraph - consultation request
+        fusion_text = "an MRI image fusion and " if include_fusion else ""
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- for {fusion_text}{treatment_type}. "
+        write_up += f"The patient is {patient_details}. "
+        write_up += f"Dr. {physician} has elected to treat with a {treatment_type} technique "
+        write_up += f"by means of the {planning_system} treatment planning system in conjunction with the "
+        write_up += f"{accelerator} linear accelerator equipped with the {tracking_system} system.\n\n"
         
-        # Simulation and planning section
-        write_up += "The patient was scanned in our CT simulator in the treatment position using a "
-        write_up += f"{immobilization_device} to ensure reproducible patient positioning and minimize motion "
-        write_up += f"during treatment. {fusion_text} The acquired images were transferred to the treatment "
-        write_up += "planning system for target and critical structure delineation. "
-        write_up += f"Dr. {physician} segmented and approved both the target volumes and organs at risk.\n\n"
+        # Second paragraph - immobilization and imaging
+        write_up += f"Days before radiation delivery, a {immobilization_device} was constructed of the patient and was then "
+        write_up += f"fixated onto a stereotactic carbon fiber frame base. Dr. {physician} was present to verify correct "
+        write_up += f"construction of the head mask. A high resolution CT scan ({ct_slice_thickness}mm slice thickness) was then acquired. "
+        
+        # MRI fusion paragraph (if included)
+        if include_fusion:
+            write_up += f"In addition, a previous high resolution MR image set ({mri_sequence} scan) was acquired. "
+            write_up += f"The MR images and CT images were fused within the {planning_system} treatment planning system platform "
+            write_up += f"where a rigid body fusion was performed. "
+        
+        # CT localization (if included)
+        if ct_localization:
+            write_up += f"CT images were also localized in {planning_system}. "
+        
+        # Approval statement
+        write_up += f"Fusion and structure segmentation were reviewed by Dr. {physician} and Dr. {physicist}.\n\n"
         
         # Treatment planning section
-        write_up += f"A {planning_technique} treatment plan was developed to deliver a prescribed dose of "
-        write_up += f"{dose_fractions_text} to the target volume. The prescription was normalized to the "
-        write_up += f"{prescription_isodose}% isodose line, providing optimal target coverage while minimizing "
-        write_up += f"dose to surrounding normal tissues. The target volume was {target_volume:.2f} cc and "
-        write_up += f"the plan achieved {ptv_coverage}% target coverage. The conformity index was {conformity_index:.2f} "
-        write_up += f"and the gradient index was {gradient_index:.2f}, indicating a highly conformal dose distribution "
-        write_up += f"with a steep dose gradient. {critical_doses_text}\n\n"
+        write_up += f"A radiotherapy treatment plan was developed to deliver the prescribed dose to the periphery of the lesion. "
+        write_up += f"The treatment plan was optimized such that the prescription isodose volume geometrically matched "
+        write_up += f"the planning target volume (PTV) and that the lower isodose volumes spared the healthy brain tissue. "
+        write_up += f"The following table summarizes the plan parameters:\n\n"
         
-        # Image guidance section
-        write_up += f"{imaging_text}\n\n"
+        # Table of plan parameters
+        write_up += f"| Parameter | Value |\n"
+        write_up += f"|-----------|-------|\n"
+        write_up += f"| Prescription Dose | {dose} Gy in {fraction_text} |\n"
+        write_up += f"| Target Volume | {target_volume} cc |\n"
+        write_up += f"| Prescription Isodose | {prescription_isodose}% |\n"
+        write_up += f"| PTV Coverage | {ptv_coverage}% |\n"
+        write_up += f"| Conformity Index | {conformity_index} |\n"
+        write_up += f"| Gradient Index | {gradient_index} |\n"
+        write_up += f"| Maximum Dose | {max_dose}% |\n\n"
         
-        # QA section
-        write_up += f"{qa_text} The treatment plan and quality assurance results were reviewed and approved by "
-        write_up += f"both the prescribing radiation oncologist, Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}."
+        # Closing statement
+        write_up += f"Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, "
+        write_up += f"Dr. {physician}, and the radiation oncology physicist, Dr. {physicist}."
         
         return write_up
     
