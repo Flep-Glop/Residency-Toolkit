@@ -262,8 +262,8 @@ class FusionModule:
     def _generate_fusion_write_up(self, physician, physicist, patient_details, patient_age, patient_sex, lesion, fusion_type_text):
         """Generate the fusion write-up based on the inputs."""
         
-        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} to perform a multimodality image fusion. "
-        write_up += f"The patient is a {patient_age}-year-old {patient_sex} with a {lesion} lesion. "
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- to perform a multimodality image fusion. "
+        write_up += f"The patient is {patient_details}. "
         write_up += "The patient was scanned in our CT simulator in the treatment position. "
         write_up += "The CT study was then exported to the Velocity imaging registration software.\n\n"
         

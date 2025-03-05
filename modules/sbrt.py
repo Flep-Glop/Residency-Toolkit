@@ -134,7 +134,7 @@ class SBRTModule:
                 motion_text += "Using the 4D dataset, a Maximum Intensity Projection (MIP) CT image set was reconstructed to generate an ITV "
                 motion_text += "that encompasses the motion envelope of the target."
             else:
-                motion_text = "The patient was scanned in our CT simulator in the treatment position without specific motion management. "
+                motion_text = "The patient was scanned in our CT simulator in the treatment position. "
                 motion_text += "The patient was immobilized using a customized immobilization device to limit motion during treatment and aid in inter-fractional repositioning."
             
             # Standard image guidance text
@@ -176,8 +176,8 @@ class SBRTModule:
                               pitv, r50, qa_text, target_volume):
         """Generate the SBRT write-up based on the inputs."""
         
-        write_up = f"Dr. {physician} requested a medical physics consultation for a 4D CT simulation study "
-        write_up += f"and SBRT delivery for {patient_details}. Dr. {physician} has elected to treat with a "
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- for a 4D CT simulation study and SBRT delivery. "
+        write_up += f"The patient is {patient_details}. Dr. {physician} has elected to treat with a "
         write_up += "stereotactic body radiotherapy (SBRT) technique by means of the Pinnacle treatment planning "
         write_up += f"system in conjunction with the {treatment_machine} equipped with the "
         write_up += "kV-CBCT system.\n\n"
@@ -191,9 +191,9 @@ class SBRTModule:
         write_up += f"In the treatment planning system, a {planning_technique} treatment plan was developed to "
         write_up += f"conformally deliver a prescribed dose of {dose} Gy in {fractions} fractions to the planning target volume. "
         write_up += "The treatment plan was inversely optimized such that the prescription isodose volume exactly matched "
-        write_up += f"the target volume of {target_volume:.2f} cc in all three spatial dimensions and that the dose fell sharply away from the target volume. "
-        write_up += f"The treatment plan covered {ptv_coverage}% of the PTV with the prescribed isodose volume. "
-        write_up += f"The PITV (Vpres iso / VPTV) was {pitv:.2f} and the R50 (Vol50% pres iso / VolPTV) was {r50:.2f}. "
+        write_up += f"the target volume of --- cc in all three spatial dimensions and that the dose fell sharply away from the target volume. "
+        write_up += f"The treatment plan covered --- of the PTV with the prescribed isodose volume. "
+        write_up += f"The PITV (Vpres iso / VPTV) was --- and the R50 (Vol50% pres iso / VolPTV) was ---. "
         write_up += "Normal tissue dose constraints for critical organs associated with the treatment site were reviewed.\n\n"
         
         # Image guidance section

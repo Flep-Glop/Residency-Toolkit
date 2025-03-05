@@ -341,8 +341,8 @@ class PacemakerModule:
             pacing_text = ""
         
         # Basic write-up structure
-        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} "
-        write_up += f"undergoing radiation treatment to their {treatment_site} for the dose of {dose} Gy in {fractions} fractions. "
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- for an implanted device. "
+        write_up += f"The patient is {patient_details}. "
         write_up += f"The patient has a {device_info} from {device_vendor}. {pacing_text}\n\n"
         
         write_up += "Our treatment plan follows the guidelines of the manufacturer for radiation therapy. "

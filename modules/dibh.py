@@ -36,10 +36,6 @@ class DIBHModule:
                                         ["left breast", "right breast", "diaphragm", "chest wall"], 
                                         key="dibh_site")
             
-            # Determine breast side based on selection
-            breast_side = ""
-            if "breast" in treatment_site or "chest wall" in treatment_site:
-                breast_side = treatment_site.split()[0]
             
             dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=40.0, step=0.1, key="dibh_dose")
             fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="dibh_fractions")
@@ -78,7 +74,6 @@ class DIBHModule:
                 physicist=physicist,
                 patient_details=patient_details,
                 treatment_site=treatment_site,
-                breast_side=breast_side,
                 dose=dose,
                 fractions=fractions,
                 machine=machine,
@@ -91,18 +86,18 @@ class DIBHModule:
         return None
     
     def _generate_dibh_write_up(self, physician, physicist, patient_details, treatment_site, 
-                              breast_side, dose, fractions, machine, scanning_system, 
+                              dose, fractions, machine, scanning_system, 
                               immobilization_device):
         """Generate the DIBH write-up based on the inputs."""
         
-        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} "
-        write_up += f"for a gated, {breast_side}-sided DIBH treatment. Dr. {physician} has elected "
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- for a gated, DIBH treatment."
+        write_up += f"The patient is {patient_details}. Dr. {physician} has elected "
         write_up += f"to treat the {treatment_site} with a DIBH technique to reduce dose to the heart "
         write_up += f"and lung and minimize breathing motion during radiation delivery using the C-RAD "
         write_up += f"positioning and gating system in conjunction with the {machine} linear accelerator.\n\n"
         
         write_up += f"Days before the initial radiation delivery, the patient was simulated in the treatment "
-        write_up += f"position (head-first supine) using a {immobilization_device} to aid in immobilization "
+        write_up += f"position using a {immobilization_device} to aid in immobilization "
         write_up += f"and localization. The patient was provided instructions and coached to reproducibly "
         write_up += f"hold their breath. Using the {scanning_system} surface scanning system, a free breathing "
         write_up += f"and breath hold signal trace was established. The patient was then asked to reproduce "
