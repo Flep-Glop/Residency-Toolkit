@@ -49,7 +49,7 @@ if selected_module == "Quick Write":
     # Sub-module selection for Quick Write
     write_up_type = st.sidebar.selectbox(
         "Select Write-Up Type",
-        ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT/SRS"]
+        ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]
     )
     
     # Display the appropriate form based on selection
@@ -64,6 +64,9 @@ if selected_module == "Quick Write":
         quick_write.display_write_up(write_up)
     elif write_up_type == "Pacemaker":
         write_up = quick_write.render_pacemaker_form()
+        quick_write.display_write_up(write_up)
+    elif write_up_type == "SBRT":
+        write_up = quick_write.render_sbrt_form()
         quick_write.display_write_up(write_up)
     else:
         st.info(f"The {write_up_type} write-up type is under development.")

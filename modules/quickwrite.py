@@ -3,6 +3,7 @@ from .templates import TemplateManager, ConfigManager
 from .fusion import FusionModule
 from .prior_dose import PriorDoseModule
 from .pacemaker import PacemakerModule
+from .sbrt import SBRTModule
 
 class QuickWriteModule:
     def __init__(self):
@@ -12,6 +13,7 @@ class QuickWriteModule:
         self.fusion_module = FusionModule()
         self.prior_dose_module = PriorDoseModule()
         self.pacemaker_module = PacemakerModule()
+        self.sbrt_module = SBRTModule()
         
     def render_dibh_form(self):
         """Render the form for DIBH write-ups."""
@@ -106,6 +108,10 @@ class QuickWriteModule:
     def render_pacemaker_form(self):
         """Delegate to the PacemakerModule for pacemaker write-ups."""
         return self.pacemaker_module.render_pacemaker_form()
+    
+    def render_sbrt_form(self):
+        """Delegate to the SBRTModule for SBRT write-ups."""
+        return self.sbrt_module.render_sbrt_form()
     
     def display_write_up(self, write_up):
         """Display the generated write-up with a copy button."""
