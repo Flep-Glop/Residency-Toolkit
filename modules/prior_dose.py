@@ -5,7 +5,6 @@ from .templates import ConfigManager
 class PriorDoseModule:
     def __init__(self):
         """Initialize the Prior Dose module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
         # Common treatment sites

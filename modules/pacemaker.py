@@ -4,7 +4,6 @@ from .templates import ConfigManager
 class PacemakerModule:
     def __init__(self):
         """Initialize the Pacemaker module."""
-        self.template_manager = TemplateManager()
         self.config_manager = ConfigManager()
         
         # Common treatment sites
