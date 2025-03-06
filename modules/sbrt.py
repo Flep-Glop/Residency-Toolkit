@@ -25,11 +25,11 @@ class SBRTModule:
             # Staff information
             st.markdown("#### Staff Information")
             physician = st.selectbox("Physician Name", 
-                                   self.config_manager.get_physicians(), 
-                                   key="sbrt_physician")
+                                self.config_manager.get_physicians(), 
+                                key="sbrt_physician")
             physicist = st.selectbox("Physicist Name", 
-                                   self.config_manager.get_physicists(), 
-                                   key="sbrt_physicist")
+                                self.config_manager.get_physicists(), 
+                                key="sbrt_physicist")
         
             # Patient information
             st.markdown("#### Patient Information")
@@ -37,23 +37,26 @@ class SBRTModule:
             
             with col1:
                 patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="sbrt_age")
+            with col2:
                 patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="sbrt_sex")
             
-            with col2:
-                treatment_site = st.selectbox("Treatment Site", 
-                                            sorted(self.treatment_sites),
-                                            key="sbrt_site")
-                
-                # Option for custom site
-                if treatment_site == "oligometastasis":
-                    oligomet_location = st.text_input("Specify Oligometastasis Location", key="oligomet_location")
-                    if oligomet_location:
-                        treatment_site = f"oligometastatic {oligomet_location}"
-                
-            patient_details = f"a {patient_age}-year-old {patient_sex} with a {treatment_site} lesion"
+            patient_details = f"a {patient_age}-year-old {patient_sex}"
         
         with treatment_tab:
+            # Treatment site - moved from basic tab
+            st.markdown("#### Treatment Site")
+            treatment_site = st.selectbox("Treatment Site", 
+                                        sorted(self.treatment_sites),
+                                        key="sbrt_site")
+            
+            # Option for custom site
+            if treatment_site == "oligometastasis":
+                oligomet_location = st.text_input("Specify Oligometastasis Location", key="oligomet_location")
+                if oligomet_location:
+                    treatment_site = f"oligometastatic {oligomet_location}"
+            
             # Treatment planning details
+            st.markdown("#### Treatment Parameters")
             col1, col2 = st.columns(2)
             
             with col1:
@@ -77,11 +80,11 @@ class SBRTModule:
                 # Plan quality metrics
                 st.markdown("#### Plan Quality Metrics")
                 pitv = st.number_input("PITV (Vpres iso / VPTV)", 
-                                     min_value=0.0, 
-                                     max_value=2.0, 
-                                     value=1.0, 
-                                     step=0.01,
-                                     key="pitv")
+                                    min_value=0.0, 
+                                    max_value=2.0, 
+                                    value=1.0, 
+                                    step=0.01,
+                                    key="pitv")
                 
                 r50 = st.number_input("R50 (Vol50% pres iso / VolPTV)", 
                                     min_value=0.0, 

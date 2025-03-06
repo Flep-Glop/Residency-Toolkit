@@ -10,10 +10,12 @@ class DIBHModule:
         """Render the form for DIBH write-ups."""
         st.subheader("DIBH Write-Up Generator")
         
-        # Two-column layout for efficient use of space
-        col1, col2 = st.columns(2)
+        # Use tabs to organize the form
+        basic_tab, treatment_tab = st.tabs([
+            "Basic Information", "Treatment Details"
+        ])
         
-        with col1:
+        with basic_tab:
             # Staff information
             st.markdown("#### Staff Information")
             physician = st.selectbox("Physician Name", 
@@ -25,25 +27,32 @@ class DIBHModule:
             
             # Patient information
             st.markdown("#### Patient Information")
-            patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="dibh_age")
-            patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="dibh_sex")
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="dibh_age")
+            with col2:
+                patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="dibh_sex")
+            
             patient_details = f"a {patient_age}-year-old {patient_sex}"
         
-        with col2:
-            # Treatment information
+        with treatment_tab:
+            # Treatment information - moved from basic tab
             st.markdown("#### Treatment Information")
-            treatment_site = st.selectbox("Treatment Site", 
-                                        ["left breast", "right breast", "diaphragm", "chest wall"], 
-                                        key="dibh_site")
+            col1, col2 = st.columns(2)
             
-            
-            dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=40.0, step=0.1, key="dibh_dose")
-            fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="dibh_fractions")
-            
-            # Simplified equipment information - removed machine and scanning_system
-            immobilization_device = st.selectbox("Immobilization Device", 
+            with col1:
+                treatment_site = st.selectbox("Treatment Site", 
+                                            ["left breast", "right breast", "diaphragm", "chest wall"], 
+                                            key="dibh_site")
+                
+                immobilization_device = st.selectbox("Immobilization Device", 
                                                 ["breast board", "wing board"], 
                                                 key="dibh_immobilization")
+            
+            with col2:
+                dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=40.0, step=0.1, key="dibh_dose")
+                fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="dibh_fractions")
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="dibh_generate")

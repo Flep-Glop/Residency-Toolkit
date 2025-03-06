@@ -50,36 +50,36 @@ class PriorDoseModule:
         with treatment_tab:
             # Current Treatment
             st.markdown("#### Current Treatment")
-            col1, col2, col3, col4 = st.columns(4)
+            col1, col2 = st.columns(2)
             
             with col1:
                 current_site = st.selectbox("Current Treatment Site", 
-                                          sorted(self.treatment_sites),
-                                          key="current_site")
-            with col2:
-                current_dose = st.number_input("Current Dose (Gy)", 
-                                             min_value=0.0, 
-                                             value=45.0, 
-                                             step=0.1,  # Changed to 0.1
-                                             key="current_dose")
-            with col3:
-                current_fractions = st.number_input("Current Fractions", 
-                                                 min_value=1, 
-                                                 value=15,
-                                                 key="current_fractions")
-            with col4:
+                                        sorted(self.treatment_sites),
+                                        key="current_site")
+                
                 current_month = st.selectbox("Current Month", 
-                                           ["January", "February", "March", "April", 
+                                        ["January", "February", "March", "April", 
                                             "May", "June", "July", "August", 
                                             "September", "October", "November", "December"],
-                                           key="current_month")
+                                        key="current_month")
                 current_year = st.number_input("Current Year", 
-                                             min_value=2000, 
-                                             max_value=2100,
-                                             value=self.current_year,
-                                             key="current_year")
+                                            min_value=2000, 
+                                            max_value=2100,
+                                            value=self.current_year,
+                                            key="current_year")
             
-            # Prior Treatments section
+            with col2:
+                current_dose = st.number_input("Current Dose (Gy)", 
+                                            min_value=0.0, 
+                                            value=45.0, 
+                                            step=0.1,
+                                            key="current_dose")
+                current_fractions = st.number_input("Current Fractions", 
+                                                min_value=1, 
+                                                value=15,
+                                                key="current_fractions")
+            
+            # Prior Treatments section - with cleaner look similar to SRS module
             st.markdown("#### Prior Treatments")
             
             # Initialize session state for prior treatments if it doesn't exist
@@ -92,66 +92,68 @@ class PriorDoseModule:
             else:
                 for i, treatment in enumerate(st.session_state.prior_treatments):
                     with st.container():
-                        cols = st.columns([3, 2, 1, 1, 2, 1])
+                        cols = st.columns([3, 2, 1, 2, 1])
                         with cols[0]:
                             st.write(f"**Site**: {treatment['site']}")
                         with cols[1]:
-                            st.write(f"**Dose**: {treatment['dose']} Gy")
+                            st.write(f"**Dose**: {treatment['dose']} Gy / {treatment['fractions']} fx")
                         with cols[2]:
-                            st.write(f"**Fx**: {treatment['fractions']}")
-                        with cols[3]:
                             st.write(f"**Date**: {treatment['month']} {treatment['year']}")
-                        with cols[4]:
+                        with cols[3]:
                             # Empty space for alignment
                             st.write("")
-                        with cols[5]:
+                        with cols[4]:
                             if st.button("🗑️", key=f"delete_treatment_{i}"):
                                 st.session_state.prior_treatments.pop(i)
                                 st.rerun()
+                
+                # Add horizontal line for visual separation
+                st.markdown("---")
             
-            # Add new prior treatment
+            # Add new prior treatment - with cleaner look
             st.markdown("#### Add Prior Treatment")
-            with st.container():
-                cols = st.columns(5)
-                with cols[0]:
-                    prior_site = st.selectbox("Treatment Site", 
-                                             sorted(self.treatment_sites),
-                                             key="prior_site")
-                with cols[1]:
-                    prior_dose = st.number_input("Dose (Gy)", 
-                                              min_value=0.0, 
-                                              value=30.0,
-                                              step=0.1,  # Changed to 0.1
-                                              key="prior_dose")
-                with cols[2]:
-                    prior_fractions = st.number_input("Fractions", 
-                                                  min_value=1, 
-                                                  value=10,
-                                                  key="prior_fractions")
-                with cols[3]:
-                    prior_month = st.selectbox("Month", 
-                                             ["January", "February", "March", "April", 
-                                              "May", "June", "July", "August", 
-                                              "September", "October", "November", "December"],
-                                             key="prior_month")
-                    prior_year = st.number_input("Year", 
-                                               min_value=2000, 
-                                               max_value=2100,
-                                               value=self.current_year-1,
-                                               key="prior_year")
-                with cols[4]:
-                    if st.button("Add Treatment", key="add_prior_treatment"):
-                        st.session_state.prior_treatments.append({
-                            "site": prior_site,
-                            "dose": prior_dose,
-                            "fractions": prior_fractions,
-                            "month": prior_month,
-                            "year": prior_year
-                        })
-                        st.rerun()
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                prior_site = st.selectbox("Treatment Site", 
+                                        sorted(self.treatment_sites),
+                                        key="prior_site")
+                
+                prior_month = st.selectbox("Month", 
+                                        ["January", "February", "March", "April", 
+                                        "May", "June", "July", "August", 
+                                        "September", "October", "November", "December"],
+                                        key="prior_month")
+                prior_year = st.number_input("Year", 
+                                        min_value=2000, 
+                                        max_value=2100,
+                                        value=self.current_year-1,
+                                        key="prior_year")
+            
+            with col2:
+                prior_dose = st.number_input("Dose (Gy)", 
+                                        min_value=0.0, 
+                                        value=30.0,
+                                        step=0.1,
+                                        key="prior_dose")
+                prior_fractions = st.number_input("Fractions", 
+                                            min_value=1, 
+                                            value=10,
+                                            key="prior_fractions")
+                
+                add_treatment = st.button("Add Treatment", key="add_prior_treatment", type="primary")
+                if add_treatment:
+                    st.session_state.prior_treatments.append({
+                        "site": prior_site,
+                        "dose": prior_dose,
+                        "fractions": prior_fractions,
+                        "month": prior_month,
+                        "year": prior_year
+                    })
+                    st.rerun()
             
             # Options for the write-up
-            st.markdown("#### Write-Up Options")
+            st.markdown("#### Overlap Assessment")
             
             col1, col2 = st.columns(2)
             with col1:

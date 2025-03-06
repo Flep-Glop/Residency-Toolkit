@@ -53,24 +53,32 @@ class FusionModule:
         basic_tab, registration_tab = st.tabs(["Basic Information", "Registration Details"])
         
         with basic_tab:
-            # Two-column layout for basic information
+            # Staff information
+            st.markdown("#### Staff Information")
+            physician = st.selectbox("Physician Name", 
+                                    self.config_manager.get_physicians(), 
+                                    key="fusion_physician")
+            physicist = st.selectbox("Physicist Name", 
+                                    self.config_manager.get_physicists(), 
+                                    key="fusion_physicist")
+            
+            # Patient information
+            st.markdown("#### Patient Information")
             col1, col2 = st.columns(2)
             
             with col1:
-                # Staff information
-                st.markdown("#### Staff Information")
-                physician = st.selectbox("Physician Name", 
-                                        self.config_manager.get_physicians(), 
-                                        key="fusion_physician")
-                physicist = st.selectbox("Physicist Name", 
-                                        self.config_manager.get_physicists(), 
-                                        key="fusion_physicist")
-                
-                # Patient information
-                st.markdown("#### Patient Information")
                 patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
+            with col2:
                 patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
-                
+            
+            patient_details = f"a {patient_age}-year-old {patient_sex}"
+        
+        with registration_tab:
+            # Lesion and anatomical region - moved from basic tab
+            st.markdown("#### Lesion Information")
+            col1, col2 = st.columns(2)
+            
+            with col1:
                 # Lesion dropdown with "Other" option for custom entries
                 lesion_options = sorted(list(self.lesion_to_region.keys()))
                 lesion_options.append("Other (specify)")
@@ -91,32 +99,17 @@ class FusionModule:
                     lesion = selected_lesion
                     # Get the anatomical region based on the selected lesion (hidden from user)
                     anatomical_region = self.lesion_to_region.get(lesion, "")
-                
-                patient_details = f"a {patient_age}-year-old {patient_sex} with a {lesion} lesion"
-        
-        with registration_tab:
-            # Select registration configuration method
-            st.markdown("#### Registration Configuration")
             
-            # Preset selection
-            preset_option = st.selectbox(
-                "Registration Preset", 
-                list(self.registration_presets.keys()),
-                key="fusion_preset"
-            )
+            # Registration configuration - removed presets, kept only Current Registrations and Add New
+            st.markdown("#### Current Registrations")
             
             # Initialize session state for registrations if it doesn't exist
             if 'registrations' not in st.session_state:
                 st.session_state.registrations = []
-            
-            # Load preset when selected
-            if st.button("Load Preset", key="load_preset") or (preset_option != "Custom" and len(st.session_state.registrations) == 0):
-                st.session_state.registrations = self.registration_presets[preset_option].copy()
-            
+                
             # Display current registrations
-            st.markdown("#### Current Registrations")
             if not st.session_state.registrations:
-                st.info("No registrations configured. Add a registration below or select a preset.")
+                st.info("No registrations configured. Add a registration below.")
             else:
                 for i, reg in enumerate(st.session_state.registrations):
                     with st.container():

@@ -48,11 +48,11 @@ class SRSModule:
             # Staff information
             st.markdown("#### Staff Information")
             physician = st.selectbox("Physician Name", 
-                                   self.config_manager.get_physicians(), 
-                                   key="srs_physician")
+                                self.config_manager.get_physicists(), 
+                                key="srs_physician")
             physicist = st.selectbox("Physicist Name", 
-                                   self.config_manager.get_physicists(), 
-                                   key="srs_physicist")
+                                self.config_manager.get_physicists(), 
+                                key="srs_physicist")
         
             # Patient information
             st.markdown("#### Patient Information")
@@ -60,15 +60,19 @@ class SRSModule:
             
             with col1:
                 patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="srs_age")
-                patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="srs_sex")
-            
             with col2:
-                # Target volume
-                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
+                patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="srs_sex")
         
         with lesions_tab:
-            # Number of lesions input - moved from Basic tab
-            num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
+            # Target volume - moved from Basic tab
+            col1, col2 = st.columns(2)
+            with col1:
+                # Number of lesions input
+                num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
+            
+            with col2:
+                # Target volume moved here from Basic tab
+                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
             
             # Initialize session state for lesions if it doesn't exist
             if 'lesions' not in st.session_state:
@@ -117,9 +121,9 @@ class SRSModule:
                     target_lesion = st.number_input("Copy to Lesion #", min_value=1, max_value=num_lesions, value=min(2, num_lesions), key="copy_target") - 1
                 with copy_cols[2]:
                     which_params = st.multiselect("Parameters to Copy", 
-                                               ["All", "Dose", "Volume", "Metrics"],
-                                               default=["All"],
-                                               key="copy_params")
+                                            ["All", "Dose", "Volume", "Metrics"],
+                                            default=["All"],
+                                            key="copy_params")
                 with copy_cols[3]:
                     if st.button("Copy Now", key="copy_button"):
                         if source_lesion != target_lesion and 0 <= source_lesion < num_lesions and 0 <= target_lesion < num_lesions:
@@ -141,7 +145,7 @@ class SRSModule:
                                     st.session_state.lesions[target_lesion]['conformity_index'] = st.session_state.lesions[source_lesion]['conformity_index']
                                     st.session_state.lesions[target_lesion]['gradient_index'] = st.session_state.lesions[source_lesion]['gradient_index']
                                     st.session_state.lesions[target_lesion]['max_dose'] = st.session_state.lesions[source_lesion]['max_dose']
-                            st.success(f"Copied from Lesion {source_lesion+1} to Lesion {target_lesion+1}")
+                                st.success(f"Copied from Lesion {source_lesion+1} to Lesion {target_lesion+1}")
             
             # Display lesion input forms
             for i in range(num_lesions):
@@ -230,7 +234,7 @@ class SRSModule:
                                 st.session_state.lesions[i]['fractions'] = 1
                         
                         with col2:
-                            # Target volume
+                            # Target volume for this specific lesion
                             st.session_state.lesions[i]['volume'] = st.number_input(
                                 "Target Volume (cc)", 
                                 min_value=0.01, 
