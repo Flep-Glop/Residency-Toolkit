@@ -1,103 +1,4 @@
-with lesion_tabs[2]:  # Quick Controls tab
-                        st.markdown("#### Quick Adjustment Controls")
-                        st.markdown("Use these controls for faster input and precise adjustments")
-                        
-                        # Organize controls in sections
-                        quick_sections = st.tabs(["Dose", "Metrics", "Volume"])
-                        
-                        with quick_sections[0]:  # Dose Controls
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.markdown("##### Quick Dose Presets")
-                                if st.button("18 Gy", key=f"q_18gy_{i}"):
-                                    st.session_state.lesions[i]['dose'] = 18.0
-                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                    st.session_state.lesions[i]['fractions'] = 1
-                                    st.rerun()
-                                    
-                                if st.button("20 Gy", key=f"q_20gy_{i}"):
-                                    st.session_state.lesions[i]['dose'] = 20.0
-                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                    st.session_state.lesions[i]['fractions'] = 1
-                                    st.rerun()
-                            
-                            with col2:
-                                st.markdown("##### SRT Quick Presets")
-                                if st.button("25 Gy / 5 fx", key=f"q_25gy5fx_{i}"):
-                                    st.session_state.lesions[i]['dose'] = 25.0
-                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                    st.session_state.lesions[i]['fractions'] = 5
-                                    st.rerun()
-                                    
-                                if st.button("30 Gy / 5 fx", key=f"q_30gy5fx_{i}"):
-                                    st.session_state.lesions[i]['dose'] = 30.0
-                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                    st.session_state.lesions[i]['fractions'] = 5
-                                    st.rerun()
-                        
-                        with quick_sections[1]:  # Metrics Controls
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.markdown("##### CI/GI Presets")
-                                if st.button("Ideal Metrics", key=f"q_ideal_{i}"):
-                                    st.session_state.lesions[i]['conformity_index'] = 1.0
-                                    st.session_state.lesions[i]['gradient_index'] = 3.0
-                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
-                                    st.session_state.lesions[i]['ptv_coverage'] = 99.0
-                                    st.rerun()
-                                    
-                                if st.button("Typical Values", key=f"q_typical_{i}"):
-                                    st.session_state.lesions[i]['conformity_index'] = 1.2
-                                    st.session_state.lesions[i]['gradient_index'] = 3.5
-                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
-                                    st.session_state.lesions[i]['ptv_coverage'] = 98.0
-                                    st.rerun()
-                            
-                            with col2:
-                                # Fine adjustments
-                                st.markdown("##### Precise Adjustments")
-                                
-                                # CI adjustment buttons
-                                ci_cols = st.columns([1,1,1,1])
-                                with ci_cols[0]:
-                                    if st.button("-0.1", key=f"ci_minus01_{i}"):
-                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.1, 2))
-                                        st.rerun()
-                                with ci_cols[1]:
-                                    if st.button("-0.01", key=f"ci_minus001_{i}"):
-                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.01, 2))
-                                        st.rerun()
-                                with ci_cols[2]:
-                                    if st.button("+0.01", key=f"ci_plus001_{i}"):
-                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.01, 2))
-                                        st.rerun()
-                                with ci_cols[3]:
-                                    if st.button("+0.1", key=f"ci_plus01_{i}"):
-                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.1, 2))
-                                        st.rerun()
-                                
-                                # Add more precise adjustment buttons as needed
-                        
-                        with quick_sections[2]:  # Volume Controls
-                            col1, col2 = st.columns(2)
-                            with col1:
-                                st.markdown("##### Common Sizes")
-                                if st.button("0.5 cc", key=f"vol_0p5_{i}"):
-                                    st.session_state.lesions[i]['volume'] = 0.5
-                                    st.rerun()
-                                    
-                                if st.button("1.0 cc", key=f"vol_1p0_{i}"):
-                                    st.session_state.lesions[i]['volume'] = 1.0
-                                    st.rerun()
-                            
-                            with col2:
-                                if st.button("2.0 cc", key=f"vol_2p0_{i}"):
-                                    st.session_state.lesions[i]['volume'] = 2.0
-                                    st.rerun()
-                                    
-                                if st.button("5.0 cc", key=f"vol_5p0_{i}"):
-                                    st.session_state.lesions[i]['volume'] = 5.0
-                                    st.rerun()import streamlit as st
+import streamlit as st
 from .templates import ConfigManager
 
 class SRSModule:
@@ -164,6 +65,13 @@ class SRSModule:
             with col2:
                 # Number of lesions input
                 num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
+                
+                # Option for custom site
+                custom_site = st.checkbox("Custom Site Description", key="custom_site_checkbox")
+                if custom_site:
+                    custom_site_text = st.text_input("Enter Custom Site", key="custom_site_text_input")
+                    if custom_site_text:
+                        treatment_site = custom_site_text
         
         with lesions_tab:
             # Initialize session state for lesions if it doesn't exist
@@ -175,8 +83,8 @@ class SRSModule:
                         'treatment_type': self.treatment_types["SRS"],
                         'dose': 18.0,
                         'fractions': 1,
-                        'prescription_isodose': 80,
-                        'ptv_coverage': 98,
+                        'prescription_isodose': 80.0,
+                        'ptv_coverage': 98.0,
                         'conformity_index': 1.2,
                         'gradient_index': 3.0,
                         'max_dose': 125
@@ -193,8 +101,8 @@ class SRSModule:
                         'treatment_type': self.treatment_types["SRS"],
                         'dose': 18.0,
                         'fractions': 1,
-                        'prescription_isodose': 80,
-                        'ptv_coverage': 98,
+                        'prescription_isodose': 80.0,
+                        'ptv_coverage': 98.0,
                         'conformity_index': 1.2,
                         'gradient_index': 3.0,
                         'max_dose': 125
@@ -241,8 +149,9 @@ class SRSModule:
             
             # Display lesion input forms
             for i in range(num_lesions):
+                # Basic Input + Advanced Input tab approach for each lesion
                 with st.expander(f"Lesion {i+1}", expanded=(i == 0 or num_lesions <= 3)):
-                    lesion_tabs = st.tabs(["Basic Info", "Plan Metrics"])
+                    lesion_tabs = st.tabs(["Basic Info", "Plan Metrics", "Quick Controls"])
                     
                     with lesion_tabs[0]:  # Basic Info tab
                         col1, col2 = st.columns(2)
@@ -416,6 +325,107 @@ class SRSModule:
                                 step=1,
                                 key=f"lesion_maxdose_{i}"
                             )
+                            
+                    with lesion_tabs[2]:  # Quick Controls tab
+                        st.markdown("#### Quick Adjustment Controls")
+                        st.markdown("Use these controls for faster input and precise adjustments")
+                        
+                        # Organize controls in sections
+                        quick_sections = st.tabs(["Dose", "Metrics", "Volume"])
+                        
+                        with quick_sections[0]:  # Dose Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### Quick Dose Presets")
+                                if st.button("18 Gy", key=f"q_18gy_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 18.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                                    st.session_state.lesions[i]['fractions'] = 1
+                                    st.rerun()
+                                    
+                                if st.button("20 Gy", key=f"q_20gy_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 20.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                                    st.session_state.lesions[i]['fractions'] = 1
+                                    st.rerun()
+                            
+                            with col2:
+                                st.markdown("##### SRT Quick Presets")
+                                if st.button("25 Gy / 5 fx", key=f"q_25gy5fx_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 25.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
+                                    st.session_state.lesions[i]['fractions'] = 5
+                                    st.rerun()
+                                    
+                                if st.button("30 Gy / 5 fx", key=f"q_30gy5fx_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 30.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
+                                    st.session_state.lesions[i]['fractions'] = 5
+                                    st.rerun()
+                        
+                        with quick_sections[1]:  # Metrics Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### CI/GI Presets")
+                                if st.button("Ideal Metrics", key=f"q_ideal_{i}"):
+                                    st.session_state.lesions[i]['conformity_index'] = 1.0
+                                    st.session_state.lesions[i]['gradient_index'] = 3.0
+                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
+                                    st.session_state.lesions[i]['ptv_coverage'] = 99.0
+                                    st.rerun()
+                                    
+                                if st.button("Typical Values", key=f"q_typical_{i}"):
+                                    st.session_state.lesions[i]['conformity_index'] = 1.2
+                                    st.session_state.lesions[i]['gradient_index'] = 3.5
+                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
+                                    st.session_state.lesions[i]['ptv_coverage'] = 98.0
+                                    st.rerun()
+                            
+                            with col2:
+                                # Fine adjustments
+                                st.markdown("##### Precise Adjustments")
+                                
+                                # CI adjustment buttons
+                                ci_cols = st.columns([1,1,1,1])
+                                with ci_cols[0]:
+                                    if st.button("-0.1", key=f"ci_minus01_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.1, 2))
+                                        st.rerun()
+                                with ci_cols[1]:
+                                    if st.button("-0.01", key=f"ci_minus001_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.01, 2))
+                                        st.rerun()
+                                with ci_cols[2]:
+                                    if st.button("+0.01", key=f"ci_plus001_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.01, 2))
+                                        st.rerun()
+                                with ci_cols[3]:
+                                    if st.button("+0.1", key=f"ci_plus01_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.1, 2))
+                                        st.rerun()
+                                
+                                # Add more precise adjustment buttons as needed
+                        
+                        with quick_sections[2]:  # Volume Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### Common Sizes")
+                                if st.button("0.5 cc", key=f"vol_0p5_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 0.5
+                                    st.rerun()
+                                    
+                                if st.button("1.0 cc", key=f"vol_1p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 1.0
+                                    st.rerun()
+                            
+                            with col2:
+                                if st.button("2.0 cc", key=f"vol_2p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 2.0
+                                    st.rerun()
+                                    
+                                if st.button("5.0 cc", key=f"vol_5p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 5.0
+                                    st.rerun()
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="srs_generate")
@@ -444,25 +454,6 @@ class SRSModule:
         
         # If all required fields are filled and button is pressed, generate the write-up
         if generate_pressed and all_fields_filled:
-            # Check if we have mixed treatment types
-            treatment_types_set = set(lesion['treatment_type'] for lesion in st.session_state.lesions)
-            
-            if len(treatment_types_set) == 1:
-                # Single treatment type for all lesions
-                if self.treatment_types["SRS"] in treatment_types_set:
-                    treatment_type_text = "stereotactic radiosurgery (SRS)"
-                    fraction_text = "single fraction"
-                else:  # SRT
-                    treatment_type_text = "stereotactic radiotherapy (SRT)"
-                    
-                    # Get the fractions from the first lesion (all should be the same)
-                    fractions = st.session_state.lesions[0]['fractions']
-                    fraction_text = f"{fractions} fractions"
-            else:
-                # Mixed treatment types
-                treatment_type_text = "mixed SRS/SRT treatment"
-                fraction_text = "mixed fractionation schedules"
-            
             # Create patient details with lesion summary
             if num_lesions == 1:
                 lesion_details = f"a {st.session_state.lesions[0]['volume']} cc lesion located in the {st.session_state.lesions[0]['site']}"
@@ -481,6 +472,25 @@ class SRSModule:
                     lesion_details += lesion_list[0]
             
             patient_details = f"a {patient_age}-year-old {patient_sex} with {lesion_details}"
+            
+            # Check if we have mixed treatment types
+            treatment_types_set = set(lesion['treatment_type'] for lesion in st.session_state.lesions)
+            
+            if len(treatment_types_set) == 1:
+                # Single treatment type for all lesions
+                if self.treatment_types["SRS"] in treatment_types_set:
+                    treatment_type_text = "stereotactic radiosurgery (SRS)"
+                    fraction_text = "single fraction"
+                else:  # SRT
+                    treatment_type_text = "stereotactic radiotherapy (SRT)"
+                    
+                    # Get the fractions from the first lesion (all should be the same)
+                    fractions = st.session_state.lesions[0]['fractions']
+                    fraction_text = f"{fractions} fractions"
+            else:
+                # Mixed treatment types
+                treatment_type_text = "mixed SRS/SRT treatment"
+                fraction_text = "mixed fractionation schedules"
             
             # Generate the write-up
             write_up = self._generate_srs_write_up(
