@@ -64,15 +64,8 @@ class SRSModule:
                 patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="srs_sex")
         
         with lesions_tab:
-            # Target volume - moved from Basic tab
-            col1, col2 = st.columns(2)
-            with col1:
-                # Number of lesions input
-                num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
-            
-            with col2:
-                # Target volume moved here from Basic tab
-                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
+            # Number of lesions input
+            num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
             
             # Initialize session state for lesions if it doesn't exist
             if 'lesions' not in st.session_state:
