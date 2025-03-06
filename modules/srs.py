@@ -63,12 +63,13 @@ class SRSModule:
                 patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="srs_sex")
             
             with col2:
-                # Number of lesions input
-                num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
-                
-                # No custom site checkbox - we'll handle this in the lesion section instead
+                # Target volume
+                target_volume = st.number_input("Target Volume (cc)", min_value=0.01, value=3.5, step=0.1, key="target_volume")
         
         with lesions_tab:
+            # Number of lesions input - moved from Basic tab
+            num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
+            
             # Initialize session state for lesions if it doesn't exist
             if 'lesions' not in st.session_state:
                 st.session_state.lesions = [
@@ -286,42 +287,57 @@ class SRSModule:
                             )
                         
                         with metrics_cols[1]:
-                            # Plan quality metrics - improved precision and validation
-                            # Try to get current value with safe fallback
+                            # Improved input handling for CI
                             try:
                                 current_ci = float(st.session_state.lesions[i].get('conformity_index', 1.2))
                                 if current_ci <= 0 or current_ci > 3.0:
                                     current_ci = 1.2
                             except (ValueError, TypeError):
                                 current_ci = 1.2
-                                
-                            st.session_state.lesions[i]['conformity_index'] = st.number_input(
-                                "Conformity Index", 
-                                min_value=0.01, 
-                                max_value=3.0, 
-                                value=current_ci,
-                                step=0.01,
-                                format="%.2f",
-                                key=f"lesion_conformity_{i}"
+                            
+                            # Direct text input for CI to avoid lag issues
+                            ci_str = st.text_input(
+                                "Conformity Index (0.01-3.0)", 
+                                value=str(current_ci),
+                                key=f"lesion_ci_text_{i}"
                             )
                             
-                            # Try to get current value with safe fallback
+                            # Convert input to float with validation
+                            try:
+                                new_ci = float(ci_str)
+                                # Constrain to valid range
+                                if 0.01 <= new_ci <= 3.0:
+                                    st.session_state.lesions[i]['conformity_index'] = new_ci
+                                else:
+                                    st.warning("Conformity Index must be between 0.01 and 3.0")
+                            except ValueError:
+                                st.warning("Please enter a valid number for Conformity Index")
+                            
+                            # Improved input handling for GI
                             try:
                                 current_gi = float(st.session_state.lesions[i].get('gradient_index', 3.0))
                                 if current_gi <= 0 or current_gi > 10.0:
                                     current_gi = 3.0
                             except (ValueError, TypeError):
                                 current_gi = 3.0
-                                
-                            st.session_state.lesions[i]['gradient_index'] = st.number_input(
-                                "Gradient Index", 
-                                min_value=0.01, 
-                                max_value=10.0, 
-                                value=current_gi,
-                                step=0.01,
-                                format="%.2f",
-                                key=f"lesion_gradient_{i}"
+                            
+                            # Direct text input for GI to avoid lag issues
+                            gi_str = st.text_input(
+                                "Gradient Index (0.01-10.0)", 
+                                value=str(current_gi),
+                                key=f"lesion_gi_text_{i}"
                             )
+                            
+                            # Convert input to float with validation
+                            try:
+                                new_gi = float(gi_str)
+                                # Constrain to valid range
+                                if 0.01 <= new_gi <= 10.0:
+                                    st.session_state.lesions[i]['gradient_index'] = new_gi
+                                else:
+                                    st.warning("Gradient Index must be between 0.01 and 10.0")
+                            except ValueError:
+                                st.warning("Please enter a valid number for Gradient Index")
                             
                             # Get current max dose - use slider as requested
                             try:
@@ -340,75 +356,68 @@ class SRSModule:
                                 key=f"lesion_maxdose_{i}"
                             )
                             
-                    with lesion_tabs[2]:  # Quick Presets tab - simplified to just fractionation presets
-                        st.markdown("#### Common Fractionation Presets")
-                        st.markdown("Select a preset to quickly configure dose and fractionation")
+                    with lesion_tabs[2]:  # Redesigned Quick Presets tab
+                        st.markdown("### Fractionation Presets")
                         
-                        # Create a 2x2 grid layout for the presets
-                        col1, col2 = st.columns(2)
-                        col3, col4 = st.columns(2)
+                        # Use a modern card-like design with CSS
+                        st.markdown("""
+                        <style>
+                        .preset-container {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 10px;
+                            margin-bottom: 20px;
+                        }
+                        .preset-header {
+                            font-weight: bold;
+                            margin-bottom: 10px;
+                        }
+                        </style>
+                        
+                        <div class="preset-header">SRS (Single Fraction)</div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Use a cleaner 4-column layout for SRS presets
+                        cols = st.columns(4)
                         
                         # SRS presets
-                        with col1:
-                            if st.button("18 Gy × 1", key=f"q_18gy1fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 18.0
-                                st.session_state.lesions[i]['fractions'] = 1
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                st.rerun()
+                        srs_presets = [
+                            {"dose": 16.0, "label": "16 Gy × 1"},
+                            {"dose": 18.0, "label": "18 Gy × 1"},
+                            {"dose": 20.0, "label": "20 Gy × 1"},
+                            {"dose": 21.0, "label": "21 Gy × 1"}
+                        ]
                         
-                        with col2:
-                            if st.button("20 Gy × 1", key=f"q_20gy1fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 20.0
-                                st.session_state.lesions[i]['fractions'] = 1
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                st.rerun()
+                        for idx, preset in enumerate(srs_presets):
+                            with cols[idx % 4]:
+                                if st.button(preset["label"], key=f"q_srs_{preset['dose']}_{i}", use_container_width=True):
+                                    st.session_state.lesions[i]['dose'] = preset["dose"]
+                                    st.session_state.lesions[i]['fractions'] = 1
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                                    st.rerun()
                         
-                        # SRT presets - these will auto-switch to SRT
-                        with col3:
-                            if st.button("25 Gy × 5", key=f"q_25gy5fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 25.0
-                                st.session_state.lesions[i]['fractions'] = 5
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                st.rerun()
+                        st.markdown("""
+                        <div class="preset-header">SRT (Multiple Fractions)</div>
+                        """, unsafe_allow_html=True)
                         
-                        with col4:
-                            if st.button("30 Gy × 5", key=f"q_30gy5fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 30.0
-                                st.session_state.lesions[i]['fractions'] = 5
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                st.rerun()
-                                
-                        # Additional common presets
-                        col5, col6 = st.columns(2)
-                        col7, col8 = st.columns(2)
+                        # SRT presets with cleaner layout
+                        cols = st.columns(4)
                         
-                        with col5:
-                            if st.button("16 Gy × 1", key=f"q_16gy1fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 16.0
-                                st.session_state.lesions[i]['fractions'] = 1
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                st.rerun()
-                                
-                        with col6:
-                            if st.button("21 Gy × 1", key=f"q_21gy1fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 21.0
-                                st.session_state.lesions[i]['fractions'] = 1
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
-                                st.rerun()
-                                
-                        with col7:
-                            if st.button("27 Gy × 3", key=f"q_27gy3fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 27.0
-                                st.session_state.lesions[i]['fractions'] = 3
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                st.rerun()
-                                
-                        with col8:
-                            if st.button("35 Gy × 5", key=f"q_35gy5fx_{i}"):
-                                st.session_state.lesions[i]['dose'] = 35.0
-                                st.session_state.lesions[i]['fractions'] = 5
-                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
-                                st.rerun()
+                        # SRT presets - automatically switch to SRT mode
+                        srt_presets = [
+                            {"dose": 25.0, "fractions": 5, "label": "25 Gy × 5"},
+                            {"dose": 27.0, "fractions": 3, "label": "27 Gy × 3"},
+                            {"dose": 30.0, "fractions": 5, "label": "30 Gy × 5"},
+                            {"dose": 35.0, "fractions": 5, "label": "35 Gy × 5"}
+                        ]
+                        
+                        for idx, preset in enumerate(srt_presets):
+                            with cols[idx % 4]:
+                                if st.button(preset["label"], key=f"q_srt_{preset['dose']}_{preset['fractions']}_{i}", use_container_width=True):
+                                    st.session_state.lesions[i]['dose'] = preset["dose"]
+                                    st.session_state.lesions[i]['fractions'] = preset["fractions"]
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
+                                    st.rerun()
         
         # Generate button
         generate_pressed = st.button("Generate Write-Up", type="primary", key="srs_generate")
