@@ -18,6 +18,12 @@ class SRSModule:
             "left hippocampus", "right hippocampus", "optic chiasm", "sellar region"
         ]
         
+        # Treatment types
+        self.treatment_types = {
+            "SRS": "SRS (Single Fraction)",
+            "SRT": "SRT (Multiple Fractions)"
+        }
+        
         # Constants (previously user inputs that are now fixed)
         self.constants = {
             "mri_sequence": "T1-weighted, post Gd contrast",
@@ -60,17 +66,18 @@ class SRSModule:
                 # Number of lesions input
                 num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
                 
-                # Treatment type applies to all lesions
-                treatment_type = st.radio(
-                    "Treatment Type (applies to all lesions)",
-                    ["SRS (Single Fraction)", "SRT (Multiple Fractions)"],
-                    key="treatment_type"
+                # Note about global fractions (shown when any lesion is SRT)
+                st.markdown("#### Default Fractions")
+                default_fractions = st.number_input(
+                    "Default Number of Fractions (for SRT treatments)", 
+                    min_value=2, 
+                    max_value=10, 
+                    value=5, 
+                    key="default_fractions"
                 )
                 
-                if treatment_type == "SRT (Multiple Fractions)":
-                    fractions = st.number_input("Number of Fractions", min_value=2, max_value=10, value=5, key="srs_fractions")
-                else:
-                    fractions = 1  # Single fraction for SRS
+                # This is just a placeholder - treatment type will be set per lesion
+                fractions = default_fractions
         
         with lesions_tab:
             # Initialize session state for lesions if it doesn't exist
@@ -79,7 +86,9 @@ class SRSModule:
                     {
                         'site': self.brain_regions[0],
                         'volume': 1.5,
-                        'dose': 18.0 if treatment_type == "SRS (Single Fraction)" else 25.0,
+                        'treatment_type': self.treatment_types["SRS"],
+                        'dose': 18.0,
+                        'fractions': 1,
                         'prescription_isodose': 80,
                         'ptv_coverage': 98,
                         'conformity_index': 1.2,
@@ -95,7 +104,9 @@ class SRSModule:
                     st.session_state.lesions.append({
                         'site': self.brain_regions[0],
                         'volume': 1.5,
-                        'dose': 18.0 if treatment_type == "SRS (Single Fraction)" else 25.0,
+                        'treatment_type': self.treatment_types["SRS"],
+                        'dose': 18.0,
+                        'fractions': 1,
                         'prescription_isodose': 80,
                         'ptv_coverage': 98,
                         'conformity_index': 1.2,
@@ -130,6 +141,8 @@ class SRSModule:
                             else:
                                 if "Dose" in which_params:
                                     st.session_state.lesions[target_lesion]['dose'] = st.session_state.lesions[source_lesion]['dose']
+                                    st.session_state.lesions[target_lesion]['treatment_type'] = st.session_state.lesions[source_lesion]['treatment_type']
+                                    st.session_state.lesions[target_lesion]['fractions'] = st.session_state.lesions[source_lesion]['fractions']
                                 if "Volume" in which_params:
                                     st.session_state.lesions[target_lesion]['volume'] = st.session_state.lesions[source_lesion]['volume']
                                 if "Metrics" in which_params:
@@ -150,13 +163,50 @@ class SRSModule:
                         
                         with col1:
                             # Lesion location
+                            sorted_regions = sorted(self.brain_regions)
+                            current_site = st.session_state.lesions[i]['site']
+                            
+                            # Find index of current site in sorted regions
+                            try:
+                                site_index = sorted_regions.index(current_site)
+                            except ValueError:
+                                site_index = 0
+                                
                             st.session_state.lesions[i]['site'] = st.selectbox(
                                 "Brain Region", 
-                                sorted(self.brain_regions),
-                                index=self.brain_regions.index(st.session_state.lesions[i]['site']) 
-                                    if st.session_state.lesions[i]['site'] in self.brain_regions else 0,
-                                key=f"site_{i}"
+                                sorted_regions,
+                                index=site_index,
+                                key=f"lesion_site_{i}"
                             )
+                            
+                            # Treatment type
+                            treatment_options = list(self.treatment_types.values())
+                            current_treatment = st.session_state.lesions[i]['treatment_type']
+                            
+                            # Find index of current treatment
+                            try:
+                                treatment_index = treatment_options.index(current_treatment)
+                            except ValueError:
+                                treatment_index = 0
+                                
+                            st.session_state.lesions[i]['treatment_type'] = st.radio(
+                                "Treatment Type",
+                                treatment_options,
+                                index=treatment_index,
+                                key=f"lesion_treatment_type_{i}"
+                            )
+                            
+                            # Show fractions input if SRT is selected
+                            if st.session_state.lesions[i]['treatment_type'] == self.treatment_types["SRT"]:
+                                st.session_state.lesions[i]['fractions'] = st.number_input(
+                                    "Number of Fractions", 
+                                    min_value=2, 
+                                    max_value=10, 
+                                    value=st.session_state.lesions[i].get('fractions', default_fractions),
+                                    key=f"lesion_fractions_{i}"
+                                )
+                            else:
+                                st.session_state.lesions[i]['fractions'] = 1
                         
                         with col2:
                             # Target volume
@@ -165,17 +215,22 @@ class SRSModule:
                                 min_value=0.01, 
                                 value=st.session_state.lesions[i]['volume'],
                                 step=0.1, 
-                                key=f"volume_{i}"
+                                key=f"lesion_volume_{i}"
                             )
-                        
-                        # Dose prescription
-                        st.session_state.lesions[i]['dose'] = st.number_input(
-                            "Prescription Dose (Gy)", 
-                            min_value=0.0, 
-                            value=st.session_state.lesions[i]['dose'],
-                            step=0.1, 
-                            key=f"dose_{i}"
-                        )
+                            
+                            # Dose prescription
+                            if st.session_state.lesions[i]['treatment_type'] == self.treatment_types["SRS"]:
+                                default_dose = 18.0
+                            else:
+                                default_dose = 25.0
+                                
+                            st.session_state.lesions[i]['dose'] = st.number_input(
+                                "Prescription Dose (Gy)", 
+                                min_value=0.0, 
+                                value=st.session_state.lesions[i].get('dose', default_dose),
+                                step=0.1, 
+                                key=f"lesion_dose_{i}"
+                            )
                     
                     with lesion_tabs[1]:  # Plan Metrics tab
                         metrics_cols = st.columns(2)
@@ -186,14 +241,14 @@ class SRSModule:
                                 "Prescription Isodose (%)", 
                                 50, 100, 
                                 value=int(st.session_state.lesions[i]['prescription_isodose']),
-                                key=f"isodose_{i}"
+                                key=f"lesion_isodose_{i}"
                             )
                             
                             st.session_state.lesions[i]['ptv_coverage'] = st.slider(
                                 "PTV Coverage (%)", 
                                 90, 100, 
                                 value=int(st.session_state.lesions[i]['ptv_coverage']),
-                                key=f"coverage_{i}"
+                                key=f"lesion_coverage_{i}"
                             )
                         
                         with metrics_cols[1]:
@@ -204,7 +259,7 @@ class SRSModule:
                                 max_value=3.0, 
                                 value=st.session_state.lesions[i]['conformity_index'],
                                 step=0.01,
-                                key=f"conformity_{i}"
+                                key=f"lesion_conformity_{i}"
                             )
                             
                             st.session_state.lesions[i]['gradient_index'] = st.number_input(
@@ -213,7 +268,7 @@ class SRSModule:
                                 max_value=10.0, 
                                 value=st.session_state.lesions[i]['gradient_index'],
                                 step=0.1,
-                                key=f"gradient_{i}"
+                                key=f"lesion_gradient_{i}"
                             )
                             
                             st.session_state.lesions[i]['max_dose'] = st.number_input(
@@ -222,7 +277,7 @@ class SRSModule:
                                 max_value=200, 
                                 value=int(st.session_state.lesions[i]['max_dose']),
                                 step=1,
-                                key=f"maxdose_{i}"
+                                key=f"lesion_maxdose_{i}"
                             )
         
         # Generate button
@@ -231,10 +286,7 @@ class SRSModule:
         # Check if we have all required information and the button was pressed
         required_fields = [physician, physicist, patient_age]
         
-        # Check fractions field based on treatment type
-        if treatment_type == "SRT (Multiple Fractions)":
-            required_fields.append(fractions)
-        
+        # No need to check fractions globally since they're set per lesion now
         all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
         
         # Show missing fields if any
@@ -247,8 +299,6 @@ class SRSModule:
                 missing_fields.append("Physicist Name")
             if patient_age == 0:
                 missing_fields.append("Patient Age")
-            if treatment_type == "SRT (Multiple Fractions)" and fractions == 0:
-                missing_fields.append("Number of Fractions")
                 
             for field in missing_fields:
                 st.warning(f"Missing required field: {field}")
@@ -257,13 +307,24 @@ class SRSModule:
         
         # If all required fields are filled and button is pressed, generate the write-up
         if generate_pressed and all_fields_filled:
-            # Format treatment type
-            if treatment_type == "SRS (Single Fraction)":
-                treatment_type_text = "stereotactic radiosurgery (SRS)"
-                fraction_text = "single fraction"
-            else:  # SRT (Multiple Fractions)
-                treatment_type_text = "stereotactic radiotherapy (SRT)"
-                fraction_text = f"{fractions} fractions"
+            # Check if we have mixed treatment types
+            treatment_types_set = set(lesion['treatment_type'] for lesion in st.session_state.lesions)
+            
+            if len(treatment_types_set) == 1:
+                # Single treatment type for all lesions
+                if self.treatment_types["SRS"] in treatment_types_set:
+                    treatment_type_text = "stereotactic radiosurgery (SRS)"
+                    fraction_text = "single fraction"
+                else:  # SRT
+                    treatment_type_text = "stereotactic radiotherapy (SRT)"
+                    
+                    # Get the fractions from the first lesion (all should be the same)
+                    fractions = st.session_state.lesions[0]['fractions']
+                    fraction_text = f"{fractions} fractions"
+            else:
+                # Mixed treatment types
+                treatment_type_text = "mixed SRS/SRT treatment"
+                fraction_text = "mixed fractionation schedules"
             
             # Create patient details with lesion summary
             if num_lesions == 1:
@@ -280,7 +341,6 @@ class SRSModule:
                 patient_details=patient_details,
                 treatment_type=treatment_type_text,
                 fraction_text=fraction_text,
-                fractions=fractions,
                 lesions=st.session_state.lesions,
                 constants=self.constants
             )
@@ -290,7 +350,7 @@ class SRSModule:
         return None
     
     def _generate_srs_write_up(self, physician, physicist, patient_details, 
-                             treatment_type, fraction_text, fractions, 
+                             treatment_type, fraction_text, 
                              lesions, constants):
         """Generate the SRS write-up for multiple lesions."""
         
@@ -327,10 +387,16 @@ class SRSModule:
             write_up += f"the planning target volume (PTV) and that the lower isodose volumes spared the healthy brain tissue. "
             write_up += f"The following table summarizes the plan parameters:\n\n"
             
+            # Get fraction text specific to this lesion
+            if lesion['treatment_type'] == self.treatment_types["SRS"]:
+                lesion_fraction_text = "single fraction"
+            else:
+                lesion_fraction_text = f"{lesion['fractions']} fractions"
+                
             # Table of plan parameters for single lesion
             write_up += f"| Parameter | Value |\n"
             write_up += f"|-----------|-------|\n"
-            write_up += f"| Prescription Dose | {lesion['dose']} Gy in {fraction_text} |\n"
+            write_up += f"| Prescription Dose | {lesion['dose']} Gy in {lesion_fraction_text} |\n"
             write_up += f"| Target Volume | {lesion['volume']} cc |\n"
             write_up += f"| Location | {lesion['site']} |\n"
             write_up += f"| Prescription Isodose | {lesion['prescription_isodose']}% |\n"
@@ -346,15 +412,24 @@ class SRSModule:
             write_up += f"The following table summarizes the plan parameters for each lesion:\n\n"
             
             # Table header for multiple lesions
-            write_up += f"| Lesion | Location | Volume (cc) | Dose (Gy) | Prescription Isodose | PTV Coverage | Conformity Index | Gradient Index | Max Dose |\n"
-            write_up += f"|--------|----------|------------|-----------|---------------------|--------------|-----------------|--------------|---------|\n"
+            write_up += f"| Lesion | Location | Volume (cc) | Dose (Gy) | Fractions | Prescription Isodose | PTV Coverage | Conformity Index | Gradient Index | Max Dose |\n"
+            write_up += f"|--------|----------|------------|-----------|-----------|---------------------|--------------|-----------------|--------------|----------|\n"
             
             # Add row for each lesion
             for i, lesion in enumerate(lesions):
-                write_up += f"| {i+1} | {lesion['site']} | {lesion['volume']} | {lesion['dose']} | {lesion['prescription_isodose']}% | "
+                write_up += f"| {i+1} | {lesion['site']} | {lesion['volume']} | {lesion['dose']} | {lesion['fractions']} | {lesion['prescription_isodose']}% | "
                 write_up += f"{lesion['ptv_coverage']}% | {lesion['conformity_index']} | {lesion['gradient_index']} | {lesion['max_dose']}% |\n"
             
-            write_up += f"\nAll lesions will be treated in {fraction_text}.\n\n"
+            # Check if all fractions are the same
+            fractions_set = set(lesion['fractions'] for lesion in lesions)
+            treatment_types_set = set(lesion['treatment_type'] for lesion in lesions)
+            
+            if len(fractions_set) == 1 and len(treatment_types_set) == 1:
+                # All lesions have the same fractionation
+                write_up += f"\nAll lesions will be treated in {fraction_text}.\n\n"
+            else:
+                # Mixed fractionation
+                write_up += f"\nLesions will be treated according to their individual fractionation schedules as shown in the table above.\n\n"
         
         # Closing statement
         write_up += f"Calculations and data analysis were reviewed and approved by both the prescribing radiation oncologist, "
