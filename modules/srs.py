@@ -1,4 +1,103 @@
-import streamlit as st
+with lesion_tabs[2]:  # Quick Controls tab
+                        st.markdown("#### Quick Adjustment Controls")
+                        st.markdown("Use these controls for faster input and precise adjustments")
+                        
+                        # Organize controls in sections
+                        quick_sections = st.tabs(["Dose", "Metrics", "Volume"])
+                        
+                        with quick_sections[0]:  # Dose Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### Quick Dose Presets")
+                                if st.button("18 Gy", key=f"q_18gy_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 18.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                                    st.session_state.lesions[i]['fractions'] = 1
+                                    st.rerun()
+                                    
+                                if st.button("20 Gy", key=f"q_20gy_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 20.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                                    st.session_state.lesions[i]['fractions'] = 1
+                                    st.rerun()
+                            
+                            with col2:
+                                st.markdown("##### SRT Quick Presets")
+                                if st.button("25 Gy / 5 fx", key=f"q_25gy5fx_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 25.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
+                                    st.session_state.lesions[i]['fractions'] = 5
+                                    st.rerun()
+                                    
+                                if st.button("30 Gy / 5 fx", key=f"q_30gy5fx_{i}"):
+                                    st.session_state.lesions[i]['dose'] = 30.0
+                                    st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRT"]
+                                    st.session_state.lesions[i]['fractions'] = 5
+                                    st.rerun()
+                        
+                        with quick_sections[1]:  # Metrics Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### CI/GI Presets")
+                                if st.button("Ideal Metrics", key=f"q_ideal_{i}"):
+                                    st.session_state.lesions[i]['conformity_index'] = 1.0
+                                    st.session_state.lesions[i]['gradient_index'] = 3.0
+                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
+                                    st.session_state.lesions[i]['ptv_coverage'] = 99.0
+                                    st.rerun()
+                                    
+                                if st.button("Typical Values", key=f"q_typical_{i}"):
+                                    st.session_state.lesions[i]['conformity_index'] = 1.2
+                                    st.session_state.lesions[i]['gradient_index'] = 3.5
+                                    st.session_state.lesions[i]['prescription_isodose'] = 80.0
+                                    st.session_state.lesions[i]['ptv_coverage'] = 98.0
+                                    st.rerun()
+                            
+                            with col2:
+                                # Fine adjustments
+                                st.markdown("##### Precise Adjustments")
+                                
+                                # CI adjustment buttons
+                                ci_cols = st.columns([1,1,1,1])
+                                with ci_cols[0]:
+                                    if st.button("-0.1", key=f"ci_minus01_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.1, 2))
+                                        st.rerun()
+                                with ci_cols[1]:
+                                    if st.button("-0.01", key=f"ci_minus001_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = max(0.01, round(st.session_state.lesions[i]['conformity_index'] - 0.01, 2))
+                                        st.rerun()
+                                with ci_cols[2]:
+                                    if st.button("+0.01", key=f"ci_plus001_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.01, 2))
+                                        st.rerun()
+                                with ci_cols[3]:
+                                    if st.button("+0.1", key=f"ci_plus01_{i}"):
+                                        st.session_state.lesions[i]['conformity_index'] = min(3.0, round(st.session_state.lesions[i]['conformity_index'] + 0.1, 2))
+                                        st.rerun()
+                                
+                                # Add more precise adjustment buttons as needed
+                        
+                        with quick_sections[2]:  # Volume Controls
+                            col1, col2 = st.columns(2)
+                            with col1:
+                                st.markdown("##### Common Sizes")
+                                if st.button("0.5 cc", key=f"vol_0p5_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 0.5
+                                    st.rerun()
+                                    
+                                if st.button("1.0 cc", key=f"vol_1p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 1.0
+                                    st.rerun()
+                            
+                            with col2:
+                                if st.button("2.0 cc", key=f"vol_2p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 2.0
+                                    st.rerun()
+                                    
+                                if st.button("5.0 cc", key=f"vol_5p0_{i}"):
+                                    st.session_state.lesions[i]['volume'] = 5.0
+                                    st.rerun()import streamlit as st
 from .templates import ConfigManager
 
 class SRSModule:
@@ -242,46 +341,78 @@ class SRSModule:
                         metrics_cols = st.columns(2)
                         
                         with metrics_cols[0]:
-                            # Prescription and coverage
-                            st.session_state.lesions[i]['prescription_isodose'] = st.slider(
+                            # Prescription and coverage - use number_input for decimal precision
+                            st.session_state.lesions[i]['prescription_isodose'] = st.number_input(
                                 "Prescription Isodose (%)", 
-                                50, 100, 
-                                value=int(st.session_state.lesions[i]['prescription_isodose']),
+                                min_value=80.0, 
+                                max_value=100.0, 
+                                value=float(st.session_state.lesions[i].get('prescription_isodose', 80.0)),
+                                step=0.1,
+                                format="%.1f",
                                 key=f"lesion_isodose_{i}"
                             )
                             
-                            st.session_state.lesions[i]['ptv_coverage'] = st.slider(
+                            st.session_state.lesions[i]['ptv_coverage'] = st.number_input(
                                 "PTV Coverage (%)", 
-                                90, 100, 
-                                value=int(st.session_state.lesions[i]['ptv_coverage']),
+                                min_value=90.0, 
+                                max_value=100.0, 
+                                value=float(st.session_state.lesions[i].get('ptv_coverage', 98.0)),
+                                step=0.1,
+                                format="%.1f",
                                 key=f"lesion_coverage_{i}"
                             )
                         
                         with metrics_cols[1]:
-                            # Plan quality metrics
+                            # Plan quality metrics - improved precision and validation
+                            # Try to get current value with safe fallback
+                            try:
+                                current_ci = float(st.session_state.lesions[i].get('conformity_index', 1.2))
+                                if current_ci <= 0 or current_ci > 3.0:
+                                    current_ci = 1.2
+                            except (ValueError, TypeError):
+                                current_ci = 1.2
+                                
                             st.session_state.lesions[i]['conformity_index'] = st.number_input(
                                 "Conformity Index", 
-                                min_value=0.0, 
+                                min_value=0.01, 
                                 max_value=3.0, 
-                                value=st.session_state.lesions[i]['conformity_index'],
+                                value=current_ci,
                                 step=0.01,
+                                format="%.2f",
                                 key=f"lesion_conformity_{i}"
                             )
                             
+                            # Try to get current value with safe fallback
+                            try:
+                                current_gi = float(st.session_state.lesions[i].get('gradient_index', 3.0))
+                                if current_gi <= 0 or current_gi > 10.0:
+                                    current_gi = 3.0
+                            except (ValueError, TypeError):
+                                current_gi = 3.0
+                                
                             st.session_state.lesions[i]['gradient_index'] = st.number_input(
                                 "Gradient Index", 
-                                min_value=0.0, 
+                                min_value=0.01, 
                                 max_value=10.0, 
-                                value=st.session_state.lesions[i]['gradient_index'],
-                                step=0.1,
+                                value=current_gi,
+                                step=0.01,
+                                format="%.2f",
                                 key=f"lesion_gradient_{i}"
                             )
                             
+                            # Get current max dose
+                            try:
+                                current_max = int(st.session_state.lesions[i].get('max_dose', 125))
+                                if current_max < 100 or current_max > 200:
+                                    current_max = 125
+                            except (ValueError, TypeError):
+                                current_max = 125
+                                
                             st.session_state.lesions[i]['max_dose'] = st.number_input(
                                 "Maximum Dose (%)", 
                                 min_value=100, 
                                 max_value=200, 
-                                value=int(st.session_state.lesions[i]['max_dose']),
+                                value=current_max,
                                 step=1,
                                 key=f"lesion_maxdose_{i}"
                             )
@@ -336,7 +467,18 @@ class SRSModule:
             if num_lesions == 1:
                 lesion_details = f"a {st.session_state.lesions[0]['volume']} cc lesion located in the {st.session_state.lesions[0]['site']}"
             else:
-                lesion_details = f"{num_lesions} brain lesions"
+                # Create a detailed list of each lesion
+                lesion_details = f"{num_lesions} brain lesions: "
+                lesion_list = []
+                
+                for i, lesion in enumerate(st.session_state.lesions):
+                    lesion_list.append(f"a {lesion['volume']} cc lesion in the {lesion['site']}")
+                
+                # Join the lesion descriptions with commas and 'and' for the last one
+                if len(lesion_list) > 1:
+                    lesion_details += ", ".join(lesion_list[:-1]) + f", and {lesion_list[-1]}"
+                else:
+                    lesion_details += lesion_list[0]
             
             patient_details = f"a {patient_age}-year-old {patient_sex} with {lesion_details}"
             
