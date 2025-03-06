@@ -65,19 +65,6 @@ class SRSModule:
             with col2:
                 # Number of lesions input
                 num_lesions = st.number_input("Number of Lesions", min_value=1, max_value=10, value=1, key="num_lesions")
-                
-                # Note about global fractions (shown when any lesion is SRT)
-                st.markdown("#### Default Fractions")
-                default_fractions = st.number_input(
-                    "Default Number of Fractions (for SRT treatments)", 
-                    min_value=2, 
-                    max_value=10, 
-                    value=5, 
-                    key="default_fractions"
-                )
-                
-                # This is just a placeholder - treatment type will be set per lesion
-                fractions = default_fractions
         
         with lesions_tab:
             # Initialize session state for lesions if it doesn't exist
@@ -181,13 +168,20 @@ class SRSModule:
                             
                             # Treatment type
                             treatment_options = list(self.treatment_types.values())
+                            
+                            # Ensure treatment_type is properly initialized
+                            if 'treatment_type' not in st.session_state.lesions[i] or st.session_state.lesions[i]['treatment_type'] not in treatment_options:
+                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
+                            
                             current_treatment = st.session_state.lesions[i]['treatment_type']
                             
                             # Find index of current treatment
                             try:
                                 treatment_index = treatment_options.index(current_treatment)
-                            except ValueError:
+                            except (ValueError, TypeError):
+                                # If treatment_type isn't set or is invalid, default to SRS
                                 treatment_index = 0
+                                st.session_state.lesions[i]['treatment_type'] = self.treatment_types["SRS"]
                                 
                             st.session_state.lesions[i]['treatment_type'] = st.radio(
                                 "Treatment Type",
@@ -198,11 +192,15 @@ class SRSModule:
                             
                             # Show fractions input if SRT is selected
                             if st.session_state.lesions[i]['treatment_type'] == self.treatment_types["SRT"]:
+                                # Ensure fractions is initialized to a valid value (at least 2 for SRT)
+                                if not 'fractions' in st.session_state.lesions[i] or st.session_state.lesions[i]['fractions'] < 2:
+                                    st.session_state.lesions[i]['fractions'] = 5  # Default to 5 fractions for SRT
+                                
                                 st.session_state.lesions[i]['fractions'] = st.number_input(
                                     "Number of Fractions", 
                                     min_value=2, 
                                     max_value=10, 
-                                    value=st.session_state.lesions[i].get('fractions', default_fractions),
+                                    value=st.session_state.lesions[i]['fractions'],
                                     key=f"lesion_fractions_{i}"
                                 )
                             else:
@@ -219,15 +217,23 @@ class SRSModule:
                             )
                             
                             # Dose prescription
-                            if st.session_state.lesions[i]['treatment_type'] == self.treatment_types["SRS"]:
-                                default_dose = 18.0
+                            if 'treatment_type' in st.session_state.lesions[i]:
+                                if st.session_state.lesions[i]['treatment_type'] == self.treatment_types["SRS"]:
+                                    default_dose = 18.0
+                                else:
+                                    default_dose = 25.0
                             else:
-                                default_dose = 25.0
+                                default_dose = 18.0  # Default to SRS dose if no treatment type set
+                            
+                            # Get current dose value or use default
+                            current_dose = st.session_state.lesions[i].get('dose', default_dose)
+                            if current_dose is None or current_dose <= 0:
+                                current_dose = default_dose
                                 
                             st.session_state.lesions[i]['dose'] = st.number_input(
                                 "Prescription Dose (Gy)", 
                                 min_value=0.0, 
-                                value=st.session_state.lesions[i].get('dose', default_dose),
+                                value=current_dose,
                                 step=0.1, 
                                 key=f"lesion_dose_{i}"
                             )
