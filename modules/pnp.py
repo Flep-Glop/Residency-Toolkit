@@ -73,17 +73,169 @@ class PnPModule:
         """Render the Policies & Procedures module UI."""
         st.title("Policies & Procedures")
         
-        # Create tabs for Browse, Add/Edit, and Print
-        browse_tab, manage_tab, print_tab = st.tabs(["Browse P&Ps", "Manage Documents", "Print/Export"])
+        # Check if we're viewing a specific document or checklist
+        if hasattr(st.session_state, 'viewing_pp'):
+            self._render_full_pp_view()
+        elif hasattr(st.session_state, 'viewing_checklist'):
+            self._render_checklist_view()
+        else:
+            # Create tabs for Browse, Add/Edit, and Print
+            browse_tab, manage_tab, print_tab = st.tabs(["Browse P&Ps", "Manage Documents", "Print/Export"])
+            
+            with browse_tab:
+                self._render_browse_interface()
+            
+            with manage_tab:
+                self._render_manage_interface()
+            
+            with print_tab:
+                self._render_print_interface()
+    
+    def _render_full_pp_view(self):
+        """Render the full view of a P&P document (outside the tabs)."""
+        doc_id = st.session_state.viewing_pp
+        doc = next((d for d in self.pp_documents["documents"] if d["id"] == doc_id), None)
         
-        with browse_tab:
-            self._render_browse_interface()
+        if not doc:
+            st.error(f"Document with ID {doc_id} not found.")
+            if st.button("Back to Browse"):
+                del st.session_state.viewing_pp
+                st.rerun()
+            return
         
-        with manage_tab:
-            self._render_manage_interface()
+        # Navigation header
+        col1, col2 = st.columns([6, 1])
+        with col1:
+            st.subheader(f"Viewing: {doc['title']}")
+        with col2:
+            if st.button("← Back", key="back_from_pp"):
+                del st.session_state.viewing_pp
+                st.rerun()
         
-        with print_tab:
-            self._render_print_interface()
+        st.markdown("---")
+        
+        # Content
+        st.markdown(f"# {doc['title']}")
+        
+        # Create styled boxes for objective and frequency
+        st.markdown(f"""
+        <div style="background-color: #f9f9f9; border-left: 3px solid #27ae60; padding: 10px; margin-bottom: 15px;">
+            <strong>Objective:</strong> {doc['objective']}
+        </div>
+        <div style="background-color: #f9f9f9; border-left: 3px solid #e74c3c; padding: 10px; margin-bottom: 15px;">
+            <strong>Frequency:</strong> {doc['frequency']}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Convert the content Markdown to HTML and display
+        st.markdown(doc['content'])
+        
+        # Footer
+        st.markdown("---")
+        st.markdown(f"*Last updated: {doc.get('last_updated', 'Unknown')} by {doc.get('updated_by', 'Unknown')}*")
+        
+        # Action buttons
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Back to Browse", key="back_to_browse"):
+                del st.session_state.viewing_pp
+                st.rerun()
+        
+        with col2:
+            if doc['has_checklist']:
+                if st.button("View Checklist", key=f"view_checklist_{doc['id']}"):
+                    st.session_state.viewing_checklist = doc['id']
+                    del st.session_state.viewing_pp
+                    st.rerun()
+        
+        with col3:
+            if st.button("Print/Export", key="print_pp"):
+                st.session_state.printing_pp = doc['id']
+                # In a real implementation, you would handle printing here
+                st.info("To print, use your browser's print function or export from the Print/Export tab.")
+    
+    def _render_checklist_view(self):
+        """Render the full view of a checklist (outside the tabs)."""
+        doc_id = st.session_state.viewing_checklist
+        
+        # Find the checklist for this document
+        checklist = next((c for c in self.checklists["checklists"] if c["id"] == doc_id), None)
+        
+        if not checklist:
+            st.warning(f"No checklist found for document ID: {doc_id}")
+            if st.button("Back to Browse"):
+                del st.session_state.viewing_checklist
+                st.rerun()
+            return
+        
+        # Find associated document
+        doc = next((d for d in self.pp_documents["documents"] if d["id"] == doc_id), None)
+        doc_title = doc["title"] if doc else "Unknown Document"
+        
+        # Navigation header
+        col1, col2 = st.columns([6, 1])
+        with col1:
+            st.subheader(f"Checklist: {checklist['title']}")
+        with col2:
+            if st.button("← Back", key="back_from_checklist"):
+                del st.session_state.viewing_checklist
+                st.rerun()
+        
+        st.markdown("---")
+        
+        # Content
+        st.markdown(f"# {checklist['title']}")
+        st.markdown(f"**Associated with:** {doc_title}")
+        st.markdown(f"*Last updated: {checklist.get('last_updated', 'Unknown')} by {checklist.get('updated_by', 'Unknown')}*")
+        
+        # Interactive checklist
+        if 'checklist_state' not in st.session_state:
+            st.session_state.checklist_state = {}
+        
+        checklist_id = f"checklist_{doc_id}"
+        if checklist_id not in st.session_state.checklist_state:
+            st.session_state.checklist_state[checklist_id] = [False] * len(checklist['items'])
+        
+        # Display each checklist item with a checkbox
+        st.markdown("### Checklist Items")
+        for i, item in enumerate(checklist['items']):
+            col1, col2 = st.columns([20, 1])
+            with col1:
+                st.checkbox(
+                    item['text'] + (" *" if item['required'] else ""),
+                    key=f"item_{doc_id}_{i}",
+                    value=st.session_state.checklist_state[checklist_id][i],
+                    on_change=self._update_checklist_state,
+                    args=(checklist_id, i)
+                )
+        
+        # Progress bar for checklist completion
+        completed = sum(st.session_state.checklist_state[checklist_id])
+        total = len(checklist['items'])
+        required_items = sum(1 for item in checklist['items'] if item['required'])
+        required_completed = sum(1 for i, item in enumerate(checklist['items']) 
+                               if item['required'] and st.session_state.checklist_state[checklist_id][i])
+        
+        st.progress(completed / total)
+        st.markdown(f"**Progress:** {completed}/{total} items completed")
+        st.markdown(f"**Required Items:** {required_completed}/{required_items} completed")
+        
+        # Action buttons
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Back to Browse", key="back_to_browse_from_checklist"):
+                del st.session_state.viewing_checklist
+                st.rerun()
+        
+        with col2:
+            if st.button("Reset Checklist", key=f"reset_{doc_id}"):
+                st.session_state.checklist_state[checklist_id] = [False] * len(checklist['items'])
+                st.rerun()
+        
+        with col3:
+            if st.button("Print Checklist", key=f"print_checklist_{doc_id}"):
+                # In a real implementation, you would handle printing here
+                st.info("To print, use your browser's print function or export from the Print/Export tab.")
     
     def _render_browse_interface(self):
         """Render the browse interface for P&Ps."""
@@ -183,97 +335,6 @@ class PnPModule:
                 st.rerun()
             
             st.markdown("---")
-        
-        # Display full P&P if selected
-        if hasattr(st.session_state, 'viewing_pp') and st.session_state.viewing_pp == doc['id']:
-            self._render_full_pp(doc)
-        
-        # Display checklist if selected
-        if hasattr(st.session_state, 'viewing_checklist') and st.session_state.viewing_checklist == doc['id']:
-            self._render_checklist(doc['id'])
-    
-    def _render_full_pp(self, doc):
-        """Render the full content of a P&P document."""
-        with st.expander("Full Document", expanded=True):
-            st.markdown(f"# {doc['title']}")
-            st.markdown(f"**Objective:** {doc['objective']}")
-            st.markdown(f"**Frequency:** {doc['frequency']}")
-            
-            # Convert the content Markdown to HTML and display
-            st.markdown(doc['content'])
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("Close", key=f"close_{doc['id']}"):
-                    del st.session_state.viewing_pp
-                    st.rerun()
-            
-            with col2:
-                if doc['has_checklist']:
-                    if st.button("Show Checklist", key=f"show_checklist_{doc['id']}"):
-                        st.session_state.viewing_checklist = doc['id']
-                        st.rerun()
-    
-    def _render_checklist(self, doc_id):
-        """Render the checklist for a P&P document."""
-        # Find the checklist for this document
-        checklist = next((c for c in self.checklists["checklists"] if c["id"] == doc_id), None)
-        
-        if not checklist:
-            st.warning(f"No checklist found for document ID: {doc_id}")
-            return
-        
-        with st.expander("Checklist", expanded=True):
-            st.markdown(f"# {checklist['title']}")
-            st.markdown(f"*Last updated: {checklist['last_updated']} by {checklist['updated_by']}*")
-            
-            # Interactive checklist
-            if 'checklist_state' not in st.session_state:
-                st.session_state.checklist_state = {}
-            
-            checklist_id = f"checklist_{doc_id}"
-            if checklist_id not in st.session_state.checklist_state:
-                st.session_state.checklist_state[checklist_id] = [False] * len(checklist['items'])
-            
-            # Display each checklist item with a checkbox
-            for i, item in enumerate(checklist['items']):
-                col1, col2 = st.columns([20, 1])
-                with col1:
-                    st.checkbox(
-                        item['text'] + (" *" if item['required'] else ""),
-                        key=f"item_{doc_id}_{i}",
-                        value=st.session_state.checklist_state[checklist_id][i],
-                        on_change=self._update_checklist_state,
-                        args=(checklist_id, i)
-                    )
-                
-            # Progress bar for checklist completion
-            completed = sum(st.session_state.checklist_state[checklist_id])
-            total = len(checklist['items'])
-            required_items = sum(1 for item in checklist['items'] if item['required'])
-            required_completed = sum(1 for i, item in enumerate(checklist['items']) 
-                                   if item['required'] and st.session_state.checklist_state[checklist_id][i])
-            
-            st.progress(completed / total)
-            st.markdown(f"**Progress:** {completed}/{total} items completed")
-            st.markdown(f"**Required Items:** {required_completed}/{required_items} completed")
-            
-            # Button to reset checklist
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("Reset Checklist", key=f"reset_{doc_id}"):
-                    st.session_state.checklist_state[checklist_id] = [False] * len(checklist['items'])
-                    st.rerun()
-            
-            with col2:
-                if st.button("Print Checklist", key=f"print_checklist_{doc_id}"):
-                    st.session_state.printing_checklist = doc_id
-                    st.rerun()
-            
-            with col3:
-                if st.button("Close Checklist", key=f"close_checklist_{doc_id}"):
-                    del st.session_state.viewing_checklist
-                    st.rerun()
     
     def _update_checklist_state(self, checklist_id, item_index):
         """Update the state of a checklist item when checked/unchecked."""
