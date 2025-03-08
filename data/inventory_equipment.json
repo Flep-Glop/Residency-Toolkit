@@ -1,0 +1,106 @@
+{
+    "items": [
+      {
+        "id": "ion-chamber-a12",
+        "name": "Farmer-type Ion Chamber A12",
+        "manufacturer": "Standard Imaging",
+        "category": "Dosimetry Equipment",
+        "available": true,
+        "description": "Calibrated ionization chamber for reference dosimetry measurements following TG-51 protocol.",
+        "specifications": {
+          "Active Volume": "0.6 cc",
+          "Calibration Factor": "5.2 cGy/nC",
+          "Calibration Date": "2024-06-15",
+          "Serial Number": "12345-A"
+        },
+        "notes": "Calibrated at ADCL, certificate in dosimetry binder",
+        "vendor_website": "https://www.standardimaging.com",
+        "image_url": "https://example.com/images/ionchambera12.jpg",
+        "usage_instructions": "# Usage Instructions\n\n1. Handle by stem only\n2. Apply +300V bias voltage\n3. Wait 10 minutes for stabilization before use",
+        "related_resources": [
+          {
+            "title": "User Manual",
+            "url": "https://example.com/manuals/ionchambera12.pdf"
+          },
+          {
+            "title": "TG-51 Protocol",
+            "url": "https://aapm.onlinelibrary.wiley.com/doi/abs/10.1118/1.598691"
+          }
+        ]
+      },
+      {
+        "id": "solid-water-phantom",
+        "name": "Solid Water Phantom 30×30×20 cm³",
+        "manufacturer": "Sun Nuclear",
+        "category": "Phantoms",
+        "available": true,
+        "description": "Water-equivalent plastic phantom for dosimetry measurements.",
+        "specifications": {
+          "Dimensions": "30×30×20 cm³",
+          "Material": "Plastic Water",
+          "Electron Density": "1.00 g/cm³"
+        },
+        "notes": "Located in physics QA cabinet, slabs labeled with thickness",
+        "vendor_website": "https://www.sunnuclear.com",
+        "image_url": "https://example.com/images/solidwaterphantom.jpg"
+      },
+      {
+        "id": "electrometer-max4000",
+        "name": "MAX-4000 Electrometer",
+        "manufacturer": "Standard Imaging",
+        "category": "Dosimetry Equipment",
+        "available": true,
+        "description": "Digital electrometer for radiation measurements with ion chambers.",
+        "specifications": {
+          "Measurement Range": "0.001 nA to 500.0 nA",
+          "Bias Voltage": "±50 to ±300 V",
+          "Serial Number": "M4K-789"
+        },
+        "notes": "Battery needs to be charged after use",
+        "vendor_website": "https://www.standardimaging.com"
+      },
+      {
+        "id": "qa-3-phantom",
+        "name": "QA-3 Phantom",
+        "manufacturer": "Sun Nuclear",
+        "category": "Phantoms",
+        "available": false,
+        "description": "Phantom for film-based IMRT QA and point dose measurements.",
+        "specifications": {
+          "Dimensions": "20×20×3 cm³",
+          "Material": "Plastic Water"
+        },
+        "notes": "Currently at remote site",
+        "vendor_website": "https://www.sunnuclear.com"
+      },
+      {
+        "id": "arccheck-phantom",
+        "name": "ArcCHECK Cylindrical Diode Array",
+        "manufacturer": "Sun Nuclear",
+        "category": "Patient QA",
+        "available": true,
+        "description": "3D cylindrical diode array for VMAT/IMRT patient-specific QA.",
+        "specifications": {
+          "Detectors": "1386 diodes",
+          "Arrangement": "Helical",
+          "Diameter": "26.6 cm"
+        },
+        "notes": "Requires calibration setup before each use",
+        "vendor_website": "https://www.sunnuclear.com"
+      },
+      {
+        "id": "profiler-2d",
+        "name": "Profiler 2D Array",
+        "manufacturer": "Sun Nuclear",
+        "category": "Beam QA",
+        "available": true,
+        "description": "2D diode array for beam profile measurements and machine QA.",
+        "specifications": {
+          "Detectors": "X-profile: 83, Y-profile: 83",
+          "Detector Spacing": "5 mm"
+        },
+        "notes": "Use with MultiPlugs software",
+        "vendor_website": "https://www.sunnuclear.com"
+      }
+    ]
+  }

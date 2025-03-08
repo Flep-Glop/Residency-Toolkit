@@ -1,7 +1,8 @@
 import streamlit as st
 from modules.quickwrite import QuickWriteModule
 from modules.qa_bank import QABankModule
-from modules.pnp import PnPModule  # Import the new P&P module
+from modules.pnp import PnPModule
+from modules.inventory import InventoryModule  # Import the Inventory module
 
 # Page configuration
 st.set_page_config(
@@ -50,6 +51,29 @@ st.markdown("""
         padding: 10px;
         margin-bottom: 15px;
     }
+    /* Inventory-specific styling */
+    .equipment-card {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    .equipment-available {
+        background-color: #d4edda;
+        border-left: 3px solid #28a745;
+        padding: 5px 10px;
+    }
+    .equipment-unavailable {
+        background-color: #f8d7da;
+        border-left: 3px solid #dc3545;
+        padding: 5px 10px;
+    }
+    .training-status {
+        background-color: #e2f0fb;
+        border-left: 3px solid #3498db;
+        padding: 5px 10px;
+    }
     /* Print-specific styling */
     @media print {
         .stButton, .stSidebar, header {
@@ -67,12 +91,13 @@ st.markdown("""
 quick_write = QuickWriteModule()
 qa_bank = QABankModule()
 pnp_module = PnPModule()
+inventory_module = InventoryModule()  # Initialize the Inventory module
 
 # Sidebar for navigation
 st.sidebar.title("Residency Toolkit")
 selected_module = st.sidebar.selectbox(
     "Select Module",
-    ["Quick Write", "QA Bank", "P&Ps", "Competency Tracker", "Part 3 Bank", "Inventory"]
+    ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Competency Tracker", "Part 3 Bank"]
 )
 
 # Display selected module content
@@ -114,8 +139,12 @@ elif selected_module == "QA Bank":
 elif selected_module == "P&Ps":
     # Render the P&Ps module UI
     pnp_module.render_pp_module()
+
+elif selected_module == "Inventory":
+    # Render the Inventory module UI
+    inventory_module.render_inventory_module()
         
-elif selected_module in ["Competency Tracker", "Part 3 Bank", "Inventory"]:
+elif selected_module in ["Competency Tracker", "Part 3 Bank"]:
     st.title(f"{selected_module}")
     st.info(f"The {selected_module} module is under development.")
 

@@ -1,0 +1,55 @@
+ 
+  {
+    "training": {
+      "ion-chamber-a12": {
+        "trained": true,
+        "comfort_level": 4,
+        "training_date": "2024-02-15"
+      },
+      "solid-water-phantom": {
+        "trained": true,
+        "comfort_level": 5,
+        "training_date": "2024-01-10"
+      },
+      "electrometer-max4000": {
+        "trained": true,
+        "comfort_level": 3,
+        "training_date": "2024-02-15"
+      },
+      "profiler-2d": {
+        "trained": false,
+        "comfort_level": 1,
+        "training_date": "2024-04-20"
+      }
+    },
+    "usage_logs": {
+      "ion-chamber-a12": [
+        {
+          "date": "2024-03-10",
+          "purpose": "Monthly Linac Output Check",
+          "notes": "Used with MAX-4000 electrometer"
+        },
+        {
+          "date": "2024-02-15",
+          "purpose": "Training with Senior Physicist",
+          "notes": "Learned proper handling techniques"
+        }
+      ],
+      "solid-water-phantom": [
+        {
+          "date": "2024-03-10",
+          "purpose": "Monthly Linac Output Check",
+          "notes": "Used 5 cm depth setup"
+        },
+        {
+          "date": "2024-02-20",
+          "purpose": "IMRT Point Dose Verification",
+          "notes": "Treatment plan ABC123"
+        }
+      ]
+    },
+    "notes": {
+      "ion-chamber-a12": "Need to double-check the temperature and pressure corrections every time.",
+      "electrometer-max4000": "Remember to use high sensitivity setting for small-field measurements."
+    }
+  }
