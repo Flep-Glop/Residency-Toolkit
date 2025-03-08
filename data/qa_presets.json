@@ -1,0 +1,16 @@
+{
+    "presets": [
+      {
+        "id": "monthly-linac",
+        "name": "Monthly Linac QA",
+        "description": "Comprehensive monthly quality assurance for linear accelerators",
+        "tests": [
+          "linac-output-constancy",
+          "linac-flatness-symmetry",
+          "linac-mlc-test"
+        ],
+        "notes": "Schedule this for a minimum 2-hour time slot with no patients",
+        "estimated_total_time": 90
+      }
+    ]
+  }

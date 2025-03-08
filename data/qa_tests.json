@@ -1,0 +1,18 @@
+{
+    "tests": [
+      {
+        "id": "linac-output-constancy",
+        "name": "Linac Output Constancy",
+        "category": "Linac",
+        "description": "Verification of the constancy of the linac's radiation output.",
+        "tolerances": "±3% for photons, ±4% for electrons",
+        "method": "1. Set up the daily QA phantom\n2. Deliver 100 MU for each energy\n3. Record measured values\n4. Compare to baseline values",
+        "equipment": ["Daily QA phantom", "Electrometer"],
+        "references": ["TG-142", "TG-51"],
+        "frequency": "Daily",
+        "estimated_time": 15,
+        "dependencies": []
+      }
+    ]
+  }
+  

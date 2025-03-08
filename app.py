@@ -1,5 +1,6 @@
 import streamlit as st
 from modules.quickwrite import QuickWriteModule
+from modules.qa_bank import QABankModule  # Import the new QA Bank module
 
 # Page configuration
 st.set_page_config(
@@ -29,17 +30,32 @@ st.markdown("""
     .stButton button:hover {
         background-color: #2980b9;
     }
+    /* Additional styling for QA Bank */
+    .preset-card {
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f5f5f5;
+    }
+    .test-item {
+        padding: 5px 10px;
+        margin: 3px 0;
+        border-left: 3px solid #3498db;
+        background-color: #eaf2f8;
+    }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize modules
 quick_write = QuickWriteModule()
+qa_bank = QABankModule()  # Initialize the QA Bank module
 
 # Sidebar for navigation
 st.sidebar.title("Residency Toolkit")
 selected_module = st.sidebar.selectbox(
     "Select Module",
-    ["Quick Write", "Competency Tracker", "QA Bank", "P&Ps", "Part 3 Bank", "Inventory"]
+    ["Quick Write", "QA Bank", "Competency Tracker", "Part 3 Bank", "P&Ps", "Inventory"]
 )
 
 # Display selected module content
@@ -73,8 +89,12 @@ if selected_module == "Quick Write":
         quick_write.srs_module.display_write_up(write_up)
     else:
         st.info(f"The {write_up_type} write-up type is under development.")
+
+elif selected_module == "QA Bank":
+    # Render the QA Bank module UI
+    qa_bank.render_qa_bank()
         
-elif selected_module in ["Competency Tracker", "QA Bank", "P&Ps", "Part 3 Bank", "Inventory"]:
+elif selected_module in ["Competency Tracker", "Part 3 Bank", "P&Ps", "Inventory"]:
     st.title(f"{selected_module}")
     st.info(f"The {selected_module} module is under development.")
 
