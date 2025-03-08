@@ -1,6 +1,7 @@
 import streamlit as st
 from modules.quickwrite import QuickWriteModule
-from modules.qa_bank import QABankModule  # Import the new QA Bank module
+from modules.qa_bank import QABankModule
+from modules.pnp import PnPModule  # Import the new P&P module
 
 # Page configuration
 st.set_page_config(
@@ -30,32 +31,48 @@ st.markdown("""
     .stButton button:hover {
         background-color: #2980b9;
     }
-    /* Additional styling for QA Bank */
-    .preset-card {
-        border: 1px solid #e0e0e0;
-        border-radius: 5px;
-        padding: 10px;
-        margin-bottom: 10px;
-        background-color: #f5f5f5;
-    }
-    .test-item {
-        padding: 5px 10px;
-        margin: 3px 0;
+    /* Additional styling for P&P and other modules */
+    .checklist-item {
+        padding: 8px 15px;
+        margin: 5px 0;
         border-left: 3px solid #3498db;
         background-color: #eaf2f8;
+    }
+    .objective-box {
+        background-color: #f9f9f9;
+        border-left: 3px solid #27ae60;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    .frequency-box {
+        background-color: #f9f9f9;
+        border-left: 3px solid #e74c3c;
+        padding: 10px;
+        margin-bottom: 15px;
+    }
+    /* Print-specific styling */
+    @media print {
+        .stButton, .stSidebar, header {
+            display: none !important;
+        }
+        .main .block-container {
+            max-width: 100% !important;
+            padding-top: 0px !important;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize modules
 quick_write = QuickWriteModule()
-qa_bank = QABankModule()  # Initialize the QA Bank module
+qa_bank = QABankModule()
+pnp_module = PnPModule()
 
 # Sidebar for navigation
 st.sidebar.title("Residency Toolkit")
 selected_module = st.sidebar.selectbox(
     "Select Module",
-    ["Quick Write", "QA Bank", "Competency Tracker", "Part 3 Bank", "P&Ps", "Inventory"]
+    ["Quick Write", "QA Bank", "P&Ps", "Competency Tracker", "Part 3 Bank", "Inventory"]
 )
 
 # Display selected module content
@@ -93,8 +110,12 @@ if selected_module == "Quick Write":
 elif selected_module == "QA Bank":
     # Render the QA Bank module UI
     qa_bank.render_qa_bank()
+
+elif selected_module == "P&Ps":
+    # Render the P&Ps module UI
+    pnp_module.render_pp_module()
         
-elif selected_module in ["Competency Tracker", "Part 3 Bank", "P&Ps", "Inventory"]:
+elif selected_module in ["Competency Tracker", "Part 3 Bank", "Inventory"]:
     st.title(f"{selected_module}")
     st.info(f"The {selected_module} module is under development.")
 

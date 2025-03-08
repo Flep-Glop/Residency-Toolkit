@@ -1,0 +1,111 @@
+{
+    "checklists": [
+      {
+        "id": "tbi-planning",
+        "title": "TBI Planning Checklist",
+        "items": [
+          {"text": "Verify patient eligibility (weight < 275 lbs, height < 6 ft)", "required": true},
+          {"text": "Create patient folder and documents", "required": true},
+          {"text": "Scan and fill out plan document", "required": true},
+          {"text": "Verify AP/PA MU and Reference Sectors match", "required": true},
+          {"text": "Verify Compensator Filters settings", "required": true},
+          {"text": "Fill out SOC", "required": true},
+          {"text": "Generate and upload PDFs (SIM, CALC, SOC)", "required": true},
+          {"text": "Complete and upload 2nd Check", "required": true},
+          {"text": "Set up site parameters", "required": true},
+          {"text": "Create and configure all fields", "required": true},
+          {"text": "Set up dosimetry tracking", "required": true},
+          {"text": "Schedule fields in RO Treat", "required": true},
+          {"text": "Add TBI task set to QCL", "required": true},
+          {"text": "Complete billing (all 4 charge codes)", "required": true},
+          {"text": "Fill out dosimetry assessment", "required": true},
+          {"text": "Create MPC request", "required": true},
+          {"text": "Set up hardware (diodes, compensator, lung blocks)", "required": true}
+        ],
+        "last_updated": "2025-02-26",
+        "updated_by": "Luke Lussier"
+      },
+      {
+        "id": "weekly-chart-check",
+        "title": "Weekly Chart Check Checklist",
+        "items": [
+          {"text": "Verify weekly is needed (≥3 fractions since last weekly)", "required": true},
+          {"text": "Confirm Physics Plan Review exists", "required": true},
+          {"text": "Verify therapist weeklies are up to date", "required": true},
+          {"text": "Check Rad Rx matches plan and treatment", "required": true},
+          {"text": "Verify MPC documents present", "required": true},
+          {"text": "Confirm Rad Calc MUs match plan (<5% diff)", "required": true},
+          {"text": "Review treatment notes", "required": true},
+          {"text": "Verify QCL tasks complete", "required": true},
+          {"text": "Review site setup", "required": true},
+          {"text": "Check field summary (MU, collimator/gantry angles)", "required": true},
+          {"text": "Verify dose summary", "required": true},
+          {"text": "Review any overrides", "required": true},
+          {"text": "Check PTV alignment in images", "required": true},
+          {"text": "Complete QCL with initials", "required": true}
+        ],
+        "last_updated": "2024-08-08",
+        "updated_by": "Luke Lussier"
+      },
+      {
+        "id": "plan-review",
+        "title": "Plan Review Checklist",
+        "items": [
+          {"text": "Review patient notes", "required": true},
+          {"text": "Verify QCL tasks on track", "required": true},
+          {"text": "Check Rad Rx matches plan", "required": true},
+          {"text": "Verify site setup parameters", "required": true},
+          {"text": "Confirm Reference Structure coordinates match DICOM", "required": true},
+          {"text": "Check field parameters (energy, MU, angles, etc.)", "required": true},
+          {"text": "Verify treatment calendar is correct", "required": true},
+          {"text": "Confirm Rad Calc matches plan document (<5% diff)", "required": true},
+          {"text": "Check planning parameters (Table, Air Thresh, Dose Grid)", "required": true},
+          {"text": "Verify max dose <110-115%", "required": true},
+          {"text": "Confirm all plan views present (isodose, BEV, etc.)", "required": true},
+          {"text": "Check MPC documents", "required": true},
+          {"text": "Verify setup images are present", "required": true},
+          {"text": "Confirm Pinnacle plan details", "required": true},
+          {"text": "Review contours and density overrides", "required": true},
+          {"text": "Check dose grid coverage", "required": true},
+          {"text": "Verify MU in Pinnacle matches plan document", "required": true},
+          {"text": "Review BEV for each beam", "required": true},
+          {"text": "Run scorecard", "required": true},
+          {"text": "Generate QA plan", "required": true},
+          {"text": "Complete QCL with initials", "required": true}
+        ],
+        "last_updated": "2024-08-05",
+        "updated_by": "Luke Lussier"
+      },
+      {
+        "id": "hdr-daily-qa",
+        "title": "HDR Daily QA Checklist",
+        "items": [
+          {"text": "Unlock room with key from V8", "required": true},
+          {"text": "Turn on and check GM detector", "required": true},
+          {"text": "Run Oncentra self test", "required": true},
+          {"text": "Check safety equipment (flashlight, dosimeter, etc.)", "required": true},
+          {"text": "Set up transfer tubes for timer test", "required": true},
+          {"text": "Load UT Timer Test plan", "required": true},
+          {"text": "Test interlock set 1", "required": true},
+          {"text": "Connect tube 1 and lock indexer ring", "required": true},
+          {"text": "Run timer test (verify 60 seconds ±1s)", "required": true},
+          {"text": "Test interrupt button", "required": true},
+          {"text": "Test emergency stop", "required": true},
+          {"text": "Test door interlock", "required": true},
+          {"text": "Save timer test documents (1.pdf and 2.pdf)", "required": true},
+          {"text": "Set up distance test tube", "required": true},
+          {"text": "Load UT Daily Position Test plan", "required": true},
+          {"text": "Take photo of source at 1500mm", "required": true},
+          {"text": "Save distance test documents (3.pdf and 4.pdf)", "required": true},
+          {"text": "Transfer all documents and images", "required": true},
+          {"text": "Check system date/time", "required": true},
+          {"text": "Verify RC and Velocity functionality", "required": true},
+          {"text": "Upload QA documents", "required": true},
+          {"text": "Check decay comparison", "required": true},
+          {"text": "Complete physical QA sheet", "required": true}
+        ],
+        "last_updated": "2024-08-08",
+        "updated_by": "Luke Lussier"
+      }
+    ]
+  }
