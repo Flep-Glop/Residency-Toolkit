@@ -14,12 +14,27 @@ class GameModule:
         self.consumables = self._get_consumables()
         self.question_bank = self._get_question_bank()
     
-    def render_game_module(self):
+    def _render_game_module(self):
         """Main entry point for rendering the game module."""
         st.title("Medical Physics Residency: The Game")
         
         # Add custom CSS for the game
         self._add_custom_css()
+        
+        # Add introduction banner when first visiting game
+        if 'game_intro_seen' not in st.session_state:
+            st.session_state.game_intro_seen = True
+            with st.container():
+                st.info("""
+                # Welcome to Medical Physics Residency: The Game!
+                
+                Your journey as a medical physics resident begins here. Navigate through 
+                clinical rotations, answer knowledge-testing questions, and build your skills.
+                
+                Start your adventure by entering the Clinical Area in the department hub.
+                """)
+                if st.button("Got it!"):
+                    st.rerun()
         
         # Initialize session state if not already done
         self._init_session_state()
@@ -75,7 +90,8 @@ class GameModule:
                 border-radius: 10px;
                 padding: 20px;
                 margin: 10px 0;
-                background-color: white;
+                background-color: #f5f5f5;  /* Light gray instead of white */
+                border: 1px solid #ddd;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                 transition: transform 0.2s;
             }
@@ -85,6 +101,8 @@ class GameModule:
             }
             .locked {
                 opacity: 0.6;
+                filter: blur(2px);  /* Blur locked content */
+                pointer-events: none;  /* Prevent interaction */
             }
             .stat-container {
                 display: flex;
@@ -322,7 +340,7 @@ class GameModule:
         st.session_state.game_view = "game"
     
     def generate_new_floor(self):
-        """Generate a new floor with nodes."""
+        """Generate a new floor with nodes in a path structure."""
         st.session_state.current_floor += 1
         
         # Create nodes for this floor
@@ -333,14 +351,35 @@ class GameModule:
             # Boss floor every 5 floors
             floor_nodes.append(self.create_node("boss", st.session_state.current_floor))
         else:
-            # Regular floor
-            for i in range(st.session_state.nodes_per_floor):
+            # Regular floor - create multiple options
+            num_options = min(3, st.session_state.current_floor + 1)  # More options on higher floors
+            for i in range(num_options):
                 node_type = self.get_node_type_for_floor(st.session_state.current_floor, i)
                 floor_nodes.append(self.create_node(node_type, st.session_state.current_floor))
         
         st.session_state.current_run["path"].append(floor_nodes)
-        
         return floor_nodes
+
+    def complete_floor(self):
+        """Process completing a floor - now just complete the visited node."""
+        # Check if this was the last floor
+        if st.session_state.current_floor >= st.session_state.max_floor:
+            self.end_run(True)
+            return
+        
+        # Generate the next floor
+        self.generate_new_floor()
+        
+        # Apply any between-floor effects
+        for perk in st.session_state.player["active_perks"]:
+            if perk["effect"] == "floor_life_recovery":
+                st.session_state.player["lives"] = min(
+                    st.session_state.player["max_lives"],
+                    st.session_state.player["lives"] + perk["value"]
+                )
+        
+        # Back to game view
+        st.session_state.game_view = "game"
     
     def get_node_type_for_floor(self, floor, position):
         """Determine what type of node to place based on floor and position."""
@@ -706,6 +745,21 @@ class GameModule:
         """Render the main game (run) interface."""
         # Player stats
         self._render_player_stats()
+        
+        # Game board - current floor
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            st.subheader(f"Floor {st.session_state.current_floor} / {st.session_state.max_floor}")
+        with col2:
+            if st.button("End Run", type="secondary", key="end_run_early"):
+                # Confirm dialog
+                if "confirm_end_run" not in st.session_state:
+                    st.session_state.confirm_end_run = True
+                    st.warning("Are you sure you want to end your run? Progress will be saved but the run will end.")
+                    st.rerun()
+                else:
+                    del st.session_state.confirm_end_run
+                    self.end_run(False)  # End the run without success
         
         # Game board - current floor
         st.subheader(f"Floor {st.session_state.current_floor} / {st.session_state.max_floor}")
