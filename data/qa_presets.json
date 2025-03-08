@@ -1,16 +1,174 @@
 {
     "presets": [
       {
-        "id": "monthly-linac",
+        "id": "daily-morning-qa",
+        "name": "Daily Morning QA",
+        "description": "Essential daily checks to be performed before patient treatments begin",
+        "tests": [
+          "linac-daily-output",
+          "linac-daily-lasers",
+          "linac-daily-doors",
+          "ct-daily-warmup",
+          "ct-daily-lasers",
+          "igrt-daily-cbct"
+        ],
+        "notes": "Complete this QA first thing in the morning before patients arrive. Document any issues immediately and escalate to senior physicist if tolerances are exceeded. For efficiency, consider splitting responsibilities between CT and linac if multiple residents/physicists are available.",
+        "estimated_total_time": 57
+      },
+      {
+        "id": "weekly-linac-qa",
+        "name": "Weekly Linac QA",
+        "description": "Comprehensive weekly linear accelerator quality assurance",
+        "tests": [
+          "linac-weekly-output",
+          "linac-weekly-flatness",
+          "linac-daily-lasers"
+        ],
+        "notes": "Schedule this QA during a block of at least 90 minutes with no patients. Most institutions perform weekly QA on Monday mornings. Be sure to check all photon and electron energies in clinical use. Set up the 2D array only after completing ion chamber measurements to improve workflow efficiency.",
+        "estimated_total_time": 80
+      },
+      {
+        "id": "monthly-linac-qa",
         "name": "Monthly Linac QA",
         "description": "Comprehensive monthly quality assurance for linear accelerators",
         "tests": [
-          "linac-output-constancy",
-          "linac-flatness-symmetry",
-          "linac-mlc-test"
+          "linac-monthly-output",
+          "linac-weekly-flatness",
+          "linac-monthly-mlc",
+          "linac-monthly-jaw",
+          "linac-monthly-lasers",
+          "linac-monthly-light-rad",
+          "linac-monthly-couch",
+          "igrt-monthly"
         ],
-        "notes": "Schedule this for a minimum 2-hour time slot with no patients",
+        "notes": "Schedule a full day for monthly QA. Begin with output measurements while the room warms up. For efficiency, prepare all equipment in advance and follow a systematic workflow from mechanical tests to dosimetric tests. Organize data collection sheets before starting to ensure all tests are documented appropriately. Consider breaking this into two sessions if time is limited.",
+        "estimated_total_time": 310
+      },
+      {
+        "id": "annual-linac-qa",
+        "name": "Annual Linac QA",
+        "description": "Comprehensive annual linear accelerator testing following TG-142 guidelines",
+        "tests": [
+          "linac-annual-output",
+          "linac-annual-mechanical",
+          "linac-monthly-output",
+          "linac-monthly-mlc",
+          "linac-monthly-jaw",
+          "linac-monthly-lasers",
+          "linac-monthly-light-rad",
+          "linac-monthly-couch",
+          "igrt-monthly",
+          "emergency-procedures",
+          "radiation-survey"
+        ],
+        "notes": "Annual QA typically requires 2-3 full days. Coordinate with department scheduler to ensure adequate time. Divide tests into logical groups and prepare all required equipment in advance. Include vendor service engineer if adjustments are anticipated. Document all tests comprehensively for regulatory compliance.",
+        "estimated_total_time": 1020
+      },
+      {
+        "id": "monthly-ct-qa",
+        "name": "Monthly CT Simulator QA",
+        "description": "Comprehensive monthly quality assurance for CT simulator",
+        "tests": [
+          "ct-monthly-number",
+          "ct-monthly-image",
+          "ct-monthly-lasers",
+          "ct-monthly-table"
+        ],
+        "notes": "Schedule at least 2 hours for monthly CT QA. Best performed early morning before patient scans. Follow a consistent scan protocol each month to ensure valid comparisons to baseline data. Archive all QA images for future reference. Use the same phantom orientation each time for consistency.",
+        "estimated_total_time": 125
+      },
+      {
+        "id": "quarterly-tps-qa",
+        "name": "Quarterly TPS QA",
+        "description": "Quarterly quality assurance for treatment planning system",
+        "tests": [
+          "tps-monthly-calc",
+          "tps-quarterly-hetero",
+          "tps-quarterly-imrt"
+        ],
+        "notes": "This QA verifies the ongoing accuracy of the treatment planning system. Use standard datasets and test cases for consistency. Document all calculation points and comparison methods thoroughly. Compare against commissioning data to identify any subtle changes over time.",
+        "estimated_total_time": 255
+      },
+      {
+        "id": "imrt-patient-qa",
+        "name": "IMRT/VMAT Patient QA",
+        "description": "Patient-specific QA process for IMRT and VMAT plans",
+        "tests": [
+          "vmat-patient-qa",
+          "initial-chart-check"
+        ],
+        "notes": "This is typically performed for each IMRT/VMAT patient before treatment begins. For efficiency, group multiple patient QAs together when possible. Prepare the phantom and equipment before importing plans to minimize setup time. Have plan details and evaluation criteria ready before starting.",
         "estimated_total_time": 90
+      },
+      {
+        "id": "sbrt-patient-qa",
+        "name": "SBRT Patient QA",
+        "description": "Patient-specific QA process for stereotactic body radiotherapy plans",
+        "tests": [
+          "sbrt-patient-qa",
+          "initial-chart-check"
+        ],
+        "notes": "SBRT QA requires higher precision and additional verification compared to standard IMRT QA. Allow extra time for setup and analysis. Consider performing absolute dose measurements at multiple points. Verify 6DOF couch parameters if applicable. Document all results thoroughly given the higher doses per fraction.",
+        "estimated_total_time": 120
+      },
+      {
+        "id": "weekly-chart-checks",
+        "name": "Weekly Chart Check",
+        "description": "Weekly physics review of all patients under treatment",
+        "tests": [
+          "chart-check"
+        ],
+        "notes": "Allocate sufficient uninterrupted time for chart checks. Create a systematic approach to review all active patients. Prioritize new starts and complex treatments. Use a checklist to ensure all elements are reviewed consistently. Document all findings and follow up on any issues promptly.",
+        "estimated_total_time": 120
+      },
+      {
+        "id": "dosimetry-equipment-qa",
+        "name": "Dosimetry Equipment QA",
+        "description": "Regular calibration and verification of dosimetry equipment",
+        "tests": [
+          "chamber-calibration",
+          "diode-calibration",
+          "array-calibration"
+        ],
+        "notes": "Typically performed quarterly, with ion chamber calibration annually or biennially. Keep detailed records of all equipment calibration factors and dates. Compare new calibration factors to previous values to identify any trends. Label all equipment with calibration date and expiration.",
+        "estimated_total_time": 270
+      },
+      {
+        "id": "brachytherapy-qa",
+        "name": "Brachytherapy QA",
+        "description": "Quality assurance procedures for HDR brachytherapy",
+        "tests": [
+          "hdr-source-calibration",
+          "hdr-daily-qa"
+        ],
+        "notes": "Source calibration is performed after each source exchange (typically quarterly). Daily QA must be completed before the first patient treatment each day. Maintain detailed records of all source measurements for regulatory compliance. Have a secondary physicist verify source strength calculations.",
+        "estimated_total_time": 90
+      },
+      {
+        "id": "resident-training-linac",
+        "name": "Resident Training: Linac QA",
+        "description": "Training sequence for new residents to learn linear accelerator QA",
+        "tests": [
+          "linac-daily-output",
+          "linac-daily-lasers",
+          "linac-weekly-output",
+          "linac-monthly-output",
+          "linac-monthly-mlc"
+        ],
+        "notes": "This preset organizes key linac QA tests in order of increasing complexity for resident training. Begin with daily QA to learn basic setup and equipment, then progress to more complex tests. Schedule extra time initially until proficiency is developed. Senior physicist should supervise and provide guidance throughout the process.",
+        "estimated_total_time": 140
+      },
+      {
+        "id": "resident-training-patient-qa",
+        "name": "Resident Training: Patient QA",
+        "description": "Training sequence for residents to learn patient-specific QA",
+        "tests": [
+          "initial-chart-check",
+          "vmat-patient-qa",
+          "chart-check"
+        ],
+        "notes": "This training sequence introduces residents to the workflow of patient-specific QA. Start with chart checks to understand treatment parameters, then progress to hands-on measurement. Allow significantly more time than usual while learning. Document training progress and ensure understanding before independent work.",
+        "estimated_total_time": 210
       }
     ]
   }
