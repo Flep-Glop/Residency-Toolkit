@@ -2,7 +2,8 @@ import streamlit as st
 from modules.quickwrite import QuickWriteModule
 from modules.qa_bank import QABankModule
 from modules.pnp import PnPModule
-from modules.inventory import InventoryModule  # Import the Inventory module
+from modules.inventory import InventoryModule
+from modules.game import GameModule  # Import the new game module
 
 # Page configuration
 st.set_page_config(
@@ -91,13 +92,14 @@ st.markdown("""
 quick_write = QuickWriteModule()
 qa_bank = QABankModule()
 pnp_module = PnPModule()
-inventory_module = InventoryModule()  # Initialize the Inventory module
+inventory_module = InventoryModule()
+game_module = GameModule()  # Initialize the Game module
 
 # Sidebar for navigation
 st.sidebar.title("Residency Toolkit")
 selected_module = st.sidebar.selectbox(
     "Select Module",
-    ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Competency Tracker", "Part 3 Bank"]
+    ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Residency Game", "Competency Tracker", "Part 3 Bank"]
 )
 
 # Display selected module content
@@ -143,6 +145,10 @@ elif selected_module == "P&Ps":
 elif selected_module == "Inventory":
     # Render the Inventory module UI
     inventory_module.render_inventory_module()
+
+elif selected_module == "Residency Game":
+    # Render the Game module UI
+    game_module.render_game_module()
         
 elif selected_module in ["Competency Tracker", "Part 3 Bank"]:
     st.title(f"{selected_module}")
