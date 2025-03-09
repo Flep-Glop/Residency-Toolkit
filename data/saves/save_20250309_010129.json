@@ -1,0 +1,311 @@
+{
+  "game_state": {
+    "character": {
+      "id": "dosimetry_wizard",
+      "name": "Dosimetry Wizard",
+      "icon": "(o o)",
+      "lives": 0,
+      "max_lives": 2,
+      "insight": 20,
+      "level": 2,
+      "experience": 10,
+      "experience_to_next_level": 108,
+      "active_perks": [
+        {
+          "id": "teaching_faculty",
+          "name": "Teaching Faculty",
+          "description": "Teaching others has enhanced your own understanding.",
+          "rarity": "rare",
+          "effect": {
+            "type": "experience_multiplier",
+            "value": 0.15,
+            "description": "XP gain increased by 15%"
+          }
+        }
+      ],
+      "inventory": [],
+      "relics": [
+        {
+          "id": "calibrated_calculator",
+          "name": "Calibrated Calculator",
+          "description": "This specialized calculator has dose calculation formulas pre-programmed.",
+          "rarity": "starter",
+          "icon": "[0.00]",
+          "effect": {
+            "type": "auto_solve",
+            "condition": "question_type",
+            "condition_value": "calculation",
+            "difficulty_max": 1,
+            "description": "Auto-solves basic dose calculations"
+          }
+        }
+      ]
+    },
+    "current_floor": 3,
+    "max_floor": 10,
+    "nodes_per_floor": 3,
+    "path": [
+      [
+        {
+          "id": "node_1_2000",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "radiation",
+          "visited": true,
+          "content": {
+            "id": "q2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "Which of the following is typically measured in monthly linac QA?",
+            "options": [
+              "Electron contamination",
+              "Output constancy",
+              "Leakage radiation",
+              "Housing integrity"
+            ],
+            "correct_answer": 1,
+            "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+          }
+        },
+        {
+          "id": "node_1_9641",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "qa",
+          "visited": true,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "node_1_5368",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": true,
+          "content": {
+            "id": "q1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_2_6616",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "content": {
+            "id": "q2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "Which of the following is typically measured in monthly linac QA?",
+            "options": [
+              "Electron contamination",
+              "Output constancy",
+              "Leakage radiation",
+              "Housing integrity"
+            ],
+            "correct_answer": 1,
+            "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+          }
+        },
+        {
+          "id": "node_2_1658",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": true,
+          "content": {
+            "id": "q1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_2_8291",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": true,
+          "content": {
+            "id": "q2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "Which of the following is typically measured in monthly linac QA?",
+            "options": [
+              "Electron contamination",
+              "Output constancy",
+              "Leakage radiation",
+              "Housing integrity"
+            ],
+            "correct_answer": 1,
+            "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_5346",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "id": "q1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_3_6912",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": true,
+          "content": {
+            "id": "q1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_3_6323",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "content": {
+            "id": "q2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "Which of the following is typically measured in monthly linac QA?",
+            "options": [
+              "Electron contamination",
+              "Output constancy",
+              "Leakage radiation",
+              "Housing integrity"
+            ],
+            "correct_answer": 1,
+            "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+          }
+        }
+      ]
+    ],
+    "visited_nodes": [
+      "node_1_5368",
+      "node_2_6616",
+      "node_1_2000",
+      "node_2_1658",
+      "node_2_8291",
+      "node_1_9641",
+      "node_3_6912",
+      "node_3_6323"
+    ],
+    "current_node": {
+      "id": "node_3_6323",
+      "type": "question",
+      "name": "Question",
+      "icon": "\ud83d\udcdd",
+      "difficulty": 1,
+      "category": "qa",
+      "visited": true,
+      "content": {
+        "id": "q2",
+        "category": "qa",
+        "difficulty": 1,
+        "question": "Which of the following is typically measured in monthly linac QA?",
+        "options": [
+          "Electron contamination",
+          "Output constancy",
+          "Leakage radiation",
+          "Housing integrity"
+        ],
+        "correct_answer": 1,
+        "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+      }
+    },
+    "score": 65,
+    "streak": 0,
+    "start_time": 1741481904.685,
+    "end_time": 1741482089.301276,
+    "is_completed": true,
+    "is_successful": false
+  },
+  "player_data": {
+    "class": null,
+    "level": 1,
+    "completed_runs": 1,
+    "total_score": 215,
+    "highest_score": 215,
+    "highest_floor": 3
+  },
+  "achievements": {
+    "unlocked_achievements": [
+      "first_run"
+    ]
+  },
+  "timestamp": 1741482089.301545,
+  "version": "1.0.0"
+}
