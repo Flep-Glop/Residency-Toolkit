@@ -11,6 +11,9 @@ from modules.game_components import (
     DataManager, Character, GameState, AchievementManager, SaveManager
 )
 
+# Import question bank directly
+from modules.question_bank import QuestionBank
+
 class GameModule:
     def __init__(self):
         """Initialize the Medical Physics Residency Game module."""
@@ -18,12 +21,66 @@ class GameModule:
         self.data_manager = DataManager("data")
         self.save_manager = SaveManager("data/saves")
         
+        # Initialize question bank
+        self.question_bank = QuestionBank()
+        
         # Ensure data directories exist
         os.makedirs("data", exist_ok=True)
         os.makedirs("data/saves", exist_ok=True)
         
         # Load data
         self._load_game_data()
+        
+        # Patch the GameState class with our improved question method
+        self._patch_game_state()
+    
+    def _patch_game_state(self):
+        """Patch the GameState class to use all questions from the question bank."""
+        def get_question_for_difficulty(game_state_self, difficulty, data_manager, category=None):
+            """Get a question of appropriate difficulty and category."""
+            # Use all questions from the question bank
+            question_bank = self.question_bank.questions
+            
+            # Filter questions by difficulty
+            filtered_questions = [q for q in question_bank if q["difficulty"] == difficulty]
+            
+            # Further filter by category if specified
+            if category and category != "general":
+                category_questions = [q for q in filtered_questions if q["category"] == category]
+                # Only use category filtering if we found matches
+                if category_questions:
+                    filtered_questions = category_questions
+            
+            # If no questions match, use any question of appropriate difficulty
+            if not filtered_questions:
+                filtered_questions = [q for q in question_bank if abs(q["difficulty"] - difficulty) <= 1]
+            
+            # If still no questions, use any question
+            if not filtered_questions:
+                filtered_questions = question_bank
+                
+            if not filtered_questions:
+                # Fallback to a default question if nothing else is available
+                return {
+                    "id": "default",
+                    "category": category or "general",
+                    "difficulty": difficulty,
+                    "question": "What is the primary goal of quality assurance in medical physics?",
+                    "options": [
+                        "To reduce equipment costs",
+                        "To ensure patient safety and treatment accuracy",
+                        "To minimize staff workload",
+                        "To satisfy regulatory requirements only"
+                    ],
+                    "correct_answer": 1,
+                    "explanation": "The primary goal of quality assurance in medical physics is to ensure patient safety and treatment accuracy through systematic testing and verification procedures."
+                }
+            
+            # Return a random question from the filtered list
+            return random.choice(filtered_questions)
+        
+        # Apply our patch to the GameState class
+        GameState._get_question_for_difficulty = get_question_for_difficulty
     
     def _load_game_data(self):
         """Load the game data from JSON files."""
@@ -729,43 +786,33 @@ class GameModule:
         """Render the hub (department) interface."""
         st.subheader("Memorial Hospital Physics Department")
         
-        # Instructions button
-        if st.button("Game Instructions", key="show_instructions"):
-            st.session_state.game_view = "instructions"
-            return
+        # Add a prominent instructions button
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            if st.button("📚 Game Instructions", key="show_instructions", use_container_width=True):
+                st.session_state.game_view = "instructions"
+                return
         
         # Show player stats
         if st.session_state.player_data["completed_runs"] > 0:
-            self._render_player_hub_stats()
+            stats_col1, stats_col2, stats_col3 = st.columns(3)
+            with stats_col1:
+                st.metric("Completed Runs", st.session_state.player_data["completed_runs"])
+            with stats_col2:
+                st.metric("Highest Score", st.session_state.player_data["highest_score"])
+            with stats_col3:
+                st.metric("Highest Floor", st.session_state.player_data["highest_floor"])
         
         st.markdown("Your medical physics journey begins here. Choose an area to explore.")
         
         # Check for newly unlocked areas
-        self._check_new_area_unlocks()
-        
-        # Render hub areas
-        self._render_hub_areas()
-    
-    def _render_player_hub_stats(self):
-        """Render player stats at the hub."""
-        stats_col1, stats_col2, stats_col3 = st.columns(3)
-        with stats_col1:
-            st.metric("Completed Runs", st.session_state.player_data["completed_runs"])
-        with stats_col2:
-            st.metric("Highest Score", st.session_state.player_data["highest_score"])
-        with stats_col3:
-            st.metric("Highest Floor", st.session_state.player_data["highest_floor"])
-    
-    def _check_new_area_unlocks(self):
-        """Check and display notifications for newly unlocked areas."""
         if hasattr(st.session_state, 'new_area_unlocked'):
             area_name = next((a["name"] for a in self._get_hub_areas() if a["id"] == st.session_state.new_area_unlocked), "New Area")
             st.success(f"🎉 Congratulations! You've unlocked a new area: {area_name}")
             # Clear the notification after showing
             delattr(st.session_state, 'new_area_unlocked')
-    
-    def _render_hub_areas(self):
-        """Render the hub areas in a grid."""
+        
+        # Arrange hub areas in a grid
         hub_areas = self._get_hub_areas()
         cols = st.columns(3)  # 3 columns
         
