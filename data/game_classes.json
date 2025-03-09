@@ -1,0 +1,136 @@
+{
+    "classes": [
+      {
+        "id": "therapy_newbie",
+        "name": "Therapy Newbie",
+        "description": "Fresh out of graduate school with enthusiasm but limited experience.",
+        "icon": "/-\\",
+        "starting_stats": {
+          "max_lives": 3,
+          "insight": 10,
+          "experience_to_next_level": 80
+        },
+        "starting_relic": "dog_eared_tg51",
+        "special_ability": {
+          "id": "quick_learner",
+          "name": "Quick Learner",
+          "description": "Gain 20% more experience from therapy questions.",
+          "effect": "experience_bonus",
+          "value": 0.2,
+          "condition": "question_category",
+          "condition_value": "planning"
+        },
+        "weakness": {
+          "description": "Takes double damage from imaging questions",
+          "effect": "damage_multiplier",
+          "condition": "question_category",
+          "condition_value": "imaging",
+          "value": 2.0
+        }
+      },
+      {
+        "id": "qa_specialist",
+        "name": "QA Specialist",
+        "description": "Meticulous and detail-oriented, you excel at quality assurance.",
+        "icon": "|QA!|",
+        "starting_stats": {
+          "max_lives": 3,
+          "insight": 15,
+          "experience_to_next_level": 100
+        },
+        "starting_relic": "lucky_phantom",
+        "special_ability": {
+          "id": "measurement_uncertainty",
+          "name": "Measurement Uncertainty",
+          "description": "Can retry one failed question per floor.",
+          "effect": "retry_question",
+          "uses_per_floor": 1
+        },
+        "weakness": {
+          "description": "Clinical questions are more challenging.",
+          "effect": "difficulty_increase",
+          "condition": "question_category",
+          "condition_value": "planning",
+          "value": 1
+        }
+      },
+      {
+        "id": "dosimetry_wizard",
+        "name": "Dosimetry Wizard",
+        "description": "You have a natural talent for dosimetry calculations.",
+        "icon": "(o o)",
+        "starting_stats": {
+          "max_lives": 2,
+          "insight": 20,
+          "experience_to_next_level": 90
+        },
+        "starting_relic": "calibrated_calculator",
+        "special_ability": {
+          "id": "dose_intuition",
+          "name": "Dose Intuition",
+          "description": "Reveals one wrong answer on dosimetry questions.",
+          "effect": "reveal_wrong_answer",
+          "condition": "question_category",
+          "condition_value": "dosimetry",
+          "value": 1
+        },
+        "weakness": {
+          "description": "Regulatory questions deal extra damage.",
+          "effect": "damage_multiplier",
+          "condition": "question_category",
+          "condition_value": "regulations",
+          "value": 1.5
+        }
+      },
+      {
+        "id": "regulatory_expert",
+        "name": "Regulatory Expert",
+        "description": "You know all the rules and regulations by heart.",
+        "icon": "|TPS|",
+        "starting_stats": {
+          "max_lives": 4,
+          "insight": 10,
+          "experience_to_next_level": 110
+        },
+        "starting_relic": "ncrp_badge",
+        "special_ability": {
+          "id": "citation_ready",
+          "name": "Citation Ready",
+          "description": "References give double insight points.",
+          "effect": "insight_multiplier",
+          "condition": "node_type",
+          "condition_value": "reference",
+          "value": 2.0
+        },
+        "weakness": {
+          "description": "Takes longer to gain experience levels.",
+          "effect": "experience_multiplier",
+          "value": 0.8
+        }
+      },
+      {
+        "id": "medical_physics_resident",
+        "name": "Medical Physics Resident",
+        "description": "Balanced character with a well-rounded education.",
+        "icon": "|ABR|",
+        "starting_stats": {
+          "max_lives": 3,
+          "insight": 15,
+          "experience_to_next_level": 100
+        },
+        "starting_relic": "coffee_mug",
+        "special_ability": {
+          "id": "eager_to_learn",
+          "name": "Eager to Learn",
+          "description": "First mistake on each floor doesn't cost a life.",
+          "effect": "prevent_damage",
+          "uses_per_floor": 1
+        },
+        "weakness": {
+          "description": "No particular strengths or weaknesses.",
+          "effect": "none"
+        }
+      }
+    ]
+  }
+  

@@ -1,0 +1,329 @@
+{
+    "encounters": [
+      {
+        "id": "conference_invitation",
+        "name": "Unexpected Conference Invitation",
+        "description": "You've been asked to give a talk on short notice.",
+        "type": "choice",
+        "choices": [
+          {
+            "text": "Accept (Hard challenge, big reward if successful)",
+            "difficulty": 3,
+            "success": {
+              "description": "Your presentation was well-received!",
+              "rewards": [
+                {
+                  "type": "experience",
+                  "value": 100
+                },
+                {
+                  "type": "item",
+                  "rarity": "rare"
+                }
+              ]
+            },
+            "failure": {
+              "description": "Your presentation didn't go as planned.",
+              "penalties": [
+                {
+                  "type": "damage",
+                  "value": 2
+                }
+              ]
+            }
+          },
+          {
+            "text": "Decline (Safe, but miss networking opportunity)",
+            "effects": [
+              {
+                "type": "insight",
+                "value": -5
+              }
+            ]
+          },
+          {
+            "text": "Send a Colleague (Medium challenge, medium reward)",
+            "difficulty": 2,
+            "success": {
+              "description": "Your colleague did well and mentioned your help.",
+              "rewards": [
+                {
+                  "type": "experience",
+                  "value": 50
+                },
+                {
+                  "type": "item",
+                  "rarity": "uncommon"
+                }
+              ]
+            },
+            "failure": {
+              "description": "Your colleague struggled with the presentation.",
+              "penalties": [
+                {
+                  "type": "insight",
+                  "value": -10
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "id": "vendor_showcase",
+        "name": "Vendor Showcase",
+        "description": "A medical physics equipment vendor is showcasing their latest products.",
+        "type": "shop",
+        "items": [
+          {
+            "id": "premium_detector",
+            "name": "Premium Detector",
+            "description": "A high-quality radiation detector with excellent precision.",
+            "cost": 50,
+            "effect": {
+              "type": "relic",
+              "id": "premium_detector",
+              "rarity": "uncommon"
+            }
+          },
+          {
+            "id": "calibration_service",
+            "name": "Calibration Service",
+            "description": "Professional calibration of your dosimetry equipment.",
+            "cost": 30,
+            "effect": {
+              "type": "perk",
+              "id": "calibration_expert",
+              "duration": 3
+            }
+          },
+          {
+            "id": "software_upgrade",
+            "name": "Software Upgrade",
+            "description": "The latest version of TPS software with new features.",
+            "cost": 40,
+            "effect": {
+              "type": "consumable",
+              "id": "software_upgrade",
+              "quantity": 2
+            }
+          }
+        ]
+      },
+      {
+        "id": "journal_club",
+        "name": "Journal Club",
+        "description": "Your colleagues are discussing a recent research paper.",
+        "type": "challenge",
+        "difficulty": 3,
+        "question_category": "random",
+        "question_multiplier": 2,
+        "success": {
+          "description": "You made insightful contributions to the discussion.",
+          "rewards": [
+            {
+              "type": "experience",
+              "value": 80
+            },
+            {
+              "type": "insight",
+              "value": 20
+            }
+          ]
+        },
+        "failure": {
+          "description": "You weren't familiar enough with the paper to contribute meaningfully.",
+          "penalties": [
+            {
+              "type": "insight",
+              "value": -10
+            }
+          ]
+        }
+      },
+      {
+        "id": "emergency_call",
+        "name": "Unexpected Emergency",
+        "description": "You receive an urgent call about a treatment machine malfunction.",
+        "type": "time_challenge",
+        "time_limit": 60,
+        "difficulty": 2,
+        "question_category": "qa",
+        "success": {
+          "description": "You quickly identified and resolved the issue!",
+          "rewards": [
+            {
+              "type": "relic",
+              "rarity": "rare"
+            },
+            {
+              "type": "experience",
+              "value": 60
+            }
+          ]
+        },
+        "failure": {
+          "description": "You couldn't solve the problem in time.",
+          "penalties": [
+            {
+              "type": "damage",
+              "value": 1
+            }
+          ]
+        }
+      },
+      {
+        "id": "mentorship",
+        "name": "Mentorship Opportunity",
+        "description": "A senior physicist offers to teach you a specialized technique.",
+        "type": "training",
+        "skill_options": [
+          {
+            "id": "advanced_dose_calculation",
+            "name": "Advanced Dose Calculation",
+            "description": "Learn sophisticated methods for dose calculation.",
+            "perk": "dose_calculation_expert"
+          },
+          {
+            "id": "quality_management",
+            "name": "Quality Management",
+            "description": "Learn comprehensive quality management techniques.",
+            "perk": "qa_specialist"
+          },
+          {
+            "id": "radiation_protection",
+            "name": "Radiation Protection",
+            "description": "Learn advanced radiation protection principles.",
+            "perk": "radiation_expert"
+          }
+        ]
+      },
+      {
+        "id": "calibration_lab",
+        "name": "Calibration Laboratory",
+        "description": "A peaceful laboratory where you can calibrate equipment and rest.",
+        "type": "rest",
+        "effects": [
+          {
+            "type": "heal",
+            "value": 2
+          },
+          {
+            "type": "skip_reward",
+            "floor": true
+          }
+        ]
+      },
+      {
+        "id": "conference",
+        "name": "Annual Conference",
+        "description": "The biggest medical physics conference of the year.",
+        "type": "multi_event",
+        "events": [
+          {
+            "id": "networking",
+            "name": "Networking Session",
+            "description": "Meet colleagues from around the world.",
+            "reward": {
+              "type": "insight",
+              "value": 15
+            }
+          },
+          {
+            "id": "poster_session",
+            "name": "Poster Session",
+            "description": "Present your research as a poster.",
+            "challenge": {
+              "difficulty": 2,
+              "success": {
+                "rewards": [
+                  {
+                    "type": "experience",
+                    "value": 40
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "id": "vendor_hall",
+            "name": "Vendor Exhibition Hall",
+            "description": "Explore the latest products and technologies.",
+            "reward": {
+              "type": "consumable",
+              "rarity": "uncommon"
+            }
+          }
+        ]
+      },
+      {
+        "id": "board_review",
+        "name": "Board Review",
+        "description": "A mock exam to prepare for board certification.",
+        "type": "exam",
+        "questions": 5,
+        "time_limit": 300,
+        "difficulty": 3,
+        "success_threshold": 0.7,
+        "success": {
+          "description": "You performed well on the practice exam!",
+          "rewards": [
+            {
+              "type": "experience",
+              "value": 100
+            },
+            {
+              "type": "perk",
+              "id": "board_preparation"
+            }
+          ]
+        },
+        "failure": {
+          "description": "You need more study time before the real exam.",
+          "rewards": [
+            {
+              "type": "experience",
+              "value": 30
+            }
+          ]
+        }
+      },
+      {
+        "id": "research_opportunity",
+        "name": "Research Opportunity",
+        "description": "You have the chance to participate in a research project.",
+        "type": "research",
+        "duration": 3,
+        "research_fields": [
+          {
+            "id": "treatment_planning",
+            "name": "Treatment Planning Optimization",
+            "difficulty": 2,
+            "reward": {
+              "type": "relic",
+              "id": "research_algorithm"
+            }
+          },
+          {
+            "id": "imaging_physics",
+            "name": "Imaging Physics",
+            "difficulty": 2,
+            "reward": {
+              "type": "perk",
+              "id": "imaging_specialist"
+            }
+          },
+          {
+            "id": "radiation_biology",
+            "name": "Radiation Biology",
+            "difficulty": 3,
+            "reward": {
+              "type": "consumable",
+              "id": "biological_model",
+              "quantity": 3
+            }
+          }
+        ]
+      }
+    ]
+  }

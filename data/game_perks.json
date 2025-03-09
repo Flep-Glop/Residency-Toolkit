@@ -1,0 +1,144 @@
+{
+    "perks": [
+      {
+        "id": "efficiency_expert",
+        "name": "Efficiency Expert",
+        "description": "You've learned to handle multiple tasks at once.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "multi_node_chance",
+          "value": 0.2,
+          "description": "20% chance to attempt two nodes with one action"
+        }
+      },
+      {
+        "id": "radiation_safety_officer",
+        "name": "Radiation Safety Officer",
+        "description": "Your radiation protection knowledge reduces mistakes.",
+        "rarity": "common",
+        "effect": {
+          "type": "damage_reduction",
+          "condition": "category",
+          "condition_value": "radiation",
+          "value": 1,
+          "description": "Take 1 less damage from radiation protection failures"
+        }
+      },
+      {
+        "id": "statistical_significance",
+        "name": "Statistical Significance",
+        "description": "You understand that sometimes you need to repeat measurements.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "retry_question",
+          "uses_per_floor": 1,
+          "description": "Can retry one failed question per floor"
+        }
+      },
+      {
+        "id": "published_author",
+        "name": "Published Author",
+        "description": "Your scientific publications have earned you recognition.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "floor_completion_bonus",
+          "value": 20,
+          "description": "Gain bonus XP when completing a floor"
+        }
+      },
+      {
+        "id": "clinical_experience",
+        "name": "Clinical Experience",
+        "description": "Your time in the clinic has given you practical knowledge.",
+        "rarity": "common",
+        "effect": {
+          "type": "insight_bonus",
+          "condition": "question_type",
+          "condition_value": "clinical",
+          "value": 5,
+          "description": "Patient scenario questions give bonus insight"
+        }
+      },
+      {
+        "id": "calculation_shortcut",
+        "name": "Calculation Shortcut",
+        "description": "You've developed quick methods for solving equations.",
+        "rarity": "common",
+        "effect": {
+          "type": "reveal_wrong_answer",
+          "condition": "category",
+          "condition_value": "calculation",
+          "value": 1,
+          "description": "Math questions have one wrong answer revealed"
+        }
+      },
+      {
+        "id": "dosimetry_wizard",
+        "name": "Dosimetry Wizard",
+        "description": "You're especially skilled with ion chamber measurements.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "health_recovery",
+          "condition": "topic",
+          "condition_value": "ion_chamber",
+          "value": 1,
+          "description": "Ion chamber questions grant small HP recovery"
+        }
+      },
+      {
+        "id": "journal_subscriber",
+        "name": "Journal Subscriber",
+        "description": "You stay current with the scientific literature.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "reference_item_chance",
+          "value": 0.3,
+          "description": "Reference nodes occasionally grant rare items"
+        }
+      },
+      {
+        "id": "teaching_faculty",
+        "name": "Teaching Faculty",
+        "description": "Teaching others has enhanced your own understanding.",
+        "rarity": "rare",
+        "effect": {
+          "type": "experience_multiplier",
+          "value": 0.15,
+          "description": "XP gain increased by 15%"
+        }
+      },
+      {
+        "id": "grant_funded",
+        "name": "Grant Funded",
+        "description": "Your research has secured funding, providing extra resources.",
+        "rarity": "rare",
+        "effect": {
+          "type": "floor_consumable",
+          "description": "Start each floor with a random consumable"
+        }
+      },
+      {
+        "id": "clinical_mentor",
+        "name": "Clinical Mentor",
+        "description": "Your mentorship helps you recover from mistakes.",
+        "rarity": "rare",
+        "effect": {
+          "type": "mistake_recovery_chance",
+          "value": 0.25,
+          "description": "25% chance to avoid damage from incorrect answers"
+        }
+      },
+      {
+        "id": "research_mindset",
+        "name": "Research Mindset",
+        "description": "Your scientific approach improves mystery outcomes.",
+        "rarity": "uncommon",
+        "effect": {
+          "type": "mystery_quality_bonus",
+          "value": 1,
+          "description": "Mystery node rewards are one tier higher"
+        }
+      }
+    ]
+  }
+  

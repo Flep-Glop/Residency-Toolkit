@@ -1,0 +1,114 @@
+{
+    "achievements": [
+      {
+        "id": "first_run",
+        "name": "First Steps",
+        "description": "Complete your first run, regardless of outcome.",
+        "icon": "🔍",
+        "difficulty": "easy",
+        "reward": {
+          "type": "insight",
+          "value": 20
+        }
+      },
+      {
+        "id": "perfect_floor",
+        "name": "Perfect Floor",
+        "description": "Complete a floor without making any mistakes.",
+        "icon": "⭐",
+        "difficulty": "medium",
+        "reward": {
+          "type": "consumable",
+          "id": "energy_drink"
+        }
+      },
+      {
+        "id": "knowledge_seeker",
+        "name": "Knowledge Seeker",
+        "description": "Visit 10 reference nodes across all runs.",
+        "icon": "📚",
+        "difficulty": "easy",
+        "reward": {
+          "type": "perk",
+          "id": "quick_study"
+        }
+      },
+      {
+        "id": "dose_detective",
+        "name": "Dose Detective",
+        "description": "Correctly identify the cause of a suspicious dose discrepancy.",
+        "icon": "🔎",
+        "difficulty": "medium",
+        "reward": {
+          "type": "consumable",
+          "id": "investigation_kit"
+        }
+      },
+      {
+        "id": "master_physicist",
+        "name": "Master Physicist",
+        "description": "Reach level 10 with any character class.",
+        "icon": "🏆",
+        "difficulty": "hard",
+        "reward": {
+          "type": "relic",
+          "rarity": "legendary"
+        }
+      },
+      {
+        "id": "collection_complete",
+        "name": "Collection Complete",
+        "description": "Find all common relics in the game.",
+        "icon": "🧩",
+        "difficulty": "hard",
+        "reward": {
+          "type": "relic",
+          "id": "collectors_badge"
+        }
+      },
+      {
+        "id": "clinical_expert",
+        "name": "Clinical Expert",
+        "description": "Answer 50 clinical questions correctly across all runs.",
+        "icon": "👨‍⚕️",
+        "difficulty": "medium",
+        "reward": {
+          "type": "perk",
+          "id": "clinical_intuition"
+        }
+      },
+      {
+        "id": "qa_master",
+        "name": "QA Master",
+        "description": "Successfully complete 15 QA scenarios without error.",
+        "icon": "✅",
+        "difficulty": "medium",
+        "reward": {
+          "type": "relic",
+          "id": "qa_toolkit"
+        }
+      },
+      {
+        "id": "ironman",
+        "name": "Ironman",
+        "description": "Complete a run without losing any lives.",
+        "icon": "🔨",
+        "difficulty": "very_hard",
+        "reward": {
+          "type": "unlock",
+          "id": "ironman_mode"
+        }
+      },
+      {
+        "id": "legend",
+        "name": "Legend",
+        "description": "Complete a run with all 5 character classes.",
+        "icon": "👑",
+        "difficulty": "very_hard",
+        "reward": {
+          "type": "unlock",
+          "id": "legendary_character"
+        }
+      }
+    ]
+  }

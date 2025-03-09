@@ -1,0 +1,185 @@
+{
+    "relics": [
+      {
+        "id": "dog_eared_tg51",
+        "name": "Dog-eared TG-51 Protocol",
+        "description": "This well-used protocol guide has seen better days, but the knowledge remains.",
+        "rarity": "starter",
+        "icon": "[TG51]",
+        "effect": {
+          "type": "question_bonus",
+          "condition": "topic",
+          "condition_value": "calibration",
+          "value": 0.15,
+          "description": "+15% on output calibration questions"
+        }
+      },
+      {
+        "id": "lucky_phantom",
+        "name": "Lucky Phantom",
+        "description": "This QA phantom has been with you for years and seems to bring good fortune.",
+        "rarity": "starter",
+        "icon": "[::::]",
+        "effect": {
+          "type": "auto_pass_chance",
+          "condition": "topic",
+          "condition_value": "qa",
+          "value": 0.5,
+          "description": "50% chance to auto-pass machine QA questions"
+        }
+      },
+      {
+        "id": "calibrated_calculator",
+        "name": "Calibrated Calculator",
+        "description": "This specialized calculator has dose calculation formulas pre-programmed.",
+        "rarity": "starter",
+        "icon": "[0.00]",
+        "effect": {
+          "type": "auto_solve",
+          "condition": "question_type",
+          "condition_value": "calculation",
+          "difficulty_max": 1,
+          "description": "Auto-solves basic dose calculations"
+        }
+      },
+      {
+        "id": "ncrp_badge",
+        "name": "NCRP Badge",
+        "description": "This badge identifies you as knowledgeable in radiation protection standards.",
+        "rarity": "starter",
+        "icon": "[NCRP]",
+        "effect": {
+          "type": "skip_question",
+          "condition": "category",
+          "condition_value": "regulations",
+          "uses": 1,
+          "description": "Can skip one regulation question per run"
+        }
+      },
+      {
+        "id": "coffee_mug",
+        "name": "Coffee Mug",
+        "description": "The resident's essential tool. It's always full of coffee... somehow.",
+        "rarity": "starter",
+        "icon": "{_}",
+        "effect": {
+          "type": "extra_question",
+          "condition": "status",
+          "condition_value": "exhausted",
+          "uses": 1,
+          "description": "Can stay awake for one extra question when exhausted"
+        }
+      },
+      {
+        "id": "maries_notebook",
+        "name": "Marie's Notebook",
+        "description": "A legendary notebook containing handwritten notes about radioactivity.",
+        "rarity": "legendary",
+        "icon": "[Ra]",
+        "effect": {
+          "type": "experience_multiplier",
+          "condition": "topic",
+          "condition_value": "radioactivity",
+          "value": 2.0,
+          "description": "Double XP from radioactivity questions"
+        }
+      },
+      {
+        "id": "golden_linac",
+        "name": "Golden Linac",
+        "description": "A miniature golden linear accelerator that glows with healing energy.",
+        "rarity": "legendary",
+        "icon": "__/\\__",
+        "effect": {
+          "type": "max_lives_bonus",
+          "value": 1,
+          "description": "Start each run with +1 life"
+        }
+      },
+      {
+        "id": "rontgens_tube",
+        "name": "Röntgen's Tube",
+        "description": "The original X-ray tube that started it all. It seems to reveal hidden things.",
+        "rarity": "legendary",
+        "icon": ".-===-.",
+        "effect": {
+          "type": "reveal_nodes",
+          "description": "Reveal contents of mystery nodes"
+        }
+      },
+      {
+        "id": "farmer_chamber",
+        "name": "Farmer Chamber",
+        "description": "A precision ionization chamber for reference dosimetry.",
+        "rarity": "common",
+        "icon": "|==0.6==|",
+        "effect": {
+          "type": "accuracy_bonus",
+          "condition": "category",
+          "condition_value": "dosimetry",
+          "value": 0.1,
+          "description": "Dosimetry checks +10% accuracy"
+        }
+      },
+      {
+        "id": "lead_apron",
+        "name": "Lead Apron",
+        "description": "A heavy apron that provides radiation protection.",
+        "rarity": "common",
+        "icon": "/||\\",
+        "effect": {
+          "type": "damage_reduction",
+          "condition": "category",
+          "condition_value": "radiation",
+          "value": 1,
+          "description": "Radiation questions deal -1 damage"
+        }
+      },
+      {
+        "id": "dvh_analyzer",
+        "name": "DVH Analyzer",
+        "description": "A tool for analyzing dose-volume histograms in treatment plans.",
+        "rarity": "common",
+        "icon": "/\\/\\/\\",
+        "effect": {
+          "type": "show_hint",
+          "condition": "category",
+          "condition_value": "planning",
+          "description": "Treatment planning questions show hints"
+        }
+      },
+      {
+        "id": "regulatory_binder",
+        "name": "Regulatory Binder",
+        "description": "A binder full of regulatory documents and guidelines.",
+        "rarity": "common",
+        "icon": "[||||]",
+        "effect": {
+          "type": "auto_pass_chance",
+          "condition": "category",
+          "condition_value": "regulations",
+          "value": 0.25,
+          "description": "25% chance to auto-pass compliance questions"
+        }
+      },
+      {
+        "id": "broken_linac",
+        "name": "Broken LINAC",
+        "description": "This malfunctioning linear accelerator has taught you a lot about troubleshooting.",
+        "rarity": "common",
+        "icon": "_/\\_X",
+        "effect": {
+          "type": "accuracy_bonus",
+          "condition": "topic",
+          "condition_value": "troubleshooting",
+          "value": 0.2,
+          "description": "Physics troubleshooting +20%, but -1 max life"
+        },
+        "side_effect": {
+          "type": "max_lives_penalty",
+          "value": 1
+        }
+      }
+    ]
+  }
+  

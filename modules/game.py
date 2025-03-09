@@ -2,17 +2,39 @@ import streamlit as st
 import random
 import json
 from datetime import datetime
+import os
+from pathlib import Path
+import math
+
+# Import our new components
+from modules.game_components import (
+    DataManager, Character, GameState, AchievementManager, SaveManager
+)
 
 class GameModule:
     def __init__(self):
         """Initialize the Medical Physics Residency Game module."""
-        # Initialize game data
-        self.categories = self._get_categories()
-        self.node_types = self._get_node_types()
-        self.hub_areas = self._get_hub_areas()
-        self.perks = self._get_perks()
-        self.consumables = self._get_consumables()
-        self.question_bank = self._get_question_bank()
+        # Initialize data managers
+        self.data_manager = DataManager("data")
+        self.save_manager = SaveManager("data/saves")
+        
+        # Ensure data directories exist
+        os.makedirs("data", exist_ok=True)
+        os.makedirs("data/saves", exist_ok=True)
+        
+        # Load data
+        self._load_game_data()
+    
+    def _load_game_data(self):
+        """Load the game data from JSON files."""
+        # Get data from the data manager
+        self.classes = self.data_manager.get_data("classes").get("classes", [])
+        self.relics = self.data_manager.get_data("relics").get("relics", [])
+        self.perks = self.data_manager.get_data("perks").get("perks", [])
+        self.consumables = self.data_manager.get_data("consumables").get("consumables", [])
+        self.encounters = self.data_manager.get_data("encounters").get("encounters", [])
+        self.achievements = self.data_manager.get_data("achievements").get("achievements", [])
+        self.challenge_modes = self.data_manager.get_data("challenge_modes").get("challenge_modes", [])
     
     def render_game_module(self):
         """Main entry point for rendering the game module."""
@@ -27,25 +49,52 @@ class GameModule:
         # Render the appropriate view
         if st.session_state.game_view == "hub":
             self._render_hub_interface()
+        elif st.session_state.game_view == "character_select":
+            self._render_character_select()
         elif st.session_state.game_view == "game":
             self._render_game_interface()
         elif st.session_state.game_view == "question":
             self._render_question_interface()
         elif st.session_state.game_view == "result":
             self._render_question_result()
+        elif st.session_state.game_view == "level_up":
+            self._render_level_up_interface()
+        elif st.session_state.game_view == "encounter":
+            self._render_encounter_interface()
+        elif st.session_state.game_view == "elite":
+            self._render_elite_interface()
+        elif st.session_state.game_view == "boss":
+            self._render_boss_interface()
         elif st.session_state.game_view == "run_end":
             self._render_run_end_interface()
+        elif st.session_state.game_view == "achievements":
+            self._render_achievements_interface()
+        elif st.session_state.game_view == "settings":
+            self._render_settings_interface()
+        elif st.session_state.game_view == "help":
+            self._render_help_interface()
     
     def _add_custom_css(self):
         """Add custom CSS for the game UI."""
         st.markdown("""
         <style>
+            /* Node styling */
             .node-card {
-                border-radius: 5px;
-                padding: 10px;
+                border-radius: 10px;
+                padding: 15px;
                 text-align: center;
-                margin: 5px;
+                margin: 10px 5px;
                 cursor: pointer;
+                transition: transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                min-height: 120px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .node-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             }
             .question-card {
                 background-color: #3498db;
@@ -71,12 +120,36 @@ class GameModule:
                 background-color: #34495e;
                 color: white;
             }
+            .encounter-card {
+                background-color: #1abc9c;
+                color: white;
+            }
+            
+            /* Character selection */
+            .character-card {
+                border-radius: 10px;
+                padding: 20px;
+                margin: 10px 0;
+                background-color: white;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                transition: transform 0.2s;
+                border: 2px solid transparent;
+            }
+            .character-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            }
+            .character-card.selected {
+                border-color: #3498db;
+                background-color: #f0f8ff;
+            }
+            
+            /* Hub cards */
             .hub-card {
                 border-radius: 10px;
                 padding: 20px;
                 margin: 10px 0;
-                background-color: #f5f5f5;  /* Light gray instead of white */
-                border: 1px solid #ddd;
+                background-color: white;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.1);
                 transition: transform 0.2s;
             }
@@ -86,28 +159,77 @@ class GameModule:
             }
             .locked {
                 opacity: 0.6;
-                filter: blur(2px);  /* Blur locked content */
-                pointer-events: none;  /* Prevent interaction */
+                filter: grayscale(70%);
             }
+            
+            /* Stats display */
             .stat-container {
                 display: flex;
                 justify-content: space-around;
-                padding: 10px;
+                padding: 15px;
                 background-color: #2c3e50;
                 color: white;
-                border-radius: 5px;
+                border-radius: 8px;
                 margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+            .stat-container > div {
+                margin: 0 10px;
             }
             .progress-bar-container {
                 margin-top: 5px;
-                height: 5px;
+                height: 8px;
                 background-color: #ecf0f1;
-                border-radius: 2px;
+                border-radius: 4px;
+                overflow: hidden;
             }
             .progress-bar-value {
                 height: 100%;
                 background-color: #3498db;
             }
+            
+            /* Items and relics */
+            .item-card {
+                border-radius: 8px;
+                padding: 12px;
+                margin: 8px 0;
+                background-color: #f8f9fa;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: transform 0.2s;
+                border-left: 4px solid #3498db;
+            }
+            .item-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            }
+            .relic-card {
+                border-radius: 8px;
+                padding: 12px;
+                margin: 8px 0;
+                background-color: #f8f9fa;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                transition: transform 0.2s;
+                border-left: 4px solid #e74c3c;
+            }
+            .relic-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+            }
+            .rarity-common {
+                border-color: #3498db;
+            }
+            .rarity-uncommon {
+                border-color: #9b59b6;
+            }
+            .rarity-rare {
+                border-color: #f1c40f;
+            }
+            .rarity-legendary {
+                border-color: #e74c3c;
+                background-color: #fff9e6;
+            }
+            
+            /* Result messages */
             .correct {
                 color: #2ecc71;
                 font-weight: bold;
@@ -115,6 +237,78 @@ class GameModule:
             .incorrect {
                 color: #e74c3c;
                 font-weight: bold;
+            }
+            
+            /* Floor progress */
+            .floor-indicator {
+                display: inline-block;
+                width: 30px;
+                height: 30px;
+                line-height: 30px;
+                text-align: center;
+                border-radius: 50%;
+                background-color: #95a5a6;
+                color: white;
+                margin: 0 2px;
+            }
+            .floor-current {
+                background-color: #3498db;
+                font-weight: bold;
+            }
+            .floor-completed {
+                background-color: #2ecc71;
+            }
+            .floor-boss {
+                background-color: #e74c3c;
+            }
+            
+            /* Achievements */
+            .achievement-card {
+                border-radius: 8px;
+                padding: 15px;
+                margin: 10px 0;
+                background-color: #f8f9fa;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                opacity: 0.7;
+                filter: grayscale(70%);
+            }
+            .achievement-card.unlocked {
+                opacity: 1;
+                filter: none;
+                border-left: 4px solid #f1c40f;
+                background-color: #fffde7;
+            }
+            
+            /* Difficulty indicators */
+            .difficulty {
+                color: #f1c40f;
+                letter-spacing: 2px;
+            }
+            
+            /* Question styling */
+            .question-option {
+                padding: 10px 15px;
+                margin: 8px 0;
+                border-radius: 8px;
+                background-color: #f8f9fa;
+                cursor: pointer;
+                transition: background-color 0.2s;
+                border: 1px solid #ddd;
+            }
+            .question-option:hover {
+                background-color: #e9ecef;
+            }
+            .option-selected {
+                background-color: #3498db;
+                color: white;
+            }
+            .option-correct {
+                background-color: #2ecc71;
+                color: white;
+            }
+            .option-incorrect {
+                background-color: #e74c3c;
+                color: white;
             }
         </style>
         """, unsafe_allow_html=True)
@@ -125,561 +319,309 @@ class GameModule:
         if 'game_initialized' not in st.session_state:
             st.session_state.game_initialized = True
             
-            # Player stats
-            st.session_state.player = {
-                "name": "Resident",
-                "year": 1,
-                "rotation": 0,
-                "lives": 3,
-                "max_lives": 3,
-                "insight": 0,
-                "level": 1,
-                "experience": 0,
-                "experience_to_next_level": 100,
-                "unlocked_perks": [],
-                "active_perks": [],
-                "inventory": []
-            }
-            
-            # Game progression
-            st.session_state.current_floor = 0
-            st.session_state.max_floor = 10
-            st.session_state.nodes_per_floor = 3
-            st.session_state.current_node = None
-            st.session_state.visited_nodes = set()
-            st.session_state.hub_unlocked = ["resident_office", "clinical_area"]
-            
-            # Game state
-            st.session_state.game_view = "hub"  # hub, game, question, result, run_end
-            st.session_state.question_result = None  # correct, incorrect
+            # Game view state
+            st.session_state.game_view = "hub"
+            st.session_state.question_result = None
             st.session_state.current_question = None
+            st.session_state.encountering_event = None
             
-            # Meta progression
-            st.session_state.completed_runs = 0
-            st.session_state.achievements_unlocked = set()
-            st.session_state.permanent_upgrades = set()
+            # Player data
+            st.session_state.player_data = {
+                "class": None,
+                "level": 1,
+                "completed_runs": 0,
+                "total_score": 0,
+                "highest_score": 0,
+                "highest_floor": 0
+            }
             
             # Current run
-            st.session_state.current_run = {
-                "path": [],
-                "score": 0,
-                "streak": 0,
-                "relics": []
-            }
-    
-    # ========== GAME DATA METHODS ==========
-    
-    def _get_categories(self):
-        """Return the categories for questions."""
-        return [
-            {"id": "dosimetry", "name": "Dosimetry", "color": "#3498db"},
-            {"id": "qa", "name": "Quality Assurance", "color": "#2ecc71"},
-            {"id": "radiation", "name": "Radiation Safety", "color": "#e74c3c"},
-            {"id": "planning", "name": "Treatment Planning", "color": "#9b59b6"},
-            {"id": "calculation", "name": "Calculations", "color": "#f1c40f"},
-            {"id": "imaging", "name": "Imaging Physics", "color": "#1abc9c"},
-            {"id": "regulations", "name": "Regulations", "color": "#e67e22"}
-        ]
-    
-    def _get_node_types(self):
-        """Return the node types for the game."""
-        return [
-            {"id": "question", "name": "Question", "description": "Test your knowledge", "difficulty": [1, 2, 3], "icon": "📝"},
-            {"id": "reference", "name": "Reference", "description": "Learn without being tested", "difficulty": [0], "icon": "📚"},
-            {"id": "rest", "name": "Break Room", "description": "Recover 1 life", "difficulty": [0], "icon": "☕"},
-            {"id": "treasure", "name": "Conference", "description": "Find a helpful item", "difficulty": [0], "icon": "🎁"},
-            {"id": "elite", "name": "Complex Case", "description": "Difficult but rewarding", "difficulty": [2, 3], "icon": "⚠️"},
-            {"id": "boss", "name": "Rotation Evaluation", "description": "Major test of knowledge", "difficulty": [3], "icon": "⭐"}
-        ]
-    
-    def _get_hub_areas(self):
-        """Return the hub areas for the game."""
-        return [
-            {"id": "resident_office", "name": "Resident Office", "description": "Your personal workspace", "unlock_condition": "start", "icon": "🏠"},
-            {"id": "clinical_area", "name": "Clinical Area", "description": "Start a new rotation", "unlock_condition": "start", "icon": "🏥"},
-            {"id": "planning_room", "name": "Planning Room", "description": "Improve treatment planning skills", "unlock_condition": "completed_runs:3", "icon": "📋"},
-            {"id": "machine_shop", "name": "Machine Shop", "description": "Learn about equipment", "unlock_condition": "completed_runs:5", "icon": "🔧"},
-            {"id": "research_lab", "name": "Research Lab", "description": "Conduct experiments", "unlock_condition": "max_floor:5", "icon": "🔬"},
-            {"id": "conference_room", "name": "Conference Room", "description": "Special challenges", "unlock_condition": "completed_runs:8", "icon": "🎓"}
-        ]
-    
-    def _get_perks(self):
-        """Return the perks for the game."""
-        return [
-            {"id": "quick_learner", "name": "Quick Learner", "description": "Gain 15% more experience from questions", "effect": "experience_bonus", "value": 0.15},
-            {"id": "resilient", "name": "Resilient", "description": "Start each rotation with +1 life", "effect": "max_lives_bonus", "value": 1},
-            {"id": "dosimetry_expert", "name": "Dosimetry Expert", "description": "Dosimetry questions are 20% easier", "effect": "category_bonus", "category": "dosimetry", "value": 0.2},
-            {"id": "qa_specialist", "name": "QA Specialist", "description": "QA questions are 20% easier", "effect": "category_bonus", "category": "qa", "value": 0.2},
-            {"id": "clinical_mind", "name": "Clinical Mind", "description": "Treatment planning questions are 20% easier", "effect": "category_bonus", "category": "planning", "value": 0.2},
-            {"id": "mathematical_genius", "name": "Mathematical Genius", "description": "Calculation questions show one wrong answer", "effect": "reveal_wrong_answer", "category": "calculation", "value": 1},
-            {"id": "well_rested", "name": "Well Rested", "description": "Recover 1 life when completing a floor", "effect": "floor_life_recovery", "value": 1},
-            {"id": "efficient_study", "name": "Efficient Study", "description": "50% chance to preserve consumables on use", "effect": "preserve_consumable", "value": 0.5}
-        ]
-    
-    def _get_consumables(self):
-        """Return the consumable items for the game."""
-        return [
-            {"id": "coffee", "name": "Coffee", "description": "Restore 1 life", "effect": "restore_life", "value": 1, "icon": "☕"},
-            {"id": "study_guide", "name": "Study Guide", "description": "Next question has a hint", "effect": "show_hint", "duration": 1, "icon": "📖"},
-            {"id": "energy_drink", "name": "Energy Drink", "description": "Next 3 questions give 25% more XP", "effect": "temp_exp_bonus", "value": 0.25, "duration": 3, "icon": "🥤"},
-            {"id": "reference_sheet", "name": "Reference Sheet", "description": "Reveals one wrong answer on the next question", "effect": "reveal_wrong_answer", "duration": 1, "icon": "📝"},
-            {"id": "lucky_charm", "name": "Lucky Charm", "description": "Next failure doesn't cost a life", "effect": "prevent_damage", "uses": 1, "icon": "🍀"}
-        ]
-    
-    def _get_question_bank(self):
-        """Return the question bank for the game."""
-        return [
-            {
-                "id": "q1",
-                "category": "dosimetry",
-                "difficulty": 1,
-                "question": "What is the correction factor for temperature and pressure called in TG-51?",
-                "options": [
-                    "PTP",
-                    "kTP",
-                    "CTP",
-                    "PTC"
-                ],
-                "correct_answer": 1,
-                "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
-            },
-            {
-                "id": "q2",
-                "category": "qa",
-                "difficulty": 1,
-                "question": "Which of the following is typically measured in monthly linac QA?",
-                "options": [
-                    "Electron contamination",
-                    "Output constancy",
-                    "Leakage radiation",
-                    "Housing integrity"
-                ],
-                "correct_answer": 1,
-                "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
-            },
-            {
-                "id": "q3",
-                "category": "radiation",
-                "difficulty": 2,
-                "question": "What is the annual effective dose limit for radiation workers?",
-                "options": [
-                    "5 mSv",
-                    "20 mSv",
-                    "50 mSv",
-                    "100 mSv"
-                ],
-                "correct_answer": 1,
-                "explanation": "The annual effective dose limit for radiation workers is 20 mSv averaged over 5 years, with no single year exceeding 50 mSv."
-            },
-            {
-                "id": "q4",
-                "category": "calculation",
-                "difficulty": 2,
-                "question": "A 6 MV photon beam has a PDD of 67.3% at 10 cm depth and 100 cm SSD. What is the approximate TMR at 10 cm depth and 100 cm SAD?",
-                "options": [
-                    "0.673",
-                    "0.750",
-                    "0.806",
-                    "0.900"
-                ],
-                "correct_answer": 2,
-                "explanation": "The TMR can be calculated from PDD using the relationship TMR = PDD × ((100+d)/100)². For 10 cm depth, TMR ≈ 0.673 × (110/100)² ≈ 0.806"
-            },
-            {
-                "id": "q5",
-                "category": "planning",
-                "difficulty": 3,
-                "question": "Which of the following optimization objectives would be LEAST appropriate for a prostate IMRT plan?",
-                "options": [
-                    "Maximize target coverage with 95% of prescription dose",
-                    "Minimize rectal volume receiving >70 Gy",
-                    "Minimize femoral head maximum dose to <45 Gy",
-                    "Maximize dose conformity to femoral heads"
-                ],
-                "correct_answer": 3,
-                "explanation": "Maximizing dose conformity to femoral heads would be inappropriate as the femoral heads are critical structures to avoid, not targets for dose delivery."
-            }
-        ]
-    
-    # ========== GAME FUNCTIONS ==========
+            st.session_state.current_character = None
+            st.session_state.game_state = None
+            
+            # Achievement tracking
+            st.session_state.achievement_manager = AchievementManager(self.data_manager)
+            
+            # Session flags
+            st.session_state.save_on_exit = True
+            st.session_state.selected_character_class = None
+            st.session_state.pending_perk_selection = None
+            st.session_state.run_success = None
+            st.session_state.final_score = 0
+            
+            # UI state
+            st.session_state.show_question_timer = False
+            st.session_state.difficulty_setting = "normal"
+            st.session_state.hub_unlocked = ["resident_office", "clinical_area"]
     
     def start_new_run(self):
-        """Initialize a new run."""
-        # Reset run-specific state
-        st.session_state.current_floor = 0
-        st.session_state.current_node = None
-        st.session_state.visited_nodes = set()
-        st.session_state.player["lives"] = st.session_state.player["max_lives"]
+        """Initialize a new run with the selected character class."""
+        if not st.session_state.selected_character_class:
+            st.error("Please select a character class first.")
+            return
         
-        st.session_state.current_run = {
-            "path": [],
-            "score": 0,
-            "streak": 0,
-            "relics": []
-        }
+        # Get the selected class data
+        class_data = next((c for c in self.classes if c["id"] == st.session_state.selected_character_class), None)
+        if not class_data:
+            st.error("Selected character class not found.")
+            return
+        
+        # Create the character
+        character = Character(class_data)
+        
+        # Add starting relic if defined
+        if hasattr(character, 'starting_relic_id') and character.starting_relic_id:
+            starting_relic = next((r for r in self.relics if r["id"] == character.starting_relic_id), None)
+            if starting_relic:
+                character.add_relic(starting_relic)
+        
+        # Create the game state
+        game_state = GameState(character)
         
         # Generate the first floor
-        self.generate_new_floor()
+        game_state.generate_new_floor(self.data_manager)
+        
+        # Store in session state
+        st.session_state.current_character = character
+        st.session_state.game_state = game_state
         
         # Switch to game view
         st.session_state.game_view = "game"
     
-    def generate_new_floor(self):
-        """Generate a new floor with nodes."""
-        st.session_state.current_floor += 1
-        
-        # Create nodes for this floor
-        floor_nodes = []
-        
-        # Determine node types based on floor number
-        if st.session_state.current_floor % 5 == 0:
-            # Boss floor every 5 floors
-            floor_nodes.append(self.create_node("boss", st.session_state.current_floor))
-        else:
-            # Regular floor
-            for i in range(st.session_state.nodes_per_floor):
-                node_type = self.get_node_type_for_floor(st.session_state.current_floor, i)
-                floor_nodes.append(self.create_node(node_type, st.session_state.current_floor))
-        
-        st.session_state.current_run["path"].append(floor_nodes)
-        
-        return floor_nodes
-    
-    def get_node_type_for_floor(self, floor, position):
-        """Determine what type of node to place based on floor and position."""
-        # First floor is always easier
-        if floor == 1:
-            if position == 1:
-                return "reference"  # Middle node on first floor is always a reference
-            return "question"
-        
-        # Higher floors have more variety and difficulty
-        possible_types = ["question", "question", "question"]
-        
-        # Add variety based on floor level
-        if floor > 2:
-            possible_types.extend(["reference", "rest"])
-        if floor > 4:
-            possible_types.extend(["treasure", "elite"])
-        
-        return random.choice(possible_types)
-    
-    def create_node(self, node_type, floor):
-        """Create a single node with appropriate properties."""
-        node_type_data = next((n for n in self.node_types if n["id"] == node_type), None)
-        
-        # Determine difficulty based on floor and node type
-        difficulty = 1
-        if node_type_data["difficulty"]:
-            # Get possible difficulties for this node type
-            possible_difficulties = node_type_data["difficulty"]
-            
-            # Higher floors increase chance of higher difficulty
-            difficulty_index = 0
-            
-            if floor > 7:
-                difficulty_index = len(possible_difficulties) - 1  # Highest difficulty
-            elif floor > 3:
-                difficulty_index = min(1, len(possible_difficulties) - 1)  # Medium difficulty
-            
-            difficulty = possible_difficulties[difficulty_index]
-        
-        # Create the node
-        return {
-            "id": f"node_{floor}_{random.randint(1000, 9999)}",
-            "type": node_type,
-            "name": node_type_data["name"],
-            "icon": node_type_data["icon"],
-            "difficulty": difficulty,
-            "category": self.get_random_category(),
-            "visited": False,
-            "content": self.generate_node_content(node_type, difficulty)
-        }
-    
-    def get_random_category(self):
-        """Get a random category ID."""
-        return self.categories[random.randint(0, len(self.categories) - 1)]["id"]
-    
-    def generate_node_content(self, node_type, difficulty):
-        """Generate content for a node based on type and difficulty."""
-        if node_type == "question":
-            return self.get_question_for_difficulty(difficulty)
-        elif node_type == "reference":
-            return {
-                "title": "Reference Material",
-                "text": "You study important concepts in your textbook.",
-                "effect": {"type": "gain_insight", "value": 10 * difficulty}
-            }
-        elif node_type == "rest":
-            return {
-                "title": "Break Room",
-                "text": "You take a moment to rest and recover.",
-                "effect": {"type": "restore_life", "value": 1}
-            }
-        elif node_type == "treasure":
-            return {
-                "title": "Conference",
-                "text": "You attend a conference and make valuable connections.",
-                "effect": {"type": "find_item", "rarity": "common" if difficulty <= 1 else "uncommon"}
-            }
-        elif node_type == "elite":
-            return {
-                "title": "Complex Case",
-                "text": "You face a particularly challenging clinical scenario.",
-                "questions": [
-                    self.get_question_for_difficulty(difficulty),
-                    self.get_question_for_difficulty(difficulty)
-                ],
-                "reward": {"type": "find_relic", "rarity": "uncommon"}
-            }
-        elif node_type == "boss":
-            return {
-                "title": "Rotation Evaluation",
-                "text": "Your knowledge is being tested as part of your rotation evaluation.",
-                "questions": [
-                    self.get_question_for_difficulty(max(1, difficulty - 1)),
-                    self.get_question_for_difficulty(difficulty),
-                    self.get_question_for_difficulty(difficulty)
-                ],
-                "reward": {"type": "complete_rotation", "value": st.session_state.current_floor}
-            }
-        return {"title": "Unknown", "text": "Something mysterious happens."}
-    
-    def get_question_for_difficulty(self, difficulty):
-        """Get a question of appropriate difficulty."""
-        # Filter questions by difficulty
-        questions = [q for q in self.question_bank if q["difficulty"] == difficulty]
-        
-        # If no questions of this difficulty, adjust
-        if not questions:
-            return self.question_bank[random.randint(0, len(self.question_bank) - 1)]
-        
-        # Return a random question
-        return questions[random.randint(0, len(questions) - 1)]
-    
     def visit_node(self, node_id):
         """Process a player visiting a node."""
-        # Find the node
-        node = self.find_node_by_id(node_id)
-        
-        if not node or node["visited"]:
+        game_state = st.session_state.game_state
+        if not game_state:
+            st.error("No active game found.")
             return
         
-        # Mark as visited
-        node["visited"] = True
-        st.session_state.visited_nodes.add(node_id)
-        st.session_state.current_node = node
+        # Visit the node
+        node = game_state.visit_node(node_id)
+        if not node:
+            st.error("Node not found or already visited.")
+            return
         
         # Process node effects
-        self.process_node_effects(node)
-    
-    def find_node_by_id(self, node_id):
-        """Find a node by its ID."""
-        for floor in st.session_state.current_run["path"]:
-            for node in floor:
-                if node["id"] == node_id:
-                    return node
-        return None
-    
-    def process_node_effects(self, node):
-        """Process the effects of visiting a node."""
-        if not node:
-            return
+        result = game_state.process_node_effects(node, self.data_manager)
         
-        if node["type"] == "question":
+        # Handle different node types
+        node_type = result.get("node_type")
+        
+        if node_type == "question":
             # Show question UI
+            st.session_state.current_question = result.get("question")
             st.session_state.game_view = "question"
-            st.session_state.current_question = node["content"]
-        elif node["type"] == "reference":
-            # Apply reference effects
-            self.apply_effect(node["content"]["effect"])
-            st.session_state.game_view = "result"
+        
+        elif node_type == "reference":
+            # Show reference result
             st.session_state.question_result = "reference"
-        elif node["type"] == "rest":
-            # Apply rest effects
-            self.apply_effect(node["content"]["effect"])
             st.session_state.game_view = "result"
+        
+        elif node_type == "rest":
+            # Show rest result
             st.session_state.question_result = "rest"
-        elif node["type"] == "treasure":
-            # Give an item
-            item = self.get_random_item(node["content"]["effect"]["rarity"])
-            st.session_state.player["inventory"].append(item)
             st.session_state.game_view = "result"
+        
+        elif node_type == "treasure":
+            # Show treasure result
             st.session_state.question_result = "treasure"
-        elif node["type"] == "elite":
-            # Show elite challenge UI
+            st.session_state.found_item = result.get("item")
+            st.session_state.game_view = "result"
+        
+        elif node_type == "elite":
+            # Show elite challenge
+            st.session_state.elite_questions = result.get("questions")
+            st.session_state.elite_reward = result.get("reward")
+            st.session_state.elite_title = result.get("title")
+            st.session_state.elite_text = result.get("text")
+            st.session_state.current_elite_question = 0
             st.session_state.game_view = "elite"
-        elif node["type"] == "boss":
-            # Show boss challenge UI
+        
+        elif node_type == "boss":
+            # Show boss challenge
+            st.session_state.boss_questions = result.get("questions")
+            st.session_state.boss_reward = result.get("reward")
+            st.session_state.boss_title = result.get("title")
+            st.session_state.boss_text = result.get("text")
+            st.session_state.current_boss_question = 0
             st.session_state.game_view = "boss"
-    
-    def apply_effect(self, effect):
-        """Apply an effect to the player."""
-        if not effect:
-            return
         
-        if effect["type"] == "restore_life":
-            st.session_state.player["lives"] = min(
-                st.session_state.player["max_lives"], 
-                st.session_state.player["lives"] + effect["value"]
-            )
-        elif effect["type"] == "gain_insight":
-            st.session_state.player["insight"] += effect["value"]
-        elif effect["type"] == "gain_experience":
-            self.gain_experience(effect["value"])
-    
-    def gain_experience(self, amount):
-        """Award experience to the player with bonuses applied."""
-        # Apply experience bonuses from perks
-        bonus_multiplier = 1.0
-        for perk in st.session_state.player["active_perks"]:
-            if perk["effect"] == "experience_bonus":
-                bonus_multiplier += perk["value"]
-        
-        adjusted_amount = int(amount * bonus_multiplier)
-        st.session_state.player["experience"] += adjusted_amount
-        
-        # Check for level up
-        while st.session_state.player["experience"] >= st.session_state.player["experience_to_next_level"]:
-            self.level_up()
-    
-    def level_up(self):
-        """Process player level up."""
-        st.session_state.player["experience"] -= st.session_state.player["experience_to_next_level"]
-        st.session_state.player["level"] += 1
-        st.session_state.player["experience_to_next_level"] = int(st.session_state.player["experience_to_next_level"] * 1.2)
-        
-        # Offer perk selection
-        # For simplicity, we'll just add a random perk for now
-        available_perks = [p for p in self.perks if p["id"] not in [ap["id"] for ap in st.session_state.player["active_perks"]]]
-        if available_perks:
-            new_perk = random.choice(available_perks)
-            st.session_state.player["active_perks"].append(new_perk)
-    
-    def get_random_item(self, rarity="common"):
-        """Get a random consumable item."""
-        return random.choice(self.consumables)
+        elif node_type == "encounter":
+            # Show encounter
+            st.session_state.encountering_event = result.get("encounter")
+            st.session_state.game_view = "encounter"
     
     def answer_question(self, answer_index):
-        """Process player answering a question."""
-        if "current_question" not in st.session_state or not st.session_state.current_question:
+        """Process a player answering a question."""
+        game_state = st.session_state.game_state
+        question = st.session_state.current_question
+        
+        if not game_state or not question:
+            st.error("No active question found.")
             return
         
-        question = st.session_state.current_question
-        correct = (answer_index == question["correct_answer"])
+        # Process the answer
+        result = game_state.answer_question(question, answer_index, self.data_manager)
         
-        if correct:
-            # Correct answer
-            st.session_state.current_run["streak"] += 1
-            streak_bonus = 1 + st.session_state.current_run["streak"] * 0.1
-            st.session_state.current_run["score"] += int(10 * streak_bonus)
-            
-            # Award experience based on difficulty
-            self.gain_experience(20 * question["difficulty"])
-            
-            st.session_state.question_result = "correct"
+        # Store result for display
+        st.session_state.answer_result = result
+        
+        # Check for level up
+        if result.get("level_up"):
+            st.session_state.pending_perk_selection = result.get("perk_choices")
+            st.session_state.game_view = "level_up"
+        elif result.get("run_over"):
+            # End the run
+            self.end_run(False)
         else:
-            # Incorrect answer
-            st.session_state.current_run["streak"] = 0
-            st.session_state.player["lives"] -= 1
-            
-            st.session_state.question_result = "incorrect"
-            
-            # Check if run is over
-            if st.session_state.player["lives"] <= 0:
-                self.end_run(False)
-                return
+            # Show result
+            st.session_state.question_result = "correct" if result.get("correct") else "incorrect"
+            st.session_state.game_view = "result"
+    
+    def select_perk(self, perk_id):
+        """Select a perk after leveling up."""
+        game_state = st.session_state.game_state
+        if not game_state:
+            st.error("No active game found.")
+            return
         
-        # Show result
+        # Select the perk
+        result = game_state.select_perk(perk_id, self.data_manager)
+        
+        # Clear the pending selection
+        st.session_state.pending_perk_selection = None
+        
+        # Return to the previous state (usually the result screen)
+        st.session_state.question_result = "correct"  # Assuming we're coming from a correct answer
         st.session_state.game_view = "result"
     
     def continue_after_node(self):
         """Continue to next stage after completing a node."""
-        # Check if all nodes on this floor are visited
-        current_floor_index = st.session_state.current_floor - 1
-        
-        all_visited = True
-        for node in st.session_state.current_run["path"][current_floor_index]:
-            if not node["visited"]:
-                all_visited = False
-                break
-        
-        if all_visited:
-            # Complete the floor
-            self.complete_floor()
-        else:
-            # Back to game board
-            st.session_state.game_view = "game"
-    
-    def complete_floor(self):
-        """Process completing a floor."""
-        # Check if this was the last floor
-        if st.session_state.current_floor >= st.session_state.max_floor:
-            self.end_run(True)
+        game_state = st.session_state.game_state
+        if not game_state:
+            st.error("No active game found.")
             return
         
-        # Generate the next floor
-        self.generate_new_floor()
-        
-        # Apply any between-floor effects
-        for perk in st.session_state.player["active_perks"]:
-            if perk["effect"] == "floor_life_recovery":
-                st.session_state.player["lives"] = min(
-                    st.session_state.player["max_lives"],
-                    st.session_state.player["lives"] + perk["value"]
-                )
+        # Check if all nodes on this floor are visited
+        if game_state.check_floor_completion():
+            # Complete the floor
+            result = game_state.complete_floor()
+            
+            # Check if this was the last floor
+            if game_state.current_floor >= game_state.max_floor:
+                self.end_run(True)
+                return
+            
+            # Generate the next floor
+            game_state.generate_new_floor(self.data_manager)
         
         # Back to game view
         st.session_state.game_view = "game"
     
     def end_run(self, success):
         """End the current run."""
-        # Calculate final score
-        final_score = st.session_state.current_run["score"] + \
-                      (500 if success else 0) + \
-                      (st.session_state.current_floor * 50) + \
-                      (st.session_state.player["lives"] * 20)
+        game_state = st.session_state.game_state
+        if not game_state:
+            st.error("No active game found.")
+            return
         
-        # Record the run
-        st.session_state.completed_runs += 1
+        # End the run
+        result = game_state.end_run(success)
         
-        # Check for unlocks
-        self.check_for_unlocks()
+        # Update player data
+        st.session_state.player_data["completed_runs"] += 1
+        st.session_state.player_data["total_score"] += result.get("final_score", 0)
+        st.session_state.player_data["highest_score"] = max(
+            st.session_state.player_data["highest_score"],
+            result.get("final_score", 0)
+        )
+        st.session_state.player_data["highest_floor"] = max(
+            st.session_state.player_data["highest_floor"],
+            game_state.current_floor
+        )
+        
+        # Check for achievements
+        unlocked_achievements = st.session_state.achievement_manager.check_run_achievements(game_state)
+        
+        # Store run results
+        st.session_state.run_success = success
+        st.session_state.final_score = result.get("final_score", 0)
+        st.session_state.unlocked_achievements = unlocked_achievements
+        
+        # Check for hub area unlocks based on progress
+        self._check_for_hub_unlocks()
+        
+        # Auto-save
+        if st.session_state.save_on_exit:
+            self.save_manager.save_game(
+                game_state,
+                st.session_state.player_data,
+                st.session_state.achievement_manager
+            )
         
         # Show run end screen
         st.session_state.game_view = "run_end"
-        st.session_state.run_success = success
-        st.session_state.final_score = final_score
     
-    def check_for_unlocks(self):
-        """Check for new unlocks based on game progress."""
-        # Check for hub area unlocks
-        for area in self.hub_areas:
+    def _check_for_hub_unlocks(self):
+        """Check for new hub area unlocks based on game progress."""
+        # Define hub areas (same as in the original code)
+        hub_areas = [
+            {"id": "resident_office", "name": "Resident Office", "unlock_condition": "start"},
+            {"id": "clinical_area", "name": "Clinical Area", "unlock_condition": "start"},
+            {"id": "planning_room", "name": "Planning Room", "unlock_condition": "completed_runs:3"},
+            {"id": "machine_shop", "name": "Machine Shop", "unlock_condition": "completed_runs:5"},
+            {"id": "research_lab", "name": "Research Lab", "unlock_condition": "max_floor:5"},
+            {"id": "conference_room", "name": "Conference Room", "unlock_condition": "completed_runs:8"}
+        ]
+        
+        # Check each area for unlocks
+        for area in hub_areas:
             if area["id"] in st.session_state.hub_unlocked:
                 continue
             
             if area["unlock_condition"].startswith("completed_runs:"):
                 required = int(area["unlock_condition"].split(":")[1])
-                if st.session_state.completed_runs >= required:
+                if st.session_state.player_data["completed_runs"] >= required:
                     st.session_state.hub_unlocked.append(area["id"])
+                    st.session_state.new_area_unlocked = area["id"]
+            
             elif area["unlock_condition"].startswith("max_floor:"):
                 required = int(area["unlock_condition"].split(":")[1])
-                if st.session_state.current_floor >= required:
+                if st.session_state.player_data["highest_floor"] >= required:
                     st.session_state.hub_unlocked.append(area["id"])
+                    st.session_state.new_area_unlocked = area["id"]
     
     def return_to_hub(self):
         """Return to the hub interface."""
         st.session_state.game_view = "hub"
-    
-    # ========== UI RENDERING METHODS ==========
+        st.session_state.current_character = None
+        st.session_state.game_state = None
     
     def _render_hub_interface(self):
         """Render the hub (department) interface."""
         st.subheader("Memorial Hospital Physics Department")
+        
+        # Show player stats
+        if st.session_state.player_data["completed_runs"] > 0:
+            stats_col1, stats_col2, stats_col3 = st.columns(3)
+            with stats_col1:
+                st.metric("Completed Runs", st.session_state.player_data["completed_runs"])
+            with stats_col2:
+                st.metric("Highest Score", st.session_state.player_data["highest_score"])
+            with stats_col3:
+                st.metric("Highest Floor", st.session_state.player_data["highest_floor"])
+        
         st.markdown("Your medical physics journey begins here. Choose an area to explore.")
         
+        # Check for newly unlocked areas
+        if hasattr(st.session_state, 'new_area_unlocked'):
+            area_name = next((a["name"] for a in self._get_hub_areas() if a["id"] == st.session_state.new_area_unlocked), "New Area")
+            st.success(f"🎉 Congratulations! You've unlocked a new area: {area_name}")
+            # Clear the notification after showing
+            delattr(st.session_state, 'new_area_unlocked')
+        
         # Arrange hub areas in a grid
-        hub_areas = self.hub_areas
+        hub_areas = self._get_hub_areas()
         cols = st.columns(3)  # 3 columns
         
         for i, area in enumerate(hub_areas):
@@ -700,32 +642,184 @@ class GameModule:
                     if is_unlocked:
                         if st.button(f"Enter {area['name']}", key=f"area_{area['id']}"):
                             if area["id"] == "clinical_area":
-                                self.start_new_run()
+                                # Go to character selection
+                                st.session_state.game_view = "character_select"
+                            elif area["id"] == "achievements":
+                                # View achievements
+                                st.session_state.game_view = "achievements"
                             else:
                                 # Other areas would have their own functions
                                 st.info(f"Entering {area['name']} - Feature coming soon!")
     
+    def _get_hub_areas(self):
+        """Get the hub areas configuration."""
+        return [
+            {"id": "resident_office", "name": "Resident Office", "description": "Your personal workspace", "unlock_condition": "start", "icon": "🏠"},
+            {"id": "clinical_area", "name": "Clinical Area", "description": "Start a new rotation", "unlock_condition": "start", "icon": "🏥"},
+            {"id": "planning_room", "name": "Planning Room", "description": "Improve treatment planning skills", "unlock_condition": "completed_runs:3", "icon": "📋"},
+            {"id": "machine_shop", "name": "Machine Shop", "description": "Learn about equipment", "unlock_condition": "completed_runs:5", "icon": "🔧"},
+            {"id": "research_lab", "name": "Research Lab", "description": "Conduct experiments", "unlock_condition": "max_floor:5", "icon": "🔬"},
+            {"id": "conference_room", "name": "Conference Room", "description": "Special challenges", "unlock_condition": "completed_runs:8", "icon": "🎓"},
+            {"id": "achievements", "name": "Achievement Hall", "description": "View your achievements", "unlock_condition": "completed_runs:1", "icon": "🏆"}
+        ]
+    
+    def _render_character_select(self):
+        """Render the character selection interface."""
+        st.subheader("Select Your Character")
+        st.markdown("Choose your character class to begin a new rotation.")
+        
+        # Navigation
+        if st.button("← Back to Department", key="back_to_hub_from_char_select"):
+            st.session_state.game_view = "hub"
+            return
+        
+        # Character selection
+        classes = self.classes
+        if not classes:
+            st.error("No character classes found. Please check the game data.")
+            return
+        
+        # Use a 2-column layout for character cards
+        col1, col2 = st.columns(2)
+        
+        for i, char_class in enumerate(classes):
+            with col1 if i % 2 == 0 else col2:
+                # Check if this class is selected
+                is_selected = st.session_state.selected_character_class == char_class["id"]
+                
+                # Character card
+                st.markdown(f"""
+                <div class="character-card{'  selected' if is_selected else ''}">
+                    <h3>{char_class["name"]}</h3>
+                    <div style="font-family: monospace; font-size: 1.2em; text-align: center; margin: 10px 0;">
+                        {char_class["icon"]}
+                    </div>
+                    <p>{char_class["description"]}</p>
+                    <p><strong>Starting Relic:</strong> {self._get_relic_name(char_class["starting_relic"])}</p>
+                    <p><strong>Special Ability:</strong> {char_class["special_ability"]["name"]} - {char_class["special_ability"]["description"]}</p>
+                    <p><strong>Weakness:</strong> {char_class["weakness"]["description"]}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Selection button
+                if st.button("Select" if not is_selected else "Selected ✓", key=f"select_{char_class['id']}"):
+                    st.session_state.selected_character_class = char_class["id"]
+                    st.rerun()
+        
+        # Start button (only enabled if a character is selected)
+        st.markdown("---")
+        if st.session_state.selected_character_class:
+            if st.button("Start Rotation", key="start_rotation", type="primary"):
+                self.start_new_run()
+        else:
+            st.warning("Please select a character class to begin.")
+    
+    def _get_relic_name(self, relic_id):
+        """Get the name of a relic by ID."""
+        relic = next((r for r in self.relics if r["id"] == relic_id), None)
+        return relic["name"] if relic else "Unknown Relic"
+    
     def _render_game_interface(self):
         """Render the main game (run) interface."""
+        game_state = st.session_state.game_state
+        character = st.session_state.current_character
+        
+        if not game_state or not character:
+            st.error("No active game found.")
+            if st.button("Return to Department"):
+                self.return_to_hub()
+            return
+        
         # Player stats
-        self._render_player_stats()
+        self._render_player_stats(character, game_state)
+        
+        # Floor progress indicator
+        self._render_floor_progress(game_state)
         
         # Game board - current floor
-        st.subheader(f"Floor {st.session_state.current_floor} / {st.session_state.max_floor}")
+        st.subheader(f"Floor {game_state.current_floor}")
         
         # Render the current floor nodes
-        current_floor_nodes = st.session_state.current_run["path"][st.session_state.current_floor - 1]
+        current_floor_index = game_state.current_floor - 1
+        if current_floor_index < len(game_state.path):
+            current_floor_nodes = game_state.path[current_floor_index]
+            
+            # Create columns for nodes
+            cols = st.columns(len(current_floor_nodes))
+            
+            for i, node in enumerate(current_floor_nodes):
+                with cols[i]:
+                    self._render_node_card(node)
+        else:
+            st.error("Floor data not found.")
         
-        # Create columns for nodes
-        cols = st.columns(len(current_floor_nodes))
-        
-        for i, node in enumerate(current_floor_nodes):
-            with cols[i]:
-                self._render_node_card(node)
-        
-        # Inventory
+        # Inventory and relics
         st.markdown("---")
-        self._render_inventory()
+        inv_col, relic_col = st.columns(2)
+        
+        with inv_col:
+            self._render_inventory(character)
+        
+        with relic_col:
+            self._render_relics(character)
+    
+    def _render_player_stats(self, character, game_state):
+        """Render the player stats bar."""
+        # Stats container
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.markdown(f"**Character:** {character.name}")
+        
+        with col2:
+            st.markdown(f"**Lives:** ❤️ {character.lives}/{character.max_lives}")
+        
+        with col3:
+            st.markdown(f"**Insight:** ✨ {character.insight}")
+        
+        with col4:
+            st.markdown(f"**Level:** Lv. {character.level}")
+        
+        # Experience bar
+        exp_percentage = min(100, int(character.experience / character.experience_to_next_level * 100))
+        st.markdown(f"""
+        <div class="progress-bar-container">
+            <div class="progress-bar-value" style="width: {exp_percentage}%;"></div>
+        </div>
+        <div style="text-align: center; font-size: 0.8em; color: #7f8c8d;">
+            Experience: {character.experience} / {character.experience_to_next_level}
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Current score
+        st.markdown(f"**Score:** {game_state.score}")
+    
+    def _render_floor_progress(self, game_state):
+        """Render a visual indicator of floor progress."""
+        max_floor = game_state.max_floor
+        current_floor = game_state.current_floor
+        
+        # Create a progress bar with floor indicators
+        indicators = []
+        for i in range(1, max_floor + 1):
+            if i == current_floor:
+                css_class = "floor-current"
+            elif i < current_floor:
+                css_class = "floor-completed"
+            else:
+                css_class = ""
+            
+            # Mark boss floors
+            if i % 5 == 0:
+                css_class += " floor-boss"
+            
+            indicators.append(f'<span class="floor-indicator {css_class}">{i}</span>')
+        
+        st.markdown(f"""
+        <div style="text-align: center; margin: 10px 0;">
+            {"".join(indicators)}
+        </div>
+        """, unsafe_allow_html=True)
     
     def _render_node_card(self, node):
         """Render a single node card."""
@@ -736,7 +830,7 @@ class GameModule:
         card_class = f"node-card {node_type}-card"
         
         # Difficulty pips
-        difficulty_display = "★" * node["difficulty"]
+        difficulty_display = "★" * node["difficulty"] if node["difficulty"] > 0 else "—"
         
         # Render card
         with st.container():
@@ -744,7 +838,7 @@ class GameModule:
             <div class="{card_class}">
                 <div style="font-size: 2em;">{node['icon']}</div>
                 <div>{node['name']}</div>
-                <div>{difficulty_display}</div>
+                <div class="difficulty">{difficulty_display}</div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -752,102 +846,105 @@ class GameModule:
             if not node["visited"]:
                 if st.button("Visit", key=f"visit_{node['id']}"):
                     self.visit_node(node["id"])
+            else:
+                st.button("Visited", key=f"visited_{node['id']}", disabled=True)
     
-    def _render_player_stats(self):
-        """Render the player stats bar."""
-        # Stats container
-        st.markdown("""
-        <div class="stat-container">
-            <div>👨‍⚕️ <span id="player-year">Year 1</span></div>
-            <div>❤️ <span id="player-lives">3/3</span></div>
-            <div>✨ <span id="player-insight">0</span></div>
-            <div>📈 <span id="player-level">Lv. 1</span></div>
-        </div>
-        """.replace("Year 1", f"Year {st.session_state.player['year']}")
-           .replace("3/3", f"{st.session_state.player['lives']}/{st.session_state.player['max_lives']}")
-           .replace("0", f"{st.session_state.player['insight']}")
-           .replace("Lv. 1", f"Lv. {st.session_state.player['level']}"), 
-        unsafe_allow_html=True)
-        
-        # Experience bar
-        exp_percentage = min(100, int(st.session_state.player["experience"] / st.session_state.player["experience_to_next_level"] * 100))
-        st.markdown(f"""
-        <div class="progress-bar-container">
-            <div class="progress-bar-value" style="width: {exp_percentage}%;"></div>
-        </div>
-        <div style="text-align: center; font-size: 0.8em; color: #7f8c8d;">
-            Experience: {st.session_state.player["experience"]} / {st.session_state.player["experience_to_next_level"]}
-        </div>
-        """, unsafe_allow_html=True)
-    
-    def _render_inventory(self):
+    def _render_inventory(self, character):
         """Render the player's inventory."""
         st.subheader("Inventory")
         
-        if not st.session_state.player["inventory"]:
+        if not character.inventory:
             st.info("Your inventory is empty. Find items during your rotations!")
             return
         
-        # Create columns for items
-        cols = st.columns(5)  # 5 items per row max
+        # Display each item
+        for i, item in enumerate(character.inventory):
+            rarity_class = f"rarity-{item.get('rarity', 'common')}"
+            
+            st.markdown(f"""
+            <div class="item-card {rarity_class}">
+                <h4>{item['icon']} {item['name']}</h4>
+                <p>{item['description']}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            if st.button("Use", key=f"use_item_{i}"):
+                # Apply item effect
+                character.use_item(i)
+                st.rerun()
+    
+    def _render_relics(self, character):
+        """Render the player's relics."""
+        st.subheader("Relics")
         
-        for i, item in enumerate(st.session_state.player["inventory"]):
-            with cols[i % 5]:
-                st.markdown(f"### {item['icon']} {item['name']}")
-                st.write(item["description"])
-                
-                if st.button("Use", key=f"use_item_{i}"):
-                    # Apply item effect
-                    self.apply_effect(item["effect"])
-                    # Remove from inventory
-                    st.session_state.player["inventory"].pop(i)
-                    st.rerun()
+        if not character.relics:
+            st.info("You don't have any relics yet.")
+            return
+        
+        # Display each relic
+        for relic in character.relics:
+            rarity_class = f"rarity-{relic.get('rarity', 'common')}"
+            
+            st.markdown(f"""
+            <div class="relic-card {rarity_class}">
+                <h4>{relic.get('icon', '🔮')} {relic['name']}</h4>
+                <p>{relic['description']}</p>
+                <p><em>{relic['effect']['description']}</em></p>
+            </div>
+            """, unsafe_allow_html=True)
     
     def _render_question_interface(self):
         """Render the question interface."""
-        # Get the current question
         question = st.session_state.current_question
         
         if not question:
             st.error("No question found!")
+            if st.button("Return to Game"):
+                st.session_state.game_view = "game"
             return
         
         # Get category info
-        category_data = next((c for c in self.categories if c["id"] == question["category"]), None)
-        category_name = category_data["name"] if category_data else "Unknown"
+        category_name = question.get("category", "Unknown").capitalize()
         
         # Question card
-        st.markdown(f"### {category_name} Question")
-        st.markdown(f"#### {question['question']}")
+        st.subheader(f"{category_name} Question")
+        st.markdown(f"### {question['question']}")
         
-        # Options
-        for i, option in enumerate(question["options"]):
-            if st.button(f"{chr(65+i)}. {option}", key=f"answer_{i}"):
+        # Option buttons
+        for i, option in enumerate(question['options']):
+            if st.button(f"{chr(65+i)}. {option}", key=f"answer_{i}", use_container_width=True):
                 self.answer_question(i)
     
     def _render_question_result(self):
         """Render the result of answering a question."""
-        # Get the current question
+        # Get the current question and result
         question = st.session_state.current_question
         result = st.session_state.question_result
         
         if result == "correct":
+            answer_result = st.session_state.get('answer_result', {})
             st.success("CORRECT!")
-            st.markdown(f"### Explanation:")
-            st.markdown(question["explanation"])
+            if question:
+                st.markdown(f"### Explanation:")
+                st.markdown(question.get("explanation", "No explanation available."))
             
             # Show rewards
             st.markdown("### Rewards:")
-            st.markdown(f"* +{20 * question['difficulty']} XP")
-            st.markdown(f"* +{10} points")
+            exp_gained = answer_result.get("experience_gained", 0)
+            score_gained = answer_result.get("score_gained", 0)
+            streak = answer_result.get("streak", 0)
             
-            if st.session_state.current_run["streak"] > 1:
-                st.markdown(f"* Streak bonus: {st.session_state.current_run['streak']}x")
+            st.markdown(f"* +{exp_gained} XP")
+            st.markdown(f"* +{score_gained} points")
+            
+            if streak > 1:
+                st.markdown(f"* Streak bonus: {streak}x")
         
         elif result == "incorrect":
             st.error("INCORRECT!")
-            st.markdown(f"### Explanation:")
-            st.markdown(question["explanation"])
+            if question:
+                st.markdown(f"### Explanation:")
+                st.markdown(question.get("explanation", "No explanation available."))
             
             # Show penalty
             st.markdown("### Penalty:")
@@ -857,8 +954,7 @@ class GameModule:
         elif result == "reference":
             st.info("You studied the material carefully.")
             st.markdown("### Gained:")
-            insight_gained = 10 * st.session_state.current_node["difficulty"]
-            st.markdown(f"* +{insight_gained} insight")
+            st.markdown("* +10 insight")
         
         elif result == "rest":
             st.success("You took a well-deserved break.")
@@ -867,20 +963,331 @@ class GameModule:
         
         elif result == "treasure":
             st.success("You found a useful item!")
-            # Get the most recently added item
-            if st.session_state.player["inventory"]:
-                latest_item = st.session_state.player["inventory"][-1]
-                st.markdown(f"### {latest_item['icon']} {latest_item['name']}")
-                st.markdown(latest_item["description"])
+            if hasattr(st.session_state, 'found_item'):
+                item = st.session_state.found_item
+                if item:
+                    st.markdown(f"### {item.get('icon', '🎁')} {item['name']}")
+                    st.markdown(item["description"])
         
         # Continue button
         if st.button("Continue", key="result_continue"):
             self.continue_after_node()
     
+    def _render_level_up_interface(self):
+        """Render the level-up interface with perk selection."""
+        character = st.session_state.current_character
+        
+        if not character:
+            st.error("No active character found.")
+            return
+        
+        st.markdown(f"""
+        <h2 style="text-align: center;">Level Up! 🎉</h2>
+        <p style="text-align: center;">Your character has reached level {character.level}!</p>
+        """, unsafe_allow_html=True)
+        
+        # Show available perks to choose from
+        st.subheader("Choose a Perk")
+        
+        perk_choices = st.session_state.pending_perk_selection
+        if not perk_choices:
+            st.warning("No perks available to select.")
+            if st.button("Continue without a perk"):
+                st.session_state.game_view = "result"
+            return
+        
+        # Display each perk option
+        cols = st.columns(len(perk_choices))
+        
+        for i, perk in enumerate(perk_choices):
+            with cols[i]:
+                rarity_class = f"rarity-{perk.get('rarity', 'common')}"
+                
+                st.markdown(f"""
+                <div class="item-card {rarity_class}">
+                    <h4>{perk['name']}</h4>
+                    <p>{perk['description']}</p>
+                    <p><em>{perk['effect']['description']}</em></p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                if st.button("Select", key=f"select_perk_{perk['id']}"):
+                    self.select_perk(perk['id'])
+    
+    def _render_encounter_interface(self):
+        """Render the special encounter interface."""
+        encounter = st.session_state.encountering_event
+        if not encounter:
+            st.error("No active encounter found.")
+            return
+        
+        st.subheader(encounter["name"])
+        st.markdown(encounter["description"])
+        
+        # Handle different encounter types
+        encounter_type = encounter.get("type", "unknown")
+        
+        if encounter_type == "choice":
+            self._render_choice_encounter(encounter)
+        elif encounter_type == "shop":
+            self._render_shop_encounter(encounter)
+        elif encounter_type == "challenge":
+            self._render_challenge_encounter(encounter)
+        elif encounter_type == "training":
+            self._render_training_encounter(encounter)
+        elif encounter_type == "rest":
+            self._render_rest_encounter(encounter)
+        elif encounter_type == "multi_event":
+            self._render_multi_event_encounter(encounter)
+        else:
+            st.warning(f"Unknown encounter type: {encounter_type}")
+            if st.button("Continue"):
+                st.session_state.encountering_event = None
+                self.continue_after_node()
+    
+    def _render_choice_encounter(self, encounter):
+        """Render a choice-based encounter."""
+        choices = encounter.get("choices", [])
+        
+        for i, choice in enumerate(choices):
+            st.markdown(f"### Option {i+1}: {choice['text']}")
+            
+            if st.button(f"Choose Option {i+1}", key=f"choice_{i}"):
+                # Handle the choice
+                # For now, just continue
+                st.session_state.encountering_event = None
+                self.continue_after_node()
+    
+    def _render_shop_encounter(self, encounter):
+        """Render a shop encounter."""
+        items = encounter.get("items", [])
+        character = st.session_state.current_character
+        
+        st.markdown(f"### Available Items")
+        st.markdown(f"You have {character.insight} insight points to spend.")
+        
+        for i, item in enumerate(items):
+            col1, col2 = st.columns([3, 1])
+            
+            with col1:
+                st.markdown(f"**{item['name']}**: {item['description']}")
+                st.markdown(f"*Cost: {item['cost']} insight*")
+            
+            with col2:
+                if character.insight >= item['cost']:
+                    if st.button(f"Purchase", key=f"buy_{i}"):
+                        # Purchase the item
+                        character.insight -= item['cost']
+                        
+                        # Add the item based on its type
+                        if item['effect']['type'] == 'relic':
+                            relic = next((r for r in self.relics if r['id'] == item['effect']['id']), None)
+                            if relic:
+                                character.add_relic(relic)
+                        elif item['effect']['type'] == 'consumable':
+                            consumable = next((c for c in self.consumables if c['id'] == item['effect']['id']), None)
+                            if consumable:
+                                for _ in range(item['effect'].get('quantity', 1)):
+                                    character.add_to_inventory(consumable)
+                        
+                        st.rerun()
+                else:
+                    st.button(f"Cannot Afford", key=f"cant_buy_{i}", disabled=True)
+        
+        if st.button("Leave Shop"):
+            st.session_state.encountering_event = None
+            self.continue_after_node()
+    
+    def _render_challenge_encounter(self, encounter):
+        """Render a challenge encounter."""
+        # Similar to a question, but with different rewards/penalties
+        st.markdown("### Challenge")
+        st.markdown(encounter.get("description", ""))
+        
+        # For now, just a continue button
+        if st.button("Accept Challenge"):
+            # In a full implementation, this would show a question or task
+            st.session_state.encountering_event = None
+            self.continue_after_node()
+    
+    def _render_training_encounter(self, encounter):
+        """Render a training/mentorship encounter."""
+        skill_options = encounter.get("skill_options", [])
+        
+        st.markdown("### Available Skills")
+        
+        for i, skill in enumerate(skill_options):
+            st.markdown(f"**{skill['name']}**: {skill['description']}")
+            
+            if st.button(f"Learn {skill['name']}", key=f"learn_{i}"):
+                # Learn the skill (add the perk)
+                perk = next((p for p in self.perks if p['id'] == skill['perk']), None)
+                if perk:
+                    st.session_state.current_character.add_perk(perk)
+                
+                st.session_state.encountering_event = None
+                self.continue_after_node()
+        
+        if st.button("Decline Training"):
+            st.session_state.encountering_event = None
+            self.continue_after_node()
+    
+    def _render_rest_encounter(self, encounter):
+        """Render a rest encounter."""
+        effects = encounter.get("effects", [])
+        
+        st.markdown("### Effects")
+        for effect in effects:
+            if effect["type"] == "heal":
+                st.markdown(f"* Restore {effect['value']} lives")
+            elif effect["type"] == "skip_reward":
+                st.markdown("* Skip rewards for this floor")
+        
+        if st.button("Rest"):
+            # Apply effects
+            for effect in effects:
+                if effect["type"] == "heal":
+                    st.session_state.current_character.restore_life(effect["value"])
+            
+            st.session_state.encountering_event = None
+            self.continue_after_node()
+    
+    def _render_multi_event_encounter(self, encounter):
+        """Render a multi-event encounter."""
+        events = encounter.get("events", [])
+        
+        st.markdown("### Available Activities")
+        
+        for i, event in enumerate(events):
+            st.markdown(f"**{event['name']}**: {event['description']}")
+            
+            if st.button(f"Choose {event['name']}", key=f"event_{i}"):
+                # For simplicity, just apply rewards directly
+                if "reward" in event:
+                    reward = event["reward"]
+                    if reward["type"] == "insight":
+                        st.session_state.current_character.insight += reward["value"]
+                    elif reward["type"] == "experience":
+                        st.session_state.current_character.gain_experience(reward["value"])
+                    elif reward["type"] == "consumable":
+                        consumable = next((c for c in self.consumables if c['rarity'] == reward['rarity']), None)
+                        if consumable:
+                            st.session_state.current_character.add_to_inventory(consumable)
+                
+                st.session_state.encountering_event = None
+                self.continue_after_node()
+    
+    def _render_elite_interface(self):
+        """Render the elite challenge interface."""
+        if not hasattr(st.session_state, 'elite_questions') or not st.session_state.elite_questions:
+            st.error("No elite challenge questions found.")
+            return
+        
+        questions = st.session_state.elite_questions
+        current_question_index = st.session_state.get('current_elite_question', 0)
+        
+        if current_question_index >= len(questions):
+            # All questions answered, show reward
+            st.success("Challenge completed successfully!")
+            
+            reward = st.session_state.elite_reward
+            if reward:
+                st.markdown("### Reward")
+                if reward["type"] == "find_relic":
+                    rarity = reward.get("rarity", "common")
+                    # Find a relic of the specified rarity
+                    available_relics = [r for r in self.relics if r.get("rarity") == rarity]
+                    if available_relics:
+                        relic = random.choice(available_relics)
+                        st.session_state.current_character.add_relic(relic)
+                        
+                        st.markdown(f"You received the **{relic['name']}** relic!")
+                        st.markdown(relic["description"])
+            
+            if st.button("Continue"):
+                st.session_state.elite_questions = None
+                st.session_state.elite_reward = None
+                self.continue_after_node()
+        else:
+            # Show the current question
+            question = questions[current_question_index]
+            
+            st.subheader(f"Challenge Question {current_question_index + 1}/{len(questions)}")
+            st.markdown(question["question"])
+            
+            # Options
+            for i, option in enumerate(question['options']):
+                if st.button(f"{chr(65+i)}. {option}", key=f"elite_answer_{i}", use_container_width=True):
+                    # Check the answer
+                    if i == question["correct_answer"]:
+                        # Correct
+                        st.session_state.current_elite_question += 1
+                        st.rerun()
+                    else:
+                        # Incorrect - lose the challenge
+                        st.session_state.elite_questions = None
+                        st.session_state.elite_reward = None
+                        st.session_state.current_character.take_damage(1)
+                        st.session_state.question_result = "incorrect"
+                        st.session_state.current_question = question  # To show the explanation
+                        st.session_state.game_view = "result"
+    
+    def _render_boss_interface(self):
+        """Render the boss challenge interface."""
+        if not hasattr(st.session_state, 'boss_questions') or not st.session_state.boss_questions:
+            st.error("No boss challenge questions found.")
+            return
+        
+        questions = st.session_state.boss_questions
+        current_question_index = st.session_state.get('current_boss_question', 0)
+        
+        if current_question_index >= len(questions):
+            # All questions answered, show reward
+            st.success("Boss challenge completed successfully!")
+            
+            reward = st.session_state.boss_reward
+            if reward:
+                st.markdown("### Reward")
+                if reward["type"] == "complete_rotation":
+                    floor_value = reward.get("value", 0)
+                    st.markdown(f"You've completed the rotation evaluation for floor {floor_value}!")
+            
+            if st.button("Continue"):
+                st.session_state.boss_questions = None
+                st.session_state.boss_reward = None
+                self.continue_after_node()
+        else:
+            # Show the current question
+            question = questions[current_question_index]
+            
+            st.subheader(f"Boss Question {current_question_index + 1}/{len(questions)}")
+            st.markdown(question["question"])
+            
+            # Options
+            for i, option in enumerate(question['options']):
+                if st.button(f"{chr(65+i)}. {option}", key=f"boss_answer_{i}", use_container_width=True):
+                    # Check the answer
+                    if i == question["correct_answer"]:
+                        # Correct
+                        st.session_state.current_boss_question += 1
+                        st.rerun()
+                    else:
+                        # Incorrect - lose a life but continue to next question
+                        st.session_state.current_character.take_damage(1)
+                        
+                        if st.session_state.current_character.lives <= 0:
+                            # Game over
+                            self.end_run(False)
+                            return
+                        
+                        st.session_state.current_boss_question += 1
+                        st.rerun()
+    
     def _render_run_end_interface(self):
         """Render the end-of-run summary."""
         success = st.session_state.run_success
         final_score = st.session_state.final_score
+        game_state = st.session_state.game_state
         
         if success:
             st.success("# Rotation Complete!")
@@ -890,16 +1297,293 @@ class GameModule:
             st.markdown("You weren't able to complete this rotation. Take what you've learned and try again!")
         
         # Stats
-        col1, col2 = st.columns(2)
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Floors Completed", st.session_state.current_floor)
-            st.metric("Questions Correct", st.session_state.current_run["streak"])
+            st.metric("Floors Completed", game_state.current_floor if game_state else 0)
         
         with col2:
+            st.metric("Questions Correct", game_state.streak if game_state else 0)
+        
+        with col3:
             st.metric("Final Score", final_score)
-            st.metric("Total Rotations", st.session_state.completed_runs)
+        
+        with col4:
+            st.metric("Total Rotations", st.session_state.player_data["completed_runs"])
+        
+        # Unlocked achievements
+        if hasattr(st.session_state, 'unlocked_achievements') and st.session_state.unlocked_achievements:
+            st.subheader("Achievements Unlocked")
+            
+            for achievement_result in st.session_state.unlocked_achievements:
+                if achievement_result["success"]:
+                    achievement = achievement_result["achievement"]
+                    st.markdown(f"""
+                    <div class="achievement-card unlocked">
+                        <h4>{achievement['icon']} {achievement['name']}</h4>
+                        <p>{achievement['description']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
         
         # Return to hub button
         if st.button("Return to Department", key="return_to_hub"):
             self.return_to_hub()
+    
+    def _render_achievements_interface(self):
+        """Render the achievements interface."""
+        st.subheader("Achievement Hall")
+        
+        if st.button("← Back to Department", key="back_to_hub_from_achievements"):
+            st.session_state.game_view = "hub"
+            return
+        
+        # Get achievements
+        achievements = self.data_manager.get_data("achievements").get("achievements", [])
+        unlocked_achievements = st.session_state.achievement_manager.unlocked_achievements
+        
+        # Group achievements by difficulty
+        difficulties = ["easy", "medium", "hard", "very_hard"]
+        achievements_by_difficulty = {d: [] for d in difficulties}
+        
+        for achievement in achievements:
+            difficulty = achievement.get("difficulty", "medium")
+            achievements_by_difficulty[difficulty].append(achievement)
+        
+        # Display achievements by difficulty
+        for difficulty in difficulties:
+            difficulty_name = {
+                "easy": "Basic Achievements",
+                "medium": "Intermediate Achievements",
+                "hard": "Advanced Achievements",
+                "very_hard": "Expert Achievements"
+            }.get(difficulty, difficulty.capitalize())
+            
+            st.markdown(f"### {difficulty_name}")
+            
+            if not achievements_by_difficulty[difficulty]:
+                st.info(f"No {difficulty_name.lower()} achievements available.")
+                continue
+            
+            # Create a 2-column layout for achievements
+            cols = st.columns(2)
+            
+            for i, achievement in enumerate(achievements_by_difficulty[difficulty]):
+                is_unlocked = achievement["id"] in unlocked_achievements
+                
+                with cols[i % 2]:
+                    st.markdown(f"""
+                    <div class="achievement-card{'  unlocked' if is_unlocked else ''}">
+                        <h4>{achievement['icon']} {achievement['name']}</h4>
+                        <p>{achievement['description']}</p>
+                        <p>{'' if is_unlocked else '???'}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+    
+    def _render_settings_interface(self):
+        """Render the settings interface."""
+        st.subheader("Game Settings")
+        
+        if st.button("← Back to Department", key="back_to_hub_from_settings"):
+            st.session_state.game_view = "hub"
+            return
+        
+        # Autosave setting
+        st.checkbox("Auto-save on run completion", 
+                   value=st.session_state.save_on_exit,
+                   key="save_on_exit_setting",
+                   on_change=lambda: setattr(st.session_state, 'save_on_exit', st.session_state.save_on_exit_setting))
+        
+        # Question timer
+        st.checkbox("Show question timer", 
+                   value=st.session_state.show_question_timer,
+                   key="show_timer_setting",
+                   on_change=lambda: setattr(st.session_state, 'show_question_timer', st.session_state.show_timer_setting))
+        
+        # Difficulty setting
+        st.selectbox("Difficulty",
+                    ["easy", "normal", "hard", "expert"],
+                    index=["easy", "normal", "hard", "expert"].index(st.session_state.difficulty_setting),
+                    key="difficulty_setting_select",
+                    on_change=lambda: setattr(st.session_state, 'difficulty_setting', st.session_state.difficulty_setting_select))
+        
+        # Save management
+        st.subheader("Save Management")
+        
+        # List available saves
+        save_result = self.save_manager.list_saves()
+        if save_result["success"] and save_result["saves"]:
+            saves = save_result["saves"]
+            
+            # Show saves in a table
+            save_data = []
+            for save in saves:
+                save_data.append([
+                    save["name"],
+                    save["date"],
+                    save["player_class"],
+                    save["player_level"],
+                    save["completed_runs"]
+                ])
+            
+            st.table({"Save Name": [s[0] for s in save_data],
+                     "Date": [s[1] for s in save_data],
+                     "Class": [s[2] for s in save_data],
+                     "Level": [s[3] for s in save_data],
+                     "Runs": [s[4] for s in save_data]})
+            
+            # Load/delete options
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                selected_save = st.selectbox("Select Save", [s["name"] for s in saves])
+                
+                if st.button("Load Save", key="load_save_button"):
+                    # Load the selected save
+                    load_result = self.save_manager.load_game(selected_save, self.data_manager)
+                    if load_result["success"]:
+                        st.session_state.player_data = load_result["player_data"]
+                        st.session_state.game_state = load_result["game_state"]
+                        st.session_state.achievement_manager = load_result["achievement_manager"]
+                        
+                        if st.session_state.game_state:
+                            st.session_state.current_character = st.session_state.game_state.character
+                            st.session_state.game_view = "game"
+                        else:
+                            st.session_state.game_view = "hub"
+                        
+                        st.success(f"Save '{selected_save}' loaded successfully!")
+                        st.rerun()
+                    else:
+                        st.error(f"Error loading save: {load_result['message']}")
+            
+            with col2:
+                if st.button("Delete Save", key="delete_save_button"):
+                    # Delete the selected save
+                    delete_result = self.save_manager.delete_save(selected_save)
+                    if delete_result["success"]:
+                        st.success(f"Save '{selected_save}' deleted successfully!")
+                        st.rerun()
+                    else:
+                        st.error(f"Error deleting save: {delete_result['message']}")
+        else:
+            st.info("No saves found.")
+        
+        # Save current game
+        st.subheader("Save Current Game")
+        
+        save_name = st.text_input("Save Name", value=f"save_{datetime.now().strftime('%Y%m%d_%H%M%S')}")
+        
+        if st.button("Save Game", key="save_game_button"):
+            if not st.session_state.game_state:
+                st.warning("No active game to save.")
+            else:
+                save_result = self.save_manager.save_game(
+                    st.session_state.game_state,
+                    st.session_state.player_data,
+                    st.session_state.achievement_manager,
+                    save_name
+                )
+                if save_result["success"]:
+                    st.success(f"Game saved as '{save_name}'!")
+                else:
+                    st.error(f"Error saving game: {save_result['message']}")
+    
+    def _render_help_interface(self):
+        """Render the help and documentation interface."""
+        st.subheader("Game Help & Documentation")
+        
+        if st.button("← Back to Department", key="back_to_hub_from_help"):
+            st.session_state.game_view = "hub"
+            return
+        
+        # Basic game explanation
+        st.markdown("""
+        ## How to Play
+        
+        **Medical Physics Residency: The Game** is a roguelike knowledge game where you progress through floors by answering 
+        questions and making strategic choices. Here's how it works:
+        
+        1. **Select a Character Class**: Each class has unique abilities and starting relics.
+        2. **Progress Through Floors**: Each floor has multiple nodes to visit.
+        3. **Answer Questions**: Test your medical physics knowledge.
+        4. **Collect Items & Relics**: Build your inventory with helpful tools.
+        5. **Level Up**: Gain perks to strengthen your character.
+        
+        Try to reach the highest floor with the best score!
+        """)
+        
+        # Explain node types
+        st.markdown("""
+        ## Node Types
+        
+        * **📝 Question**: Answer medical physics questions to gain experience and advance.
+        * **📚 Reference**: Study important concepts to gain insight without risk.
+        * **☕ Break Room**: Recover a life point.
+        * **🎁 Conference**: Find useful items to help on your journey.
+        * **⚠️ Complex Case**: Challenging questions with better rewards.
+        * **⭐ Rotation Evaluation**: Major tests at milestone floors (every 5th floor).
+        * **🔍 Special Event**: Unique opportunities with various outcomes.
+        """)
+        
+        # Explain items and relics
+        st.markdown("""
+        ## Items & Relics
+        
+        **Items** are consumable one-time use tools that help you in specific situations.
+        
+        **Relics** are permanent artifacts that provide ongoing benefits throughout your run.
+        
+        Items and relics come in different rarities:
+        * **Common**: Basic benefits
+        * **Uncommon**: Stronger effects
+        * **Rare**: Powerful advantages
+        * **Legendary**: Game-changing abilities
+        """)
+        
+        # Character classes
+        st.markdown("""
+        ## Character Classes
+        
+        * **Therapy Newbie**: Fresh out of graduate school with enthusiasm. Gets bonus on treatment planning questions.
+        * **QA Specialist**: Detail-oriented and meticulous. Excels at machine QA questions.
+        * **Dosimetry Wizard**: Natural talent for calculations. Gets help with dosimetry questions.
+        * **Regulatory Expert**: Knows all the rules. Gets bonus insights from reference nodes.
+        * **Medical Physics Resident**: Balanced character with well-rounded education. Gets a free mistake on each floor.
+        """)
+        
+        # Tips section
+        st.markdown("""
+        ## Tips for Success
+        
+        * Balance risk and reward when choosing which nodes to visit.
+        * Consider your character's strengths and weaknesses when answering questions.
+        * Use consumable items strategically rather than hoarding them.
+        * Try to maintain a question streak for bonus points.
+        * Complete achievements to unlock permanent benefits.
+        * Unlock new areas in the department hub by completing runs and reaching higher floors.
+        """)
+        
+        # Scoring
+        st.markdown("""
+        ## Scoring System
+        
+        Your score is calculated based on:
+        * Correct answers (base points)
+        * Answer streak (bonus multiplier)
+        * Floor completion (50 points per floor)
+        * Remaining lives (20 points per life)
+        * Successful run completion (500 bonus points)
+        
+        The difficulty setting also affects your scoring potential.
+        """)
+        
+        # Acknowledgments
+        st.markdown("""
+        ## Acknowledgments
+        
+        This game was designed as an educational tool for medical physics residents and students.
+        The questions and content are inspired by medical physics concepts, but this is not intended
+        as a formal study tool or replacement for proper education and training.
+        
+        Have fun and happy learning!
+        """)
