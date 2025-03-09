@@ -1420,10 +1420,13 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """Render the nodes for the current floor with better "clickable" styling."""
+        """
+        Render the nodes for the current floor with separate card and button components.
+        This is the most reliable approach for Streamlit.
+        """
         st.subheader(f"Floor {game_state.current_floor}")
         
-        # Add instructions to clarify the choice mechanic
+        # Add instructions
         st.markdown("### Choose Your Path")
         st.markdown("Select one node to proceed to the next floor.")
         
@@ -1447,99 +1450,65 @@ class GameModule:
         # Create columns for nodes
         cols = st.columns(len(current_floor_nodes))
         
-        # Custom CSS for better button styling
+        # Add custom CSS
         st.markdown("""
         <style>
-            /* Make buttons look more like cards */
-            .node-button {
-                width: 100%;
-                height: auto;
-                padding: 15px !important;
-                white-space: normal !important;
+            /* Node card styling */
+            .node-card {
+                padding: 15px;
+                border-radius: 10px;
                 text-align: center;
-                display: flex !important;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                color: white !important;
-                border: none !important;
-                border-radius: 10px !important;
-                transition: transform 0.2s, box-shadow 0.2s;
-            }
-            
-            .node-button:hover:not(:disabled) {
-                transform: translateY(-5px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+                margin-bottom: 5px;
             }
             
             /* Node type colors */
-            .question-button { background-color: #3498db !important; }
-            .reference-button { background-color: #2ecc71 !important; }
-            .rest-button { background-color: #9b59b6 !important; }
-            .treasure-button { background-color: #f1c40f !important; color: black !important; }
-            .elite-button { background-color: #e74c3c !important; }
-            .boss-button { background-color: #34495e !important; }
-            .encounter-button { background-color: #1abc9c !important; }
+            .question-card { background-color: #3498db; color: white; }
+            .reference-card { background-color: #2ecc71; color: white; }
+            .rest-card { background-color: #9b59b6; color: white; }
+            .treasure-card { background-color: #f1c40f; color: black; }
+            .elite-card { background-color: #e74c3c; color: white; }
+            .boss-card { background-color: #34495e; color: white; }
+            .encounter-card { background-color: #1abc9c; color: white; }
             
-            /* Node visited/unavailable styles */
+            /* Status styles */
             .node-visited { background-color: #2ecc71 !important; }
-            .node-unavailable { 
-                opacity: 0.7;
-                filter: grayscale(40%);
-            }
+            .node-unavailable { opacity: 0.7; filter: grayscale(40%); }
             
-            /* Button content styling */
-            .node-icon {
-                font-size: 24px;
-                margin-bottom: 8px;
-            }
-            
-            .node-title {
-                font-weight: bold;
-                margin-bottom: 5px;
-            }
-            
-            .node-difficulty {
-                color: #f1c40f;
-                letter-spacing: 2px;
-                margin-bottom: 5px;
-            }
-            
-            .node-category {
-                font-size: 12px;
-                margin-bottom: 8px;
-            }
-            
-            .node-status-badge {
-                font-size: 10px;
+            /* Content styling */
+            .node-icon { font-size: 24px; margin-bottom: 8px; }
+            .node-title { font-weight: bold; margin-bottom: 5px; }
+            .node-difficulty { color: #f1c40f; letter-spacing: 2px; margin-bottom: 5px; }
+            .node-category { font-size: 12px; margin-bottom: 8px; }
+            .node-status { 
+                display: inline-block;
                 padding: 3px 8px;
                 border-radius: 10px;
                 background-color: rgba(255,255,255,0.2);
-                margin-top: 5px;
+                font-size: 11px;
             }
         </style>
         """, unsafe_allow_html=True)
         
         for i, node in enumerate(current_floor_nodes):
             with cols[i]:
-                # Determine if this node is available in the path
+                # Determine if node is available
                 is_available = node in available_nodes
                 
-                # Get node type and state information
+                # Get node info
                 node_type = node["type"]
                 node_visited = node["visited"]
                 
-                # Create CSS classes for the button
-                button_classes = f"node-button {node_type}-button"
+                # Determine card CSS classes
+                card_class = f"node-card {node_type}-card"
                 if node_visited:
-                    button_classes += " node-visited"
+                    card_class += " node-visited"
                 elif not is_available or floor_completed:
-                    button_classes += " node-unavailable"
+                    card_class += " node-unavailable"
                 
                 # Difficulty stars
                 difficulty_stars = "★" * node["difficulty"] if node["difficulty"] > 0 else "—"
                 
-                # Determine status badge text
+                # Status text
                 if node_visited:
                     status_text = "Completed"
                 elif not is_available or floor_completed:
@@ -1547,29 +1516,33 @@ class GameModule:
                 else:
                     status_text = "Available"
                 
-                # Create the button HTML
-                button_html = f"""
-                <div class="node-icon">{node['icon']}</div>
-                <div class="node-title">{node['name']}</div>
-                <div class="node-difficulty">{difficulty_stars}</div>
-                <div class="node-category">{node.get('category', '').capitalize()}</div>
-                <div class="node-status-badge">{status_text}</div>
-                """
+                # Display the node card
+                st.markdown(f"""
+                <div class="{card_class}">
+                    <div class="node-icon">{node['icon']}</div>
+                    <div class="node-title">{node['name']}</div>
+                    <div class="node-difficulty">{difficulty_stars}</div>
+                    <div class="node-category">{node.get('category', '').capitalize()}</div>
+                    <div class="node-status">{status_text}</div>
+                </div>
+                """, unsafe_allow_html=True)
                 
-                # Determine button functionality
+                # Determine button text based on node type
+                button_text = {
+                    "question": "Answer",
+                    "reference": "Study",
+                    "rest": "Rest",
+                    "treasure": "Find",
+                    "elite": "Challenge",
+                    "boss": "Evaluate",
+                    "encounter": "Explore"
+                }.get(node_type, "Choose")
+                
+                # Add button below card
                 disabled = node_visited or not is_available or floor_completed
-                
-                # Create the actual button - Streamlit allows HTML within a button
-                if st.button(button_html, key=f"node_button_{node['id']}", 
-                            disabled=disabled, use_container_width=True,
-                            help=f"{node['name']} ({node.get('category', '').capitalize()}) - Difficulty: {node['difficulty']}"):
+                if st.button(button_text, key=f"btn_{node['id']}", 
+                            disabled=disabled, use_container_width=True):
                     self.visit_node(node["id"])
-        
-        # Add a "Continue" button if floor is completed
-        if floor_completed:
-            st.markdown("---")
-            if st.button("Continue to Next Floor", type="primary", use_container_width=True):
-                self.continue_after_node()
 
     def _render_enhanced_node_card(self, node, is_available):
         """Render a more detailed and interactive node card."""
