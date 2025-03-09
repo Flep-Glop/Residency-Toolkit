@@ -492,6 +492,69 @@ class GameModule:
                 color: #3498db;
                 font-weight: bold;
             }
+                    
+            /* Node status indicators */
+            .node-status {
+                padding: 3px 8px;
+                border-radius: 10px;
+                font-size: 0.7em;
+                font-weight: bold;
+            }
+            
+            .node-visited .node-status {
+                background-color: #2ecc71;
+                color: white;
+            }
+            
+            .node-unavailable {
+                opacity: 0.7;
+                filter: grayscale(50%);
+            }
+            
+            .node-unavailable .node-status {
+                background-color: #95a5a6;
+                color: white;
+            }
+            
+            /* Node hover effects */
+            .node-card {
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .node-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .node-card:hover::before {
+                left: 100%;
+            }
+            
+            /* Path animations */
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            .question-card:not(.node-unavailable):not(.node-visited) {
+                animation: pulse 2s infinite;
+            }
+            
+            .elite-card:not(.node-unavailable):not(.node-visited) {
+                animation: pulse 1.5s infinite;
+            }
+            
+            .boss-card:not(.node-unavailable):not(.node-visited) {
+                animation: pulse 1s infinite;
+            }
         </style>
         """, unsafe_allow_html=True)
     
@@ -565,8 +628,8 @@ class GameModule:
         # Create the game state
         game_state = GameState(character)
         
-        # Generate the first floor
-        game_state.generate_new_floor(self.data_manager)
+        # Generate a branching path
+        game_state.generate_branching_path(self.data_manager)
         
         # Store in session state
         st.session_state.current_character = character
@@ -995,11 +1058,8 @@ class GameModule:
         # Player stats
         self._render_player_stats(character, game_state)
         
-        # Floor progress indicator
-        self._render_floor_progress(game_state)
-        
-        # New path map
-        self._render_path_map(game_state)
+        # Visual path map - NEW!
+        self._render_visual_path_map(game_state)
         
         # Game board - current floor
         self._render_current_floor_nodes(game_state)
@@ -1081,6 +1141,138 @@ class GameModule:
                 else:
                     st.markdown(f"<div style='text-align: center; color: #95a5a6;'>{floor_num}</div>", unsafe_allow_html=True)
 
+    def _render_visual_path_map(self, game_state):
+        """Render a visual map of the game path using SVG (Streamlit compatible)."""
+        
+        if not game_state.path:
+            return
+        
+        st.markdown("### Path Map")
+        
+        # Configure SVG dimensions
+        svg_width = 700
+        svg_height = 250
+        node_radius = 15
+        floor_spacing = svg_width / (game_state.max_floor + 1)
+        
+        # Start building SVG
+        svg = f'<svg width="{svg_width}" height="{svg_height}" xmlns="http://www.w3.org/2000/svg">'
+        
+        # Draw connecting lines between floors
+        for floor_idx in range(game_state.max_floor - 1):
+            current_floor_nodes = game_state.path[floor_idx] if floor_idx < len(game_state.path) else []
+            next_floor_nodes = game_state.path[floor_idx + 1] if floor_idx + 1 < len(game_state.path) else []
+            
+            # Skip if either floor is empty
+            if not current_floor_nodes or not next_floor_nodes:
+                continue
+            
+            # Draw connections from each node on current floor to each node on next floor
+            x1 = floor_spacing * (floor_idx + 1)
+            x2 = floor_spacing * (floor_idx + 2)
+            
+            for i, node1 in enumerate(current_floor_nodes):
+                # Calculate y position for current node
+                y1 = svg_height * (i + 1) / (len(current_floor_nodes) + 1)
+                
+                # Check if this node is visited
+                node1_visited = node1.get("visited", False)
+                
+                for j, node2 in enumerate(next_floor_nodes):
+                    # Calculate y position for next node
+                    y2 = svg_height * (j + 1) / (len(next_floor_nodes) + 1)
+                    
+                    # If we have branching paths, check if there's a connection
+                    if hasattr(game_state, 'path_connections'):
+                        if node2["id"] not in game_state.path_connections.get(node1["id"], []):
+                            continue
+                    
+                    # Determine connection style based on visited state
+                    if node1_visited and node2.get("visited", False):
+                        # Path fully traveled
+                        line_style = 'stroke="#2ecc71" stroke-width="3"'
+                    elif node1_visited:
+                        # Available path
+                        line_style = 'stroke="#3498db" stroke-width="2"'
+                    else:
+                        # Unavailable path
+                        line_style = 'stroke="#bdc3c7" stroke-width="1" stroke-dasharray="5,5"'
+                    
+                    svg += f'<line x1="{x1}" y1="{y1}" x2="{x2}" y2="{y2}" {line_style} />'
+        
+        # Draw nodes for each floor
+        for floor_idx, floor_nodes in enumerate(game_state.path):
+            x = floor_spacing * (floor_idx + 1)
+            
+            # Draw floor label
+            floor_label = f"Floor {floor_idx + 1}"
+            if floor_idx + 1 == game_state.current_floor:
+                label_style = 'font-weight: bold; fill: #3498db;'
+            else:
+                label_style = 'fill: #7f8c8d;'
+            
+            svg += f'<text x="{x}" y="20" text-anchor="middle" style="{label_style}">{floor_label}</text>'
+            
+            # Draw each node on this floor
+            for i, node in enumerate(floor_nodes):
+                y = svg_height * (i + 1) / (len(floor_nodes) + 1)
+                
+                # Node style based on state
+                is_available = True
+                
+                # For branching paths, check availability
+                if hasattr(game_state, 'get_available_nodes') and floor_idx + 1 == game_state.current_floor:
+                    available_nodes = game_state.get_available_nodes()
+                    is_available = node in available_nodes
+                
+                if node.get("visited", False):
+                    # Visited node
+                    circle_style = 'fill="#2ecc71" stroke="#27ae60" stroke-width="2"'
+                    text_style = 'fill="white" font-weight="bold"'
+                elif floor_idx + 1 == game_state.current_floor and is_available:
+                    # Current floor node (available)
+                    circle_style = 'fill="#3498db" stroke="#2980b9" stroke-width="2"'
+                    text_style = 'fill="white"'
+                elif floor_idx + 1 == game_state.current_floor and not is_available:
+                    # Current floor node (unavailable)
+                    circle_style = 'fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"'
+                    text_style = 'fill="white"'
+                elif floor_idx + 1 < game_state.current_floor:
+                    # Past floor
+                    circle_style = 'fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"'
+                    text_style = 'fill="#7f8c8d"'
+                else:
+                    # Future floor
+                    circle_style = 'fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"'
+                    text_style = 'fill="#7f8c8d"'
+                
+                # Get node icon based on type
+                node_icons = {
+                    "question": "📝",
+                    "reference": "📚",
+                    "rest": "☕",
+                    "treasure": "🎁",
+                    "elite": "⚠️",
+                    "boss": "⭐",
+                    "encounter": "🔍"
+                }
+                node_icon = node_icons.get(node.get("type", "unknown"), "❓")
+                
+                # Draw node circle
+                svg += f'<circle cx="{x}" cy="{y}" r="{node_radius}" {circle_style} />'
+                
+                # Draw node text (emoji)
+                svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style} font-size: 12px;">{node_icon}</text>'
+                
+                # Add tooltip (requires modern browsers)
+                tooltip_text = f"{node.get('name', 'Node')}: {node.get('category', 'unknown').capitalize()}"
+                svg += f'<title>{tooltip_text}</title>'
+        
+        svg += '</svg>'
+        
+        # Render the SVG in Streamlit
+        st.markdown(svg, unsafe_allow_html=True)
+
     def _render_floor_progress(self, game_state):
         """Render a visual indicator of floor progress."""
         max_floor = game_state.max_floor
@@ -1109,38 +1301,106 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """Render the nodes for the current floor as a path choice."""
+        """Render the nodes for the current floor with enhanced styling and interactions."""
         st.subheader(f"Floor {game_state.current_floor}")
         
         # Add instructions to clarify the choice mechanic
-        st.markdown("### Choose One Path")
-        st.markdown("Select only one node to proceed to the next floor.")
+        st.markdown("### Choose Your Path")
+        st.markdown("Select one node to proceed to the next floor.")
         
-        # Render the current floor nodes
+        # Get nodes for the current floor
         current_floor_index = game_state.current_floor - 1
-        if current_floor_index < len(game_state.path):
-            current_floor_nodes = game_state.path[current_floor_index]
-            
-            # Check if any node on this floor has been visited
-            floor_completed = any(node["visited"] for node in current_floor_nodes)
-            
-            # Create columns for nodes
-            cols = st.columns(len(current_floor_nodes))
-            
-            for i, node in enumerate(current_floor_nodes):
-                with cols[i]:
-                    self._render_node_card(node)
-                    
-                    # If floor is already completed, disable all node buttons
-                    if not node["visited"] and not floor_completed:
-                        if st.button("Choose", key=f"visit_{node['id']}"):
-                            self.visit_node(node["id"])
-                    elif node["visited"]:
-                        st.button("Selected", key=f"visited_{node['id']}", disabled=True)
-                    elif floor_completed:
-                        st.button("Unavailable", key=f"unavailable_{node['id']}", disabled=True)
-        else:
+        if current_floor_index < 0 or current_floor_index >= len(game_state.path):
             st.error("Floor data not found.")
+            return
+        
+        current_floor_nodes = game_state.path[current_floor_index]
+        
+        # If using branching paths, get only the available nodes
+        if hasattr(game_state, 'get_available_nodes'):
+            available_nodes = game_state.get_available_nodes()
+        else:
+            available_nodes = current_floor_nodes
+        
+        # Check if any node on this floor has been visited
+        floor_completed = any(node["visited"] for node in current_floor_nodes)
+        
+        # Create columns for nodes
+        cols = st.columns(len(current_floor_nodes))
+        
+        for i, node in enumerate(current_floor_nodes):
+            with cols[i]:
+                # Determine if this node is available in the path
+                is_available = node in available_nodes
+                
+                # Enhanced node card with availability indicator
+                self._render_enhanced_node_card(node, is_available and not floor_completed)
+        
+        # Add a "Continue" button if floor is completed
+        if floor_completed:
+            st.markdown("---")
+            if st.button("Continue to Next Floor", type="primary", use_container_width=True):
+                self.continue_after_node()
+
+    def _render_enhanced_node_card(self, node, is_available):
+        """Render a more detailed and interactive node card."""
+        # Get node type info
+        node_type = node["type"]
+        node_visited = node["visited"]
+        
+        # Style based on node type
+        card_class = f"node-card {node_type}-card"
+        if not is_available:
+            card_class += " node-unavailable"
+        if node_visited:
+            card_class += " node-visited"
+        
+        # Difficulty pips
+        difficulty_display = "★" * node["difficulty"] if node["difficulty"] > 0 else "—"
+        
+        # Render card with more details
+        with st.container():
+            st.markdown(f"""
+            <div class="{card_class}">
+                <div style="font-size: 2em;">{node['icon']}</div>
+                <div style="font-weight: bold;">{node['name']}</div>
+                <div class="difficulty">{difficulty_display}</div>
+                <div style="font-size: 0.8em; margin-top: 5px;">{node.get('category', '').capitalize()}</div>
+                <div style="margin-top: 8px;">
+                    <span class="node-status">{
+                        "Completed" if node_visited else 
+                        "Available" if is_available else 
+                        "Unavailable"
+                    }</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Node interaction button
+            if not node_visited and is_available:
+                node_button_text = self._get_node_button_text(node)
+                if st.button(node_button_text, key=f"visit_{node['id']}"):
+                    self.visit_node(node["id"])
+            elif node_visited:
+                st.button("Completed", key=f"visited_{node['id']}", disabled=True)
+            else:
+                st.button("Unavailable", key=f"unavailable_{node['id']}", disabled=True)
+
+    def _get_node_button_text(self, node):
+        """Get appropriate button text based on node type."""
+        node_type = node.get("type", "question")
+        
+        button_texts = {
+            "question": "Answer Question",
+            "reference": "Study Material",
+            "rest": "Take a Break",
+            "treasure": "Find Treasure",
+            "elite": "Face Challenge",
+            "boss": "Face Evaluation",
+            "encounter": "Explore Event"
+        }
+        
+        return button_texts.get(node_type, "Choose")
     
     def _render_node_card(self, node):
         """Render a single node card."""
@@ -1662,6 +1922,51 @@ class GameModule:
         
         # Stats
         self._render_run_end_stats(game_state, final_score)
+        
+        # Add path statistics section
+        if hasattr(game_state, 'path_history'):
+            st.subheader("Path Statistics")
+            
+            path_summary = game_state.path_history.get_path_summary()
+            player_strategy = game_state.path_history.get_player_strategy()
+            
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Nodes Visited", path_summary["nodes_visited"])
+            
+            with col2:
+                st.metric("Elites Defeated", path_summary["elites_defeated"])
+            
+            with col3:
+                st.metric("Highest Floor", path_summary["highest_floor"])
+            
+            with col4:
+                st.metric("Path Strategy", player_strategy)
+            
+            # Show node distribution
+            st.subheader("Node Type Distribution")
+            
+            # Convert to percentages for better visualization
+            total_nodes = path_summary["nodes_visited"]
+            if total_nodes > 0:
+                percentages = {k: (v / total_nodes) * 100 for k, v in path_summary["node_distribution"].items()}
+                
+                # Create a horizontal bar chart
+                # For Streamlit, we need to format the data correctly
+                import pandas as pd
+                chart_data = []
+                for node_type, percentage in percentages.items():
+                    if percentage > 0:
+                        chart_data.append({
+                            "Node Type": node_type.capitalize(),
+                            "Percentage": percentage
+                        })
+                
+                # Use Streamlit's native bar chart if we have data
+                if chart_data:
+                    chart_df = pd.DataFrame(chart_data).set_index("Node Type")
+                    st.bar_chart(chart_df)
         
         # Unlocked achievements
         self._render_unlocked_achievements()

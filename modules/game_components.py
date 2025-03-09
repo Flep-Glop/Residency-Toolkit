@@ -244,6 +244,8 @@ class GameState:
         self.is_completed = False
         self.is_successful = False
         self.special_effects = {}  # For temporary effects
+        self.path_history = PathHistory()  # Add this line 
+        self.path_connections = {}  # Add this line for branching paths
     
     def generate_new_floor(self, data_manager):
         """Generate a new floor with nodes."""
@@ -518,6 +520,9 @@ class GameState:
         self.visited_nodes.add(node_id)
         self.current_node = node
         
+        # Record in path history
+        self.path_history.record_visit(node)
+        
         return node
     
     def find_node_by_id(self, node_id):
@@ -660,6 +665,48 @@ class GameState:
         
         return result
     
+    def generate_branching_path(self, data_manager):
+        """Generate a branching path instead of individual floors."""
+        path_generator = BranchingPathGenerator(max_floors=self.max_floor)
+        floors, connections = path_generator.generate(data_manager)
+        
+        # Save path data
+        self.path = floors
+        self.path_connections = connections
+        
+        # Start at floor 1
+        self.current_floor = 1
+        
+        return self.path
+    
+    def get_available_nodes(self):
+        """Get nodes that are available to visit based on path connections."""
+        # If we're on the first floor, all nodes are available
+        if self.current_floor == 1:
+            return self.path[0]
+        
+        # Otherwise, only nodes connected to visited nodes on previous floor
+        available_nodes = []
+        
+        if not hasattr(self, 'path_connections'):
+            # Fallback if no connection data
+            return self.path[self.current_floor - 1]
+        
+        # Get all visited nodes from previous floor
+        prev_floor_nodes = self.path[self.current_floor - 2]
+        visited_prev_nodes = [node for node in prev_floor_nodes if node["visited"]]
+        
+        # Get all nodes connected to any visited node
+        for source_node in visited_prev_nodes:
+            for target_id in self.path_connections.get(source_node["id"], []):
+                # Find the target node
+                for node in self.path[self.current_floor - 1]:
+                    if node["id"] == target_id:
+                        available_nodes.append(node)
+                        break
+        
+        return available_nodes
+
     def _get_available_perks(self, data_manager):
         """Get perks that are available to select."""
         all_perks = data_manager.get_data("perks").get("perks", [])
@@ -695,6 +742,9 @@ class GameState:
         for perk in self.character.active_perks:
             if "effect" in perk and perk["effect"]["type"] == "floor_life_recovery":
                 self.character.restore_life(perk["effect"]["value"])
+        
+        # Record in path history
+        self.path_history.record_floor_completion(self.current_floor)
         
         return {"success": True, "floor_completed": self.current_floor}
     
@@ -955,3 +1005,304 @@ class SaveManager:
             return {"success": True, "message": f"Deleted save: {save_name}"}
         except IOError as e:
             return {"success": False, "message": f"Error deleting save: {e}"}
+
+class PathHistory:
+    """Tracks the player's path history and statistics."""
+    
+    def __init__(self):
+        self.visited_nodes = []  # List of node IDs in visit order
+        self.node_types = {      # Count of each node type visited
+            "question": 0,
+            "reference": 0,
+            "rest": 0,
+            "treasure": 0,
+            "elite": 0,
+            "boss": 0,
+            "encounter": 0
+        }
+        self.floors_completed = 0
+        self.elites_defeated = 0
+        self.highest_floor = 0
+    
+    def record_visit(self, node):
+        """Record a node visit."""
+        self.visited_nodes.append(node["id"])
+        
+        # Update type counts
+        node_type = node.get("type", "question")
+        if node_type in self.node_types:
+            self.node_types[node_type] += 1
+            
+        # Special counters
+        if node_type == "elite":
+            self.elites_defeated += 1
+    
+    def record_floor_completion(self, floor_num):
+        """Record completing a floor."""
+        self.floors_completed += 1
+        self.highest_floor = max(self.highest_floor, floor_num)
+    
+    def get_path_summary(self):
+        """Get a summary of the path."""
+        return {
+            "nodes_visited": len(self.visited_nodes),
+            "floors_completed": self.floors_completed,
+            "highest_floor": self.highest_floor,
+            "elites_defeated": self.elites_defeated,
+            "node_distribution": self.node_types.copy()
+        }
+    
+    def get_player_strategy(self):
+        """Analyze the player's path strategy."""
+        if not self.visited_nodes:
+            return "Undetermined"
+        
+        total = len(self.visited_nodes)
+        
+        # Calculate percentages
+        percentages = {k: (v / total) * 100 for k, v in self.node_types.items()}
+        
+        # Determine strategy
+        if percentages.get("elite", 0) >= 25:
+            return "Challenge Seeker"
+        elif percentages.get("rest", 0) >= 25:
+            return "Cautious Explorer"
+        elif percentages.get("treasure", 0) >= 25:
+            return "Treasure Hunter"
+        elif percentages.get("reference", 0) >= 25:
+            return "Knowledge Seeker"
+        elif percentages.get("question", 0) >= 50:
+            return "Balanced Learner"
+        else:
+            return "Versatile Physicist"
+        
+class BranchingPathGenerator:
+    """Generates true branching paths for the game, similar to Slay the Spire."""
+    
+    def __init__(self, max_floors=10, min_width=2, max_width=4):
+        """Initialize the path generator with configuration options."""
+        self.max_floors = max_floors
+        self.min_width = min_width
+        self.max_width = max_width
+        
+        # Path data
+        self.nodes = []  # All nodes in the path
+        self.floors = []  # Nodes organized by floor
+        self.connections = {}  # Dictionary mapping node_id -> list of connected node_ids
+        
+    def generate(self, data_manager):
+        """Generate a complete path structure and return it in GameState format."""
+        import random
+        
+        # Initialize path structure
+        self.floors = [[] for _ in range(self.max_floors)]
+        self.connections = {}
+        self.nodes = []
+        
+        # Create nodes for each floor
+        for floor in range(self.max_floors):
+            # Determine how many nodes on this floor
+            if floor == 0:
+                # First floor always has one starting node
+                num_nodes = 1
+            elif floor == self.max_floors - 1:
+                # Last floor always has one boss node
+                num_nodes = 1
+            else:
+                # Middle floors vary in width
+                # More nodes in the middle of the path
+                floor_factor = min(floor, self.max_floors - floor - 1) + 1
+                num_nodes = min(self.max_width, max(self.min_width, floor_factor))
+            
+            # Create nodes for this floor
+            floor_nodes = []
+            for i in range(num_nodes):
+                # Create a node
+                node = self._create_node(floor, i, data_manager)
+                floor_nodes.append(node)
+                self.connections[node["id"]] = []
+            
+            # Add to floors
+            self.floors[floor] = floor_nodes
+            self.nodes.extend(floor_nodes)
+        
+        # Create connections between floors
+        self._create_connections()
+        
+        # Convert to GameState format and return
+        return self.floors, self.connections
+    
+    def _create_node(self, floor, position, data_manager):
+        """Create a node for the path."""
+        import random
+        
+        # Determine node type based on floor and position
+        if floor == 0:
+            # First floor is always a question
+            node_type = "question"
+        elif floor == self.max_floors - 1:
+            # Last floor is always a boss
+            node_type = "boss"
+        else:
+            # Determine node type based on floor and position
+            node_type = self._get_node_type(floor, position)
+        
+        # Generate a category
+        categories = ["dosimetry", "qa", "radiation", "planning", "calculation", "imaging", "regulations"]
+        category = random.choice(categories)
+        
+        # Generate difficulty (higher floors = higher difficulty)
+        base_difficulty = min(3, max(1, floor // 3 + 1))
+        if node_type == "elite":
+            difficulty = min(3, base_difficulty + 1)
+        elif node_type == "boss":
+            difficulty = 3
+        else:
+            difficulty = base_difficulty
+        
+        # Map node types to icons and names
+        node_types = {
+            "question": {"name": "Question", "icon": "📝"},
+            "reference": {"name": "Reference", "icon": "📚"},
+            "rest": {"name": "Break Room", "icon": "☕"},
+            "treasure": {"name": "Conference", "icon": "🎁"},
+            "elite": {"name": "Complex Case", "icon": "⚠️"},
+            "boss": {"name": "Rotation Evaluation", "icon": "⭐"},
+            "encounter": {"name": "Special Event", "icon": "🔍"}
+        }
+        
+        # Create node data
+        node_id = f"node_{floor}_{position}_{random.randint(1000, 9999)}"
+        node = {
+            "id": node_id,
+            "type": node_type,
+            "name": node_types[node_type]["name"],
+            "icon": node_types[node_type]["icon"],
+            "difficulty": difficulty,
+            "category": category,
+            "visited": False,
+            "floor": floor,
+            "position": position,
+            # Content would be generated when the node is visited
+            "content": None
+        }
+        
+        return node
+    
+    def _get_node_type(self, floor, position):
+        """Determine what type of node to place based on floor and position."""
+        import random
+        
+        # Node type probabilities (default)
+        probabilities = {
+            "question": 50,
+            "reference": 15,
+            "rest": 15,
+            "treasure": 10,
+            "elite": 5,
+            "encounter": 5
+        }
+        
+        # Adjust probabilities based on floor
+        if floor > 3:
+            # More elites in later floors
+            probabilities["elite"] += floor * 2
+            probabilities["question"] -= floor * 2
+        
+        # Special adjustments for certain positions
+        if position == 0:
+            # First node in a row has higher chance of rest
+            probabilities["rest"] += 10
+            probabilities["question"] -= 10
+        
+        if position == self.max_width - 1:
+            # Last node has higher chance of elite/treasure
+            probabilities["elite"] += 15
+            probabilities["treasure"] += 5
+            probabilities["question"] -= 20
+        
+        # Normalize probabilities
+        total = sum(probabilities.values())
+        normalized = {k: v / total for k, v in probabilities.items()}
+        
+        # Choose node type based on probabilities
+        r = random.random()
+        cumulative = 0
+        for node_type, probability in normalized.items():
+            cumulative += probability
+            if r <= cumulative:
+                return node_type
+        
+        # Default to question if something goes wrong
+        return "question"
+    
+    def _create_connections(self):
+        """Create connections between nodes on adjacent floors."""
+        import random
+        
+        # For each floor except the last
+        for floor in range(self.max_floors - 1):
+            current_floor_nodes = self.floors[floor]
+            next_floor_nodes = self.floors[floor + 1]
+            
+            # Special case: if there's only one node on either floor, connect to all
+            if len(current_floor_nodes) == 1 or len(next_floor_nodes) == 1:
+                for source in current_floor_nodes:
+                    for target in next_floor_nodes:
+                        self.connections[source["id"]].append(target["id"])
+                continue
+            
+            # General case: create branching connections
+            for i, source in enumerate(current_floor_nodes):
+                # Determine how many connections to make
+                min_connections = 1
+                max_connections = min(3, len(next_floor_nodes))
+                num_connections = random.randint(min_connections, max_connections)
+                
+                # Choose target nodes based on position (prefer nearby nodes)
+                target_indices = []
+                available_targets = list(range(len(next_floor_nodes)))
+                
+                # Try to add a connection to a node in a similar position first
+                similar_pos = int(i * len(next_floor_nodes) / len(current_floor_nodes))
+                if similar_pos in available_targets:
+                    target_indices.append(similar_pos)
+                    available_targets.remove(similar_pos)
+                
+                # Add remaining random connections
+                while len(target_indices) < num_connections and available_targets:
+                    idx = random.choice(available_targets)
+                    target_indices.append(idx)
+                    available_targets.remove(idx)
+                
+                # Create the connections
+                for idx in target_indices:
+                    target = next_floor_nodes[idx]
+                    self.connections[source["id"]].append(target["id"])
+        
+        # Ensure all nodes are reachable
+        self._ensure_connectivity()
+    
+    def _ensure_connectivity(self):
+        """Make sure all nodes have at least one incoming and outgoing connection."""
+        import random
+        
+        # Every node except on the first floor should have at least one incoming connection
+        for floor in range(1, self.max_floors):
+            for target in self.floors[floor]:
+                # Check if this node has any incoming connections
+                has_incoming = any(target["id"] in self.connections[source["id"]] 
+                                  for source in self.floors[floor-1])
+                
+                if not has_incoming:
+                    # Connect it to a random node on the previous floor
+                    source = random.choice(self.floors[floor-1])
+                    self.connections[source["id"]].append(target["id"])
+        
+        # Every node except on the last floor should have at least one outgoing connection
+        for floor in range(self.max_floors - 1):
+            for source in self.floors[floor]:
+                if not self.connections[source["id"]] and floor < self.max_floors - 1:
+                    # Connect it to a random node on the next floor
+                    target = random.choice(self.floors[floor+1])
+                    self.connections[source["id"]].append(target["id"])
