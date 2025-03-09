@@ -1360,46 +1360,35 @@ class GameModule:
                         available_nodes = game_state.get_available_nodes()
                         is_available = node in available_nodes
                 
-                # Node style based on state
+                # Get node colors based on type
+                node_colors = {
+                    "question": "#3498db",
+                    "reference": "#2ecc71",
+                    "rest": "#9b59b6",
+                    "treasure": "#f1c40f",
+                    "elite": "#e74c3c",
+                    "boss": "#34495e",
+                    "encounter": "#1abc9c"
+                }
+                base_color = node_colors.get(node.get("type", "question"), "#95a5a6")
+                
+                # Determine styling based on state BUT PRESERVE NODE TYPE COLOR
                 if node.get("visited", False):
-                    # Visited node
-                    circle_style = 'fill="#2ecc71" stroke="#27ae60" stroke-width="2"'
+                    # Visited node - keep original color but add checkmark-style border
+                    circle_style = f'fill="{base_color}" stroke="#27ae60" stroke-width="3"'
                     text_style = 'fill="white" font-weight="bold"'
                     opacity = '1'
                 elif floor_idx + 1 == game_state.current_floor and is_available:
-                    # Current floor node (available)
-                    circle_style = 'fill="#3498db" stroke="#2980b9" stroke-width="2"'
+                    # Current floor available node - keep original color but add highlight border
+                    circle_style = f'fill="{base_color}" stroke="#ffd700" stroke-width="3"'  # Gold border for available
                     text_style = 'fill="white"'
                     opacity = '1'
                 else:
-                    # Future or unavailable node - SHOW TYPE BUT GREYED OUT
-                    # Use different colors based on node type for better visualization
-                    node_colors = {
-                        "question": "#3498db",
-                        "reference": "#2ecc71",
-                        "rest": "#9b59b6",
-                        "treasure": "#f1c40f",
-                        "elite": "#e74c3c",
-                        "boss": "#34495e",
-                        "encounter": "#1abc9c"
-                    }
-                    base_color = node_colors.get(node.get("type", "question"), "#95a5a6")
-                    if node.get("visited", False):
-                        # Visited node - keep color but add check mark
-                        circle_style = f'fill="{base_color}" stroke="#27ae60" stroke-width="3"'
-                        text_style = 'fill="white" font-weight="bold"'
-                        opacity = '1'
-                        # Could add a checkmark indicator here
-                    elif floor_idx + 1 == game_state.current_floor and is_available:
-                        # Current floor node (available) - highlight border but keep node type color
-                        circle_style = f'fill="{base_color}" stroke="#2980b9" stroke-width="3"'
-                        text_style = 'fill="white"'
-                        opacity = '1'
-                    else:
-                        # Future or unavailable node - show type but greyed out
-                        circle_style = f'fill="{base_color}" stroke="#7f8c8d" stroke-width="1"'
-                        text_style = 'fill="white"'
-                        opacity = '0.5'  # Partially transparent for future nodes
+                    # Future or unavailable node - dimmed version of original color
+                    circle_style = f'fill="{base_color}" stroke="#7f8c8d" stroke-width="1"'
+                    text_style = 'fill="white"'
+                    opacity = '0.5'  # Partially transparent for future nodes
+                
                 # Get node icon based on type
                 node_icons = {
                     "question": "📝",
@@ -1415,7 +1404,7 @@ class GameModule:
                 # Draw node circle with opacity
                 svg += f'<circle cx="{x}" cy="{y}" r="{node_radius}" {circle_style} opacity="{opacity}" />'
                 
-                # Draw node text (emoji)
+                # Draw node icon (emoji)
                 svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="12px" opacity="{opacity}">{node_icon}</text>'
                 
                 # Add difficulty indicator for available nodes
