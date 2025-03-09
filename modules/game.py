@@ -1245,7 +1245,7 @@ class GameModule:
                     st.markdown(f"<div style='text-align: center; color: #95a5a6;'>{floor_num}</div>", unsafe_allow_html=True)
 
     def _render_visual_path_map(self, game_state):
-        """Render a visual map of the game path using SVG (Streamlit compatible)."""
+        """Render a visual map of the game path using SVG with node type icons."""
         
         if not game_state.path:
             return
@@ -1285,9 +1285,10 @@ class GameModule:
                     # Calculate y position for next node
                     y2 = svg_height * (j + 1) / (len(next_floor_nodes) + 1)
                     
-                    # If we have branching paths, check if there's a connection
+                    # For branching paths, check if there's a connection
                     if hasattr(game_state, 'path_connections'):
-                        if node2["id"] not in game_state.path_connections.get(node1["id"], []):
+                        connection_exists = node2["id"] in game_state.path_connections.get(node1["id"], [])
+                        if not connection_exists:
                             continue
                     
                     # Determine connection style based on visited state
@@ -1320,34 +1321,44 @@ class GameModule:
             for i, node in enumerate(floor_nodes):
                 y = svg_height * (i + 1) / (len(floor_nodes) + 1)
                 
-                # Node style based on state
+                # Determine node availability
                 is_available = True
+                if floor_idx + 1 > game_state.current_floor:
+                    # Future floor - not available yet
+                    is_available = False
+                elif floor_idx + 1 == game_state.current_floor:
+                    # Current floor - check branching availability
+                    if hasattr(game_state, 'get_available_nodes'):
+                        available_nodes = game_state.get_available_nodes()
+                        is_available = node in available_nodes
                 
-                # For branching paths, check availability
-                if hasattr(game_state, 'get_available_nodes') and floor_idx + 1 == game_state.current_floor:
-                    available_nodes = game_state.get_available_nodes()
-                    is_available = node in available_nodes
-                
+                # Node style based on state
                 if node.get("visited", False):
                     # Visited node
                     circle_style = 'fill="#2ecc71" stroke="#27ae60" stroke-width="2"'
                     text_style = 'fill="white" font-weight="bold"'
+                    opacity = '1'
                 elif floor_idx + 1 == game_state.current_floor and is_available:
                     # Current floor node (available)
                     circle_style = 'fill="#3498db" stroke="#2980b9" stroke-width="2"'
                     text_style = 'fill="white"'
-                elif floor_idx + 1 == game_state.current_floor and not is_available:
-                    # Current floor node (unavailable)
-                    circle_style = 'fill="#95a5a6" stroke="#7f8c8d" stroke-width="2"'
-                    text_style = 'fill="white"'
-                elif floor_idx + 1 < game_state.current_floor:
-                    # Past floor
-                    circle_style = 'fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"'
-                    text_style = 'fill="#7f8c8d"'
+                    opacity = '1'
                 else:
-                    # Future floor
-                    circle_style = 'fill="#ecf0f1" stroke="#bdc3c7" stroke-width="1"'
-                    text_style = 'fill="#7f8c8d"'
+                    # Future or unavailable node - SHOW TYPE BUT GREYED OUT
+                    # Use different colors based on node type for better visualization
+                    node_colors = {
+                        "question": "#3498db",
+                        "reference": "#2ecc71",
+                        "rest": "#9b59b6",
+                        "treasure": "#f1c40f",
+                        "elite": "#e74c3c",
+                        "boss": "#34495e",
+                        "encounter": "#1abc9c"
+                    }
+                    base_color = node_colors.get(node.get("type", "question"), "#95a5a6")
+                    circle_style = f'fill="{base_color}" stroke="#7f8c8d" stroke-width="1"'
+                    text_style = 'fill="white"'
+                    opacity = '0.5'  # Partially transparent for future nodes
                 
                 # Get node icon based on type
                 node_icons = {
@@ -1361,14 +1372,19 @@ class GameModule:
                 }
                 node_icon = node_icons.get(node.get("type", "unknown"), "❓")
                 
-                # Draw node circle
-                svg += f'<circle cx="{x}" cy="{y}" r="{node_radius}" {circle_style} />'
+                # Draw node circle with opacity
+                svg += f'<circle cx="{x}" cy="{y}" r="{node_radius}" {circle_style} opacity="{opacity}" />'
                 
                 # Draw node text (emoji)
-                svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style} font-size: 12px;">{node_icon}</text>'
+                svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="12px" opacity="{opacity}">{node_icon}</text>'
                 
-                # Add tooltip (requires modern browsers)
-                tooltip_text = f"{node.get('name', 'Node')}: {node.get('category', 'unknown').capitalize()}"
+                # Add difficulty indicator for available nodes
+                if node.get("difficulty", 1) > 1:
+                    difficulty_pips = "★" * node.get("difficulty", 1)
+                    svg += f'<text x="{x}" y="{y+25}" text-anchor="middle" fill="#f1c40f" font-size="8px" opacity="{opacity}">{difficulty_pips}</text>'
+                
+                # Add tooltip with more details
+                tooltip_text = f"{node.get('name', 'Node')} ({node.get('category', 'unknown').capitalize()}) - Difficulty: {node.get('difficulty', 1)}"
                 svg += f'<title>{tooltip_text}</title>'
         
         svg += '</svg>'
@@ -1404,7 +1420,7 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """Render the nodes for the current floor with enhanced styling and interactions."""
+        """Render the nodes for the current floor with better "clickable" styling."""
         st.subheader(f"Floor {game_state.current_floor}")
         
         # Add instructions to clarify the choice mechanic
@@ -1431,13 +1447,123 @@ class GameModule:
         # Create columns for nodes
         cols = st.columns(len(current_floor_nodes))
         
+        # Custom CSS for better button styling
+        st.markdown("""
+        <style>
+            /* Make buttons look more like cards */
+            .node-button {
+                width: 100%;
+                height: auto;
+                padding: 15px !important;
+                white-space: normal !important;
+                text-align: center;
+                display: flex !important;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white !important;
+                border: none !important;
+                border-radius: 10px !important;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            
+            .node-button:hover:not(:disabled) {
+                transform: translateY(-5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+            }
+            
+            /* Node type colors */
+            .question-button { background-color: #3498db !important; }
+            .reference-button { background-color: #2ecc71 !important; }
+            .rest-button { background-color: #9b59b6 !important; }
+            .treasure-button { background-color: #f1c40f !important; color: black !important; }
+            .elite-button { background-color: #e74c3c !important; }
+            .boss-button { background-color: #34495e !important; }
+            .encounter-button { background-color: #1abc9c !important; }
+            
+            /* Node visited/unavailable styles */
+            .node-visited { background-color: #2ecc71 !important; }
+            .node-unavailable { 
+                opacity: 0.7;
+                filter: grayscale(40%);
+            }
+            
+            /* Button content styling */
+            .node-icon {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+            
+            .node-title {
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .node-difficulty {
+                color: #f1c40f;
+                letter-spacing: 2px;
+                margin-bottom: 5px;
+            }
+            
+            .node-category {
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .node-status-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+                border-radius: 10px;
+                background-color: rgba(255,255,255,0.2);
+                margin-top: 5px;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
         for i, node in enumerate(current_floor_nodes):
             with cols[i]:
                 # Determine if this node is available in the path
                 is_available = node in available_nodes
                 
-                # Enhanced node card with availability indicator
-                self._render_enhanced_node_card(node, is_available and not floor_completed)
+                # Get node type and state information
+                node_type = node["type"]
+                node_visited = node["visited"]
+                
+                # Create CSS classes for the button
+                button_classes = f"node-button {node_type}-button"
+                if node_visited:
+                    button_classes += " node-visited"
+                elif not is_available or floor_completed:
+                    button_classes += " node-unavailable"
+                
+                # Difficulty stars
+                difficulty_stars = "★" * node["difficulty"] if node["difficulty"] > 0 else "—"
+                
+                # Determine status badge text
+                if node_visited:
+                    status_text = "Completed"
+                elif not is_available or floor_completed:
+                    status_text = "Unavailable"
+                else:
+                    status_text = "Available"
+                
+                # Create the button HTML
+                button_html = f"""
+                <div class="node-icon">{node['icon']}</div>
+                <div class="node-title">{node['name']}</div>
+                <div class="node-difficulty">{difficulty_stars}</div>
+                <div class="node-category">{node.get('category', '').capitalize()}</div>
+                <div class="node-status-badge">{status_text}</div>
+                """
+                
+                # Determine button functionality
+                disabled = node_visited or not is_available or floor_completed
+                
+                # Create the actual button - Streamlit allows HTML within a button
+                if st.button(button_html, key=f"node_button_{node['id']}", 
+                            disabled=disabled, use_container_width=True,
+                            help=f"{node['name']} ({node.get('category', '').capitalize()}) - Difficulty: {node['difficulty']}"):
+                    self.visit_node(node["id"])
         
         # Add a "Continue" button if floor is completed
         if floor_completed:

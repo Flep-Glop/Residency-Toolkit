@@ -1,0 +1,855 @@
+{
+  "game_state": {
+    "character": {
+      "id": "therapy_newbie",
+      "name": "Therapy Newbie",
+      "icon": "/-\\",
+      "lives": 0,
+      "max_lives": 3,
+      "insight": 20,
+      "level": 1,
+      "experience": 20,
+      "experience_to_next_level": 80,
+      "active_perks": [],
+      "inventory": [],
+      "relics": [
+        {
+          "id": "dog_eared_tg51",
+          "name": "Dog-eared TG-51 Protocol",
+          "description": "This well-used protocol guide has seen better days, but the knowledge remains.",
+          "rarity": "starter",
+          "icon": "[TG51]",
+          "effect": {
+            "type": "question_bonus",
+            "condition": "topic",
+            "condition_value": "calibration",
+            "value": 0.15,
+            "description": "+15% on output calibration questions"
+          }
+        }
+      ]
+    },
+    "current_floor": 6,
+    "max_floor": 10,
+    "nodes_per_floor": 3,
+    "path": [
+      [
+        {
+          "id": "node_0_0_7877",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": true,
+          "floor": 0,
+          "position": 0,
+          "content": {
+            "id": "planning-1",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "Which of the following dose-volume metrics would be most relevant for evaluating the risk of radiation pneumonitis?",
+            "options": [
+              "Lung V5",
+              "Lung V20",
+              "Lung V50",
+              "Lung Dmax"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lung V20 (the volume of lung receiving \u226520 Gy) is commonly used to evaluate the risk of radiation pneumonitis."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_1_0_2294",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": true,
+          "floor": 1,
+          "position": 0,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_1_1_3666",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "radiation",
+          "visited": false,
+          "floor": 1,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_2_0_4557",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "floor": 2,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_2_1_6398",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": false,
+          "floor": 2,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_2_2_1824",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "floor": 2,
+          "position": 2,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in medical physics.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 10
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_0_1085",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 3,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_3_1_1838",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 3,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_3_2_7963",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": true,
+          "floor": 3,
+          "position": 2,
+          "content": {
+            "title": "Complex Case",
+            "text": "You face a challenging clinical scenario.",
+            "questions": [
+              {
+                "id": "dosimetry-5",
+                "category": "dosimetry",
+                "difficulty": 3,
+                "question": "A 10\u00d710 cm\u00b2 field is measured to have a PDD(10) of 66.8%. What is the approximate beam quality specifier (TPR20,10) for this beam?",
+                "options": [
+                  "0.628",
+                  "0.668",
+                  "0.733",
+                  "0.768"
+                ],
+                "correct_answer": 2,
+                "explanation": "The approximate conversion from PDD(10) to TPR20,10 for a 10\u00d710 cm\u00b2 field is given by TPR20,10 \u2248 1.2661 \u00d7 PDD(10) - 0.0595, which gives 0.733 for a PDD(10) of 66.8%."
+              },
+              {
+                "id": "dosimetry-5",
+                "category": "dosimetry",
+                "difficulty": 3,
+                "question": "A 10\u00d710 cm\u00b2 field is measured to have a PDD(10) of 66.8%. What is the approximate beam quality specifier (TPR20,10) for this beam?",
+                "options": [
+                  "0.628",
+                  "0.668",
+                  "0.733",
+                  "0.768"
+                ],
+                "correct_answer": 2,
+                "explanation": "The approximate conversion from PDD(10) to TPR20,10 for a 10\u00d710 cm\u00b2 field is given by TPR20,10 \u2248 1.2661 \u00d7 PDD(10) - 0.0595, which gives 0.733 for a PDD(10) of 66.8%."
+              }
+            ],
+            "reward": {
+              "type": "find_relic",
+              "rarity": "uncommon"
+            }
+          }
+        },
+        {
+          "id": "node_3_3_1199",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "calculation",
+          "visited": false,
+          "floor": 3,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_4_0_1802",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": false,
+          "floor": 4,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_4_1_9821",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": true,
+          "floor": 4,
+          "position": 1,
+          "content": {
+            "id": "regulations-4",
+            "category": "regulations",
+            "difficulty": 2,
+            "question": "What is the frequency of full calibration required after a source exchange for an HDR unit?",
+            "options": [
+              "Immediately before the first patient treatment",
+              "Within 24 hours before the first patient treatment",
+              "Within 7 days before the first patient treatment",
+              "Within 30 days before the first patient treatment"
+            ],
+            "correct_answer": 0,
+            "explanation": "A full calibration of an HDR unit is required immediately before the first patient treatment following a source exchange."
+          }
+        },
+        {
+          "id": "node_4_2_8217",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "qa",
+          "visited": false,
+          "floor": 4,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_4_3_7025",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": false,
+          "floor": 4,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_5_0_2477",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 2,
+          "category": "qa",
+          "visited": false,
+          "floor": 5,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_5_1_3548",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "radiation",
+          "visited": true,
+          "floor": 5,
+          "position": 1,
+          "content": {
+            "id": "radiation-3",
+            "category": "radiation",
+            "difficulty": 2,
+            "question": "Which of the following is the most effective shielding material for gamma radiation?",
+            "options": [
+              "Concrete",
+              "Lead",
+              "Aluminum",
+              "Water"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lead is the most effective shielding material for gamma radiation due to its high density and high atomic number."
+          }
+        },
+        {
+          "id": "node_5_2_2340",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 5,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_5_3_2864",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 5,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_6_0_4084",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 6,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_6_1_2070",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "radiation",
+          "visited": false,
+          "floor": 6,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_6_2_2243",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": false,
+          "floor": 6,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_6_3_8640",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 3,
+          "category": "radiation",
+          "visited": false,
+          "floor": 6,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_7_0_8511",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "imaging",
+          "visited": false,
+          "floor": 7,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_7_1_7437",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "imaging",
+          "visited": false,
+          "floor": 7,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_7_2_1845",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "calculation",
+          "visited": false,
+          "floor": 7,
+          "position": 2,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_8_0_8055",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "floor": 8,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_8_1_9918",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "calculation",
+          "visited": false,
+          "floor": 8,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_9_0_7179",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": false,
+          "floor": 9,
+          "position": 0,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_2_4711",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "id": "calculation-1",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "What is the equivalent dose in Sv for a tissue exposed to 2 Gy of proton radiation with a radiation weighting factor of 2?",
+            "options": [
+              "1 Sv",
+              "2 Sv",
+              "4 Sv",
+              "8 Sv"
+            ],
+            "correct_answer": 2,
+            "explanation": "Equivalent dose (Sv) = Absorbed dose (Gy) \u00d7 Radiation weighting factor. So, 2 Gy \u00d7 2 = 4 Sv."
+          }
+        },
+        {
+          "id": "node_2_5653",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": false,
+          "content": {
+            "id": "imaging-2",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "What is the typical slice thickness used in CT simulation for radiotherapy planning?",
+            "options": [
+              "0.5-1 mm",
+              "2-3 mm",
+              "5-10 mm",
+              "15-20 mm"
+            ],
+            "correct_answer": 1,
+            "explanation": "Typical slice thickness for CT simulation in radiotherapy planning is 2-3 mm, balancing spatial resolution with imaging dose and data size."
+          }
+        },
+        {
+          "id": "node_2_3824",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": false,
+          "content": {
+            "id": "imaging-1",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "Which of the following imaging modalities uses ionizing radiation?",
+            "options": [
+              "Ultrasound",
+              "MRI",
+              "Computed Tomography",
+              "Functional MRI"
+            ],
+            "correct_answer": 2,
+            "explanation": "Computed Tomography (CT) uses X-rays, which are a form of ionizing radiation."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_7520",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "node_3_7598",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": false,
+          "content": {
+            "id": "imaging-2",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "What is the typical slice thickness used in CT simulation for radiotherapy planning?",
+            "options": [
+              "0.5-1 mm",
+              "2-3 mm",
+              "5-10 mm",
+              "15-20 mm"
+            ],
+            "correct_answer": 1,
+            "explanation": "Typical slice thickness for CT simulation in radiotherapy planning is 2-3 mm, balancing spatial resolution with imaging dose and data size."
+          }
+        },
+        {
+          "id": "node_3_7646",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "id": "planning-1",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "Which of the following dose-volume metrics would be most relevant for evaluating the risk of radiation pneumonitis?",
+            "options": [
+              "Lung V5",
+              "Lung V20",
+              "Lung V50",
+              "Lung Dmax"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lung V20 (the volume of lung receiving \u226520 Gy) is commonly used to evaluate the risk of radiation pneumonitis."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_4_5109",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "radiation",
+          "visited": false,
+          "content": {
+            "id": "radiation-3",
+            "category": "radiation",
+            "difficulty": 2,
+            "question": "Which of the following is the most effective shielding material for gamma radiation?",
+            "options": [
+              "Concrete",
+              "Lead",
+              "Aluminum",
+              "Water"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lead is the most effective shielding material for gamma radiation due to its high density and high atomic number."
+          }
+        },
+        {
+          "id": "node_4_2599",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "id": "planning-3",
+            "category": "planning",
+            "difficulty": 2,
+            "question": "Which of the following is a potential disadvantage of using a non-coplanar beam arrangement?",
+            "options": [
+              "Reduced dose conformity",
+              "Increased treatment time",
+              "Reduced skin sparing",
+              "Increased heterogeneity corrections"
+            ],
+            "correct_answer": 1,
+            "explanation": "Non-coplanar beam arrangements generally increase treatment time due to the need for couch rotations between fields, although they may provide dosimetric advantages in certain cases."
+          }
+        },
+        {
+          "id": "node_4_5281",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 0,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "boss_5_2937",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "multi",
+          "visited": false,
+          "content": {
+            "title": "Rotation Evaluation",
+            "text": "Your knowledge is being tested as part of your rotation evaluation.",
+            "questions": [
+              {
+                "id": "regulations-1",
+                "category": "regulations",
+                "difficulty": 1,
+                "question": "Which organization is responsible for accrediting radiation oncology practices in the United States?",
+                "options": [
+                  "FDA",
+                  "ACR",
+                  "AAPM",
+                  "NRC"
+                ],
+                "correct_answer": 1,
+                "explanation": "The American College of Radiology (ACR) provides accreditation for radiation oncology practices, though other organizations like ASTRO also offer accreditation programs."
+              },
+              {
+                "id": "planning-4",
+                "category": "planning",
+                "difficulty": 2,
+                "question": "In inverse planning for IMRT, what is typically specified as part of the optimization objectives?",
+                "options": [
+                  "The specific MLC positions",
+                  "The number of monitor units per segment",
+                  "Dose-volume constraints for targets and organs at risk",
+                  "The exact beam angles"
+                ],
+                "correct_answer": 2,
+                "explanation": "In inverse planning for IMRT, dose-volume constraints (or objectives) for targets and organs at risk are specified, and the treatment planning system optimizes the fluence patterns to meet these objectives."
+              },
+              {
+                "id": "calculation-5",
+                "category": "calculation",
+                "difficulty": 3,
+                "question": "A patient is prescribed 50 Gy in 25 fractions with an \u03b1/\u03b2 ratio of 3 Gy for late effects. What is the equivalent dose in 2 Gy fractions (EQD2) for late effects?",
+                "options": [
+                  "46.9 Gy",
+                  "50.0 Gy",
+                  "53.1 Gy",
+                  "56.3 Gy"
+                ],
+                "correct_answer": 2,
+                "explanation": "Using the EQD2 formula: EQD2 = D \u00d7 (d + (\u03b1/\u03b2)) / (2 + (\u03b1/\u03b2)), where D is the total dose, d is the dose per fraction, and \u03b1/\u03b2 is the tissue-specific ratio. EQD2 = 50 \u00d7 (2 + 3) / (2 + 3) = 50 Gy."
+              }
+            ],
+            "reward": {
+              "type": "complete_rotation",
+              "value": 5
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_6_4499",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 0,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_6_7281",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 0,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_6_1470",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 0,
+          "category": "imaging",
+          "visited": false,
+          "content": {
+            "title": "Conference",
+            "text": "You attend a conference and make valuable connections.",
+            "effect": {
+              "type": "find_item",
+              "rarity": "common"
+            }
+          }
+        }
+      ]
+    ],
+    "visited_nodes": [
+      "node_5_1_3548",
+      "node_0_0_7877",
+      "node_4_1_9821",
+      "node_1_0_2294",
+      "node_2_2_1824",
+      "node_3_2_7963"
+    ],
+    "current_node": {
+      "id": "node_5_1_3548",
+      "type": "question",
+      "name": "Question",
+      "icon": "\ud83d\udcdd",
+      "difficulty": 2,
+      "category": "radiation",
+      "visited": true,
+      "floor": 5,
+      "position": 1,
+      "content": {
+        "id": "radiation-3",
+        "category": "radiation",
+        "difficulty": 2,
+        "question": "Which of the following is the most effective shielding material for gamma radiation?",
+        "options": [
+          "Concrete",
+          "Lead",
+          "Aluminum",
+          "Water"
+        ],
+        "correct_answer": 1,
+        "explanation": "Lead is the most effective shielding material for gamma radiation due to its high density and high atomic number."
+      }
+    },
+    "score": 11,
+    "streak": 0,
+    "start_time": 1741490563.983151,
+    "end_time": 1741490636.011841,
+    "is_completed": true,
+    "is_successful": false
+  },
+  "player_data": {
+    "class": null,
+    "level": 1,
+    "completed_runs": 1,
+    "total_score": 311,
+    "highest_score": 311,
+    "highest_floor": 6
+  },
+  "achievements": {
+    "unlocked_achievements": [
+      "first_run"
+    ]
+  },
+  "timestamp": 1741490636.012325,
+  "version": "1.0.0"
+}
