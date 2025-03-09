@@ -239,6 +239,22 @@ class GameModule:
         """Add custom CSS for the game UI."""
         st.markdown("""
         <style>
+            /* Add this at the top to detect dark mode */
+            :root {
+                --text-color: #333333;
+                --bg-color: white;
+                --card-bg: white;
+                --card-border: rgba(0,0,0,0.1);
+            }
+            /* Dark mode detection */
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --text-color: #f1f1f1;
+                    --bg-color: #262730;
+                    --card-bg: #1e1e1e;
+                    --card-border: rgba(255,255,255,0.1);
+                }
+            }
             /* Node styling */
             .node-card {
                 border-radius: 10px;
@@ -247,11 +263,12 @@ class GameModule:
                 margin: 10px 5px;
                 cursor: pointer;
                 transition: transform 0.2s, box-shadow 0.2s;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 5px var(--card-border);
                 min-height: 120px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                color: var(--text-color) !important; /* Important override */
             }
             .node-card:hover {
                 transform: translateY(-5px);
@@ -285,7 +302,18 @@ class GameModule:
                 background-color: #1abc9c;
                 color: white;
             }
+            /* Keep your existing color styles but add color overrides */
+            .question-card, .reference-card, .rest-card, .treasure-card, .elite-card, .boss-card, .encounter-card {
+                color: white !important; /* Ensure text is white on colored backgrounds */
+            }
             
+            /* Other card styles - make sure they use variables */
+            .character-card, .hub-card, .item-card, .relic-card, .achievement-card {
+                background-color: var(--card-bg);
+                color: var(--text-color) !important;
+                border: 1px solid var(--card-border);
+            }
+
             /* Character selection */
             .character-card {
                 border-radius: 10px;
@@ -1356,10 +1384,22 @@ class GameModule:
                         "encounter": "#1abc9c"
                     }
                     base_color = node_colors.get(node.get("type", "question"), "#95a5a6")
-                    circle_style = f'fill="{base_color}" stroke="#7f8c8d" stroke-width="1"'
-                    text_style = 'fill="white"'
-                    opacity = '0.5'  # Partially transparent for future nodes
-                
+                    if node.get("visited", False):
+                        # Visited node - keep color but add check mark
+                        circle_style = f'fill="{base_color}" stroke="#27ae60" stroke-width="3"'
+                        text_style = 'fill="white" font-weight="bold"'
+                        opacity = '1'
+                        # Could add a checkmark indicator here
+                    elif floor_idx + 1 == game_state.current_floor and is_available:
+                        # Current floor node (available) - highlight border but keep node type color
+                        circle_style = f'fill="{base_color}" stroke="#2980b9" stroke-width="3"'
+                        text_style = 'fill="white"'
+                        opacity = '1'
+                    else:
+                        # Future or unavailable node - show type but greyed out
+                        circle_style = f'fill="{base_color}" stroke="#7f8c8d" stroke-width="1"'
+                        text_style = 'fill="white"'
+                        opacity = '0.5'  # Partially transparent for future nodes
                 # Get node icon based on type
                 node_icons = {
                     "question": "📝",
@@ -1637,6 +1677,7 @@ class GameModule:
         with relic_col:
             self._render_relics(character)
     
+    # Find this method in modules/game.py
     def _render_inventory(self, character):
         """Render the player's inventory."""
         st.subheader("Inventory")
@@ -1649,10 +1690,34 @@ class GameModule:
         for i, item in enumerate(character.inventory):
             rarity_class = f"rarity-{item.get('rarity', 'common')}"
             
+            # Add usage instructions based on effect type
+            usage_tip = ""
+            if "effect" in item:
+                effect = item["effect"]
+                if effect["type"] == "skip_cooldown":
+                    usage_tip = "Use this to skip waiting between questions."
+                elif effect["type"] == "reveal_wrong_answers":
+                    usage_tip = f"Reveals {effect.get('value', 1)} wrong answer options on a question."
+                elif effect["type"] == "escape_node":
+                    usage_tip = "Allows you to leave any node without penalties."
+                elif effect["type"] == "find_errors":
+                    usage_tip = "Automatically identifies errors in a question scenario."
+                elif effect["type"] == "extra_action":
+                    usage_tip = "Lets you answer two questions in one turn."
+                elif effect["type"] == "show_hint":
+                    usage_tip = "Provides a hint for the current question."
+                elif effect["type"] == "find_item":
+                    usage_tip = "Provides a special item when used."
+                elif effect["type"] == "reroll_question":
+                    usage_tip = "Changes the current question to a different one."
+                
+            
             st.markdown(f"""
             <div class="item-card {rarity_class}">
                 <h4>{item.get('icon', '🔮')} {item['name']}</h4>
                 <p>{item['description']}</p>
+                <p><em style="color: #3498db;">Usage: {usage_tip}</em></p>
+                <p><small>Uses remaining: {item.get('uses', 1)}</small></p>
             </div>
             """, unsafe_allow_html=True)
             
