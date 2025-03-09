@@ -689,7 +689,7 @@ class GameModule:
             st.error("No active game found.")
             return
         
-        # Check if all nodes on this floor are visited
+        # Check if a node on this floor has been visited
         if game_state.check_floor_completion():
             # Complete the floor
             result = game_state.complete_floor()
@@ -998,6 +998,9 @@ class GameModule:
         # Floor progress indicator
         self._render_floor_progress(game_state)
         
+        # New path map
+        self._render_path_map(game_state)
+        
         # Game board - current floor
         self._render_current_floor_nodes(game_state)
         
@@ -1040,7 +1043,44 @@ class GameModule:
         
         # Current score
         st.markdown(f"**Score:** {game_state.score}")
-    
+
+    def _render_path_map(self, game_state):
+        """Render a simple map of the path structure."""
+        if not game_state.path:
+            return
+            
+        st.markdown("### Progress Map")
+        
+        # For a simple initial implementation, just show floor progress
+        total_floors = game_state.max_floor
+        current_floor = game_state.current_floor
+        
+        # Create a progress bar
+        progress_percentage = (current_floor - 1) / total_floors * 100
+        
+        st.markdown(f"""
+        <div style="margin: 10px 0;">
+            <div style="background-color: #f0f0f0; height: 20px; border-radius: 10px; overflow: hidden;">
+                <div style="background-color: #3498db; width: {progress_percentage}%; height: 100%;"></div>
+            </div>
+            <div style="text-align: center; margin-top: 5px; font-size: 0.8em;">
+                Floor {current_floor} of {total_floors}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Show a basic text representation of floors
+        cols = st.columns(total_floors)
+        for i in range(total_floors):
+            floor_num = i + 1
+            with cols[i]:
+                if floor_num < current_floor:
+                    st.markdown(f"<div style='text-align: center; color: #2ecc71;'>✓</div>", unsafe_allow_html=True)
+                elif floor_num == current_floor:
+                    st.markdown(f"<div style='text-align: center; color: #3498db; font-weight: bold;'>{floor_num}</div>", unsafe_allow_html=True)
+                else:
+                    st.markdown(f"<div style='text-align: center; color: #95a5a6;'>{floor_num}</div>", unsafe_allow_html=True)
+
     def _render_floor_progress(self, game_state):
         """Render a visual indicator of floor progress."""
         max_floor = game_state.max_floor
@@ -1069,13 +1109,20 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """Render the nodes for the current floor."""
+        """Render the nodes for the current floor as a path choice."""
         st.subheader(f"Floor {game_state.current_floor}")
+        
+        # Add instructions to clarify the choice mechanic
+        st.markdown("### Choose One Path")
+        st.markdown("Select only one node to proceed to the next floor.")
         
         # Render the current floor nodes
         current_floor_index = game_state.current_floor - 1
         if current_floor_index < len(game_state.path):
             current_floor_nodes = game_state.path[current_floor_index]
+            
+            # Check if any node on this floor has been visited
+            floor_completed = any(node["visited"] for node in current_floor_nodes)
             
             # Create columns for nodes
             cols = st.columns(len(current_floor_nodes))
@@ -1083,6 +1130,15 @@ class GameModule:
             for i, node in enumerate(current_floor_nodes):
                 with cols[i]:
                     self._render_node_card(node)
+                    
+                    # If floor is already completed, disable all node buttons
+                    if not node["visited"] and not floor_completed:
+                        if st.button("Choose", key=f"visit_{node['id']}"):
+                            self.visit_node(node["id"])
+                    elif node["visited"]:
+                        st.button("Selected", key=f"visited_{node['id']}", disabled=True)
+                    elif floor_completed:
+                        st.button("Unavailable", key=f"unavailable_{node['id']}", disabled=True)
         else:
             st.error("Floor data not found.")
     
@@ -1104,15 +1160,9 @@ class GameModule:
                 <div style="font-size: 2em;">{node['icon']}</div>
                 <div>{node['name']}</div>
                 <div class="difficulty">{difficulty_display}</div>
+                <div style="font-size: 0.8em; margin-top: 5px;">{node.get('category', '').capitalize()}</div>
             </div>
             """, unsafe_allow_html=True)
-            
-            # Node interaction button
-            if not node["visited"]:
-                if st.button("Visit", key=f"visit_{node['id']}"):
-                    self.visit_node(node["id"])
-            else:
-                st.button("Visited", key=f"visited_{node['id']}", disabled=True)
     
     def _render_inventory_and_relics(self, character):
         """Render the inventory and relics sections."""

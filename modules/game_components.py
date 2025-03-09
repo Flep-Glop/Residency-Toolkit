@@ -679,12 +679,15 @@ class GameState:
         return {"success": False, "message": "Perk not found"}
     
     def check_floor_completion(self):
-        """Check if all nodes on the current floor have been visited."""
+        """Check if a node on the current floor has been visited."""
         if not self.path or self.current_floor - 1 >= len(self.path):
             return False
         
+        # Get the nodes for the current floor
         current_floor_nodes = self.path[self.current_floor - 1]
-        return all(node["visited"] for node in current_floor_nodes)
+        
+        # Check if ANY node has been visited (not ALL nodes)
+        return any(node["visited"] for node in current_floor_nodes)
     
     def complete_floor(self):
         """Process completing a floor."""
