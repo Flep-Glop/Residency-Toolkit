@@ -558,6 +558,105 @@ class GameModule:
         </style>
         """, unsafe_allow_html=True)
     
+    def _generate_node_content(self, node, game_state):
+        """Generate content for a node based on its type."""
+        node_type = node.get("type", "question")
+        difficulty = node.get("difficulty", 1)
+        category = node.get("category", "general")
+        
+        if node_type == "question":
+            # Use the question bank to get a suitable question
+            question = self.question_bank.get_random_question(category, difficulty)
+            return question if question else {
+                "question": "What is the primary goal of quality assurance in medical physics?",
+                "options": ["To reduce costs", "To ensure patient safety", "To minimize workload", "To satisfy regulations"],
+                "correct_answer": 1,
+                "explanation": "The primary goal of QA is to ensure patient safety and treatment accuracy."
+            }
+        
+        elif node_type == "reference":
+            return {
+                "title": "Reference Material",
+                "text": "You study important concepts in medical physics.",
+                "effect": {"type": "gain_insight", "value": 10 * difficulty}
+            }
+        
+        elif node_type == "rest":
+            return {
+                "title": "Break Room",
+                "text": "You take a moment to rest and recover.",
+                "effect": {"type": "restore_life", "value": 1}
+            }
+        
+        elif node_type == "treasure":
+            return {
+                "title": "Conference",
+                "text": "You attend a conference and make valuable connections.",
+                "effect": {"type": "find_item", "rarity": "common" if difficulty <= 1 else "uncommon"}
+            }
+        
+        elif node_type == "elite":
+            # Create multiple questions for elite
+            questions = []
+            for i in range(2):  # Elite nodes have 2 questions
+                q = self.question_bank.get_random_question(category, difficulty)
+                if q:
+                    questions.append(q)
+            
+            if not questions:
+                # Fallback if no questions found
+                questions = [{
+                    "question": "What principle forms the basis of ALARA in radiation protection?",
+                    "options": ["Maximizing dose", "Minimizing dose", "Optimizing dose", "Standardizing dose"],
+                    "correct_answer": 2,
+                    "explanation": "ALARA (As Low As Reasonably Achievable) is based on optimizing dose."
+                }]
+            
+            return {
+                "title": "Complex Case",
+                "text": "You face a challenging clinical scenario.",
+                "questions": questions,
+                "reward": {"type": "find_relic", "rarity": "uncommon"}
+            }
+        
+        elif node_type == "boss":
+            # Create multiple questions of increasing difficulty for boss
+            questions = []
+            for i in range(3):  # Boss has 3 questions
+                q = self.question_bank.get_random_question(category, min(3, i+1))
+                if q:
+                    questions.append(q)
+            
+            if not questions:
+                # Fallback
+                questions = [{
+                    "question": "What is the primary challenge in IMRT QA?",
+                    "options": ["Setup time", "Dose verification", "Record keeping", "Staff training"],
+                    "correct_answer": 1,
+                    "explanation": "Verifying the complex dose distribution is the primary challenge in IMRT QA."
+                }]
+            
+            return {
+                "title": "Rotation Evaluation",
+                "text": "Your knowledge is being tested as part of your rotation evaluation.",
+                "questions": questions,
+                "reward": {"type": "complete_rotation", "value": game_state.current_floor}
+            }
+        
+        elif node_type == "encounter":
+            return {
+                "title": "Special Event",
+                "text": "You encounter an interesting situation that tests your knowledge.",
+                "effect": {"type": "gain_insight", "value": 15}
+            }
+        
+        # Default content if type not recognized
+        return {
+            "title": "Unknown Node",
+            "text": "You encounter an unknown situation.",
+            "effect": {"type": "gain_insight", "value": 5}
+        }
+
     def _init_session_state(self):
         """Initialize session state for game data if not already done."""
         # Use a unique key for this module to avoid conflicts
@@ -650,6 +749,10 @@ class GameModule:
         if not node:
             st.error("Node not found or already visited.")
             return
+        
+        # Generate content if needed
+        if node["content"] is None:
+            node["content"] = self._generate_node_content(node, game_state)
         
         # Process node effects
         result = game_state.process_node_effects(node, self.data_manager)

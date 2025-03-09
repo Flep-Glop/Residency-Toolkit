@@ -540,6 +540,13 @@ class GameState:
         
         result = {"success": True, "node_type": node["type"]}
         
+        # Handle null content
+        if node["content"] is None:
+            # Return basic info without trying to process content
+            result["title"] = f"{node['type'].capitalize()} Node"
+            result["text"] = "This node has no content."
+            return result
+        
         if node["type"] == "question":
             # Question nodes are handled separately in the answer_question method
             result["question"] = node["content"]
