@@ -413,97 +413,37 @@ class GameState:
         
         return {"title": "Unknown", "text": "Something mysterious happens."}
     
-    def _get_question_for_difficulty(self, difficulty, data_manager, category=None):
+    # Fix _get_question_for_difficulty method in GameState class
+    def fixed_get_question_for_difficulty(self, difficulty, data_manager, category=None):
         """Get a question of appropriate difficulty and category."""
-        # Use a sample question bank if none exists in data manager
-        question_bank = [
-            {
-                "id": "q1",
-                "category": "dosimetry",
-                "difficulty": 1,
-                "question": "What is the correction factor for temperature and pressure called in TG-51?",
-                "options": [
-                    "PTP",
-                    "kTP",
-                    "CTP",
-                    "PTC"
-                ],
-                "correct_answer": 1,
-                "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
-            },
-            {
-                "id": "q2",
-                "category": "qa",
-                "difficulty": 1,
-                "question": "Which of the following is typically measured in monthly linac QA?",
-                "options": [
-                    "Electron contamination",
-                    "Output constancy",
-                    "Leakage radiation",
-                    "Housing integrity"
-                ],
-                "correct_answer": 1,
-                "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
-            },
-            {
-                "id": "q3",
-                "category": "radiation",
-                "difficulty": 2,
-                "question": "What is the annual effective dose limit for radiation workers?",
-                "options": [
-                    "5 mSv",
-                    "20 mSv",
-                    "50 mSv",
-                    "100 mSv"
-                ],
-                "correct_answer": 1,
-                "explanation": "The annual effective dose limit for radiation workers is 20 mSv averaged over 5 years, with no single year exceeding 50 mSv."
-            },
-            {
-                "id": "q4",
-                "category": "calculation",
-                "difficulty": 2,
-                "question": "A 6 MV photon beam has a PDD of 67.3% at 10 cm depth and 100 cm SSD. What is the approximate TMR at 10 cm depth and 100 cm SAD?",
-                "options": [
-                    "0.673",
-                    "0.750",
-                    "0.806",
-                    "0.900"
-                ],
-                "correct_answer": 2,
-                "explanation": "The TMR can be calculated from PDD using the relationship TMR = PDD × ((100+d)/100)². For 10 cm depth, TMR ≈ 0.673 × (110/100)² ≈ 0.806"
-            },
-            {
-                "id": "q5",
-                "category": "planning",
-                "difficulty": 3,
-                "question": "Which of the following optimization objectives would be LEAST appropriate for a prostate IMRT plan?",
-                "options": [
-                    "Maximize target coverage with 95% of prescription dose",
-                    "Minimize rectal volume receiving >70 Gy",
-                    "Minimize femoral head maximum dose to <45 Gy",
-                    "Maximize dose conformity to femoral heads"
-                ],
-                "correct_answer": 3,
-                "explanation": "Maximizing dose conformity to femoral heads would be inappropriate as the femoral heads are critical structures to avoid, not targets for dose delivery."
-            }
-        ]
+        # Load all questions from question_bank module
+        from modules.question_bank import QuestionBank
+        question_bank = QuestionBank().questions
         
         # Filter questions by difficulty and category if specified
         filtered_questions = [q for q in question_bank if q["difficulty"] == difficulty]
-        if category:
-            filtered_questions = [q for q in filtered_questions if q["category"] == category]
         
-        # If no questions match, use any question of appropriate difficulty
+        if category and category != "general":
+            category_questions = [q for q in filtered_questions if q["category"] == category]
+            # Only use category filtering if we found matches
+            if category_questions:
+                filtered_questions = category_questions
+        
+        # If no matching questions found, fall back to any difficulty
         if not filtered_questions:
-            filtered_questions = [q for q in question_bank if q["difficulty"] == difficulty]
+            filtered_questions = [q for q in question_bank if abs(q["difficulty"] - difficulty) <= 1]
         
         # If still no questions, use any question
         if not filtered_questions:
             filtered_questions = question_bank
         
         # Return a random question
+        import random
         return random.choice(filtered_questions)
+    
+    from modules.game_components import GameState
+    # Replace the method in the GameState class
+    GameState._get_question_for_difficulty = fixed_get_question_for_difficulty
     
     def visit_node(self, node_id):
         """Process a player visiting a node."""
