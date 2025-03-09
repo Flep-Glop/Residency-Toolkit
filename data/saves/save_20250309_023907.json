@@ -1,0 +1,528 @@
+{
+  "game_state": {
+    "character": {
+      "id": "qa_specialist",
+      "name": "QA Specialist",
+      "icon": "|QA!|",
+      "lives": 0,
+      "max_lives": 3,
+      "insight": 15,
+      "level": 3,
+      "experience": 40,
+      "experience_to_next_level": 144,
+      "active_perks": [
+        {
+          "id": "research_mindset",
+          "name": "Research Mindset",
+          "description": "Your scientific approach improves mystery outcomes.",
+          "rarity": "uncommon",
+          "effect": {
+            "type": "mystery_quality_bonus",
+            "value": 1,
+            "description": "Mystery node rewards are one tier higher"
+          }
+        },
+        {
+          "id": "teaching_faculty",
+          "name": "Teaching Faculty",
+          "description": "Teaching others has enhanced your own understanding.",
+          "rarity": "rare",
+          "effect": {
+            "type": "experience_multiplier",
+            "value": 0.15,
+            "description": "XP gain increased by 15%"
+          }
+        }
+      ],
+      "inventory": [],
+      "relics": [
+        {
+          "id": "lucky_phantom",
+          "name": "Lucky Phantom",
+          "description": "This QA phantom has been with you for years and seems to bring good fortune.",
+          "rarity": "starter",
+          "icon": "[::::]",
+          "effect": {
+            "type": "auto_pass_chance",
+            "condition": "topic",
+            "condition_value": "qa",
+            "value": 0.5,
+            "description": "50% chance to auto-pass machine QA questions"
+          }
+        }
+      ]
+    },
+    "current_floor": 6,
+    "max_floor": 10,
+    "nodes_per_floor": 3,
+    "path": [
+      [
+        {
+          "id": "node_1_9473",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": true,
+          "content": {
+            "id": "dosimetry-1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_1_4498",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "radiation",
+          "visited": true,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "node_1_5760",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": true,
+          "content": {
+            "id": "imaging-1",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "Which of the following imaging modalities uses ionizing radiation?",
+            "options": [
+              "Ultrasound",
+              "MRI",
+              "Computed Tomography",
+              "Functional MRI"
+            ],
+            "correct_answer": 2,
+            "explanation": "Computed Tomography (CT) uses X-rays, which are a form of ionizing radiation."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_2_3490",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": true,
+          "content": {
+            "id": "calculation-2",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "If a radioisotope has a half-life of 8 days, approximately what fraction of the original activity will remain after 24 days?",
+            "options": [
+              "1/8",
+              "1/4",
+              "1/6",
+              "1/3"
+            ],
+            "correct_answer": 0,
+            "explanation": "After 24 days (3 half-lives), the remaining activity is (1/2)\u00b3 = 1/8 of the original activity."
+          }
+        },
+        {
+          "id": "node_2_5045",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "content": {
+            "id": "qa-2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "According to TG-142, what is the tolerance for photon beam flatness constancy during monthly QA?",
+            "options": [
+              "\u00b11%",
+              "\u00b12%",
+              "\u00b13%",
+              "\u00b15%"
+            ],
+            "correct_answer": 1,
+            "explanation": "According to TG-142, the tolerance for photon beam flatness constancy during monthly QA is \u00b12%."
+          }
+        },
+        {
+          "id": "node_2_5966",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "content": {
+            "id": "qa-2",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "According to TG-142, what is the tolerance for photon beam flatness constancy during monthly QA?",
+            "options": [
+              "\u00b11%",
+              "\u00b12%",
+              "\u00b13%",
+              "\u00b15%"
+            ],
+            "correct_answer": 1,
+            "explanation": "According to TG-142, the tolerance for photon beam flatness constancy during monthly QA is \u00b12%."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_4968",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": true,
+          "content": {
+            "id": "planning-2",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "What is the main advantage of IMRT over 3D conformal radiotherapy?",
+            "options": [
+              "Lower monitor units",
+              "Faster treatment delivery",
+              "Better dose conformity to the target",
+              "Simplified quality assurance"
+            ],
+            "correct_answer": 2,
+            "explanation": "The main advantage of IMRT over 3D conformal radiotherapy is better dose conformity to the target volume, especially for complex shapes, allowing better sparing of adjacent normal tissues."
+          }
+        },
+        {
+          "id": "node_3_3798",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": true,
+          "content": {
+            "id": "planning-2",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "What is the main advantage of IMRT over 3D conformal radiotherapy?",
+            "options": [
+              "Lower monitor units",
+              "Faster treatment delivery",
+              "Better dose conformity to the target",
+              "Simplified quality assurance"
+            ],
+            "correct_answer": 2,
+            "explanation": "The main advantage of IMRT over 3D conformal radiotherapy is better dose conformity to the target volume, especially for complex shapes, allowing better sparing of adjacent normal tissues."
+          }
+        },
+        {
+          "id": "node_3_4326",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": true,
+          "content": {
+            "id": "imaging-1",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "Which of the following imaging modalities uses ionizing radiation?",
+            "options": [
+              "Ultrasound",
+              "MRI",
+              "Computed Tomography",
+              "Functional MRI"
+            ],
+            "correct_answer": 2,
+            "explanation": "Computed Tomography (CT) uses X-rays, which are a form of ionizing radiation."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_4_2645",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": true,
+          "content": {
+            "id": "regulations-4",
+            "category": "regulations",
+            "difficulty": 2,
+            "question": "What is the frequency of full calibration required after a source exchange for an HDR unit?",
+            "options": [
+              "Immediately before the first patient treatment",
+              "Within 24 hours before the first patient treatment",
+              "Within 7 days before the first patient treatment",
+              "Within 30 days before the first patient treatment"
+            ],
+            "correct_answer": 0,
+            "explanation": "A full calibration of an HDR unit is required immediately before the first patient treatment following a source exchange."
+          }
+        },
+        {
+          "id": "node_4_9150",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": true,
+          "content": {
+            "id": "regulations-3",
+            "category": "regulations",
+            "difficulty": 2,
+            "question": "According to NRC regulations, how soon must a medical event be reported to the NRC Operations Center?",
+            "options": [
+              "Immediately",
+              "Within 24 hours",
+              "Within 48 hours",
+              "Within 30 days"
+            ],
+            "correct_answer": 1,
+            "explanation": "According to NRC regulations, a medical event must be reported to the NRC Operations Center within 24 hours of discovery."
+          }
+        },
+        {
+          "id": "node_4_2788",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": true,
+          "content": {
+            "id": "planning-3",
+            "category": "planning",
+            "difficulty": 2,
+            "question": "Which of the following is a potential disadvantage of using a non-coplanar beam arrangement?",
+            "options": [
+              "Reduced dose conformity",
+              "Increased treatment time",
+              "Reduced skin sparing",
+              "Increased heterogeneity corrections"
+            ],
+            "correct_answer": 1,
+            "explanation": "Non-coplanar beam arrangements generally increase treatment time due to the need for couch rotations between fields, although they may provide dosimetric advantages in certain cases."
+          }
+        }
+      ],
+      [
+        {
+          "id": "boss_5_3144",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "multi",
+          "visited": true,
+          "content": {
+            "title": "Rotation Evaluation",
+            "text": "Your knowledge is being tested as part of your rotation evaluation.",
+            "questions": [
+              {
+                "id": "qa-1",
+                "category": "qa",
+                "difficulty": 1,
+                "question": "Which of the following is typically measured in monthly linac QA?",
+                "options": [
+                  "Electron contamination",
+                  "Output constancy",
+                  "Leakage radiation",
+                  "Housing integrity"
+                ],
+                "correct_answer": 1,
+                "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+              },
+              {
+                "id": "regulations-3",
+                "category": "regulations",
+                "difficulty": 2,
+                "question": "According to NRC regulations, how soon must a medical event be reported to the NRC Operations Center?",
+                "options": [
+                  "Immediately",
+                  "Within 24 hours",
+                  "Within 48 hours",
+                  "Within 30 days"
+                ],
+                "correct_answer": 1,
+                "explanation": "According to NRC regulations, a medical event must be reported to the NRC Operations Center within 24 hours of discovery."
+              },
+              {
+                "id": "radiation-5",
+                "category": "radiation",
+                "difficulty": 3,
+                "question": "What is the primary factor that determines induced activity in a linear accelerator during high-energy photon beam operation?",
+                "options": [
+                  "Beam energy",
+                  "Dose rate",
+                  "Field size",
+                  "Beam symmetry"
+                ],
+                "correct_answer": 0,
+                "explanation": "Beam energy is the primary factor that determines photonuclear reactions leading to induced activity in a linear accelerator. Energies above 10 MV can produce photoneutrons that cause activation."
+              }
+            ],
+            "reward": {
+              "type": "complete_rotation",
+              "value": 5
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_6_7349",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": true,
+          "content": {
+            "id": "planning-4",
+            "category": "planning",
+            "difficulty": 2,
+            "question": "In inverse planning for IMRT, what is typically specified as part of the optimization objectives?",
+            "options": [
+              "The specific MLC positions",
+              "The number of monitor units per segment",
+              "Dose-volume constraints for targets and organs at risk",
+              "The exact beam angles"
+            ],
+            "correct_answer": 2,
+            "explanation": "In inverse planning for IMRT, dose-volume constraints (or objectives) for targets and organs at risk are specified, and the treatment planning system optimizes the fluence patterns to meet these objectives."
+          }
+        },
+        {
+          "id": "node_6_3909",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "radiation",
+          "visited": false,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "node_6_3339",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": true,
+          "content": {
+            "id": "dosimetry-3",
+            "category": "dosimetry",
+            "difficulty": 2,
+            "question": "What is the tissue-phantom ratio (TPR) used for?",
+            "options": [
+              "To convert percentage depth dose to different source-to-surface distances",
+              "To account for inverse square law effects in treatment planning",
+              "To measure the quality of the beam",
+              "To describe the dose at a point relative to the dose at a reference depth"
+            ],
+            "correct_answer": 3,
+            "explanation": "The tissue-phantom ratio (TPR) describes the dose at a point in a phantom relative to the dose at a reference depth, with the same source-to-detector distance."
+          }
+        }
+      ]
+    ],
+    "visited_nodes": [
+      "node_1_5760",
+      "node_3_4968",
+      "node_4_9150",
+      "node_3_3798",
+      "node_2_5045",
+      "node_6_7349",
+      "node_2_5966",
+      "node_4_2788",
+      "node_2_3490",
+      "node_4_2645",
+      "boss_5_3144",
+      "node_1_4498",
+      "node_6_3339",
+      "node_1_9473",
+      "node_3_4326"
+    ],
+    "current_node": {
+      "id": "node_6_7349",
+      "type": "question",
+      "name": "Question",
+      "icon": "\ud83d\udcdd",
+      "difficulty": 2,
+      "category": "planning",
+      "visited": true,
+      "content": {
+        "id": "planning-4",
+        "category": "planning",
+        "difficulty": 2,
+        "question": "In inverse planning for IMRT, what is typically specified as part of the optimization objectives?",
+        "options": [
+          "The specific MLC positions",
+          "The number of monitor units per segment",
+          "Dose-volume constraints for targets and organs at risk",
+          "The exact beam angles"
+        ],
+        "correct_answer": 2,
+        "explanation": "In inverse planning for IMRT, dose-volume constraints (or objectives) for targets and organs at risk are specified, and the treatment planning system optimizes the fluence patterns to meet these objectives."
+      }
+    },
+    "score": 133,
+    "streak": 0,
+    "start_time": 1741487788.161911,
+    "end_time": 1741487947.902663,
+    "is_completed": true,
+    "is_successful": false
+  },
+  "player_data": {
+    "class": null,
+    "level": 1,
+    "completed_runs": 1,
+    "total_score": 433,
+    "highest_score": 433,
+    "highest_floor": 6
+  },
+  "achievements": {
+    "unlocked_achievements": [
+      "first_run"
+    ]
+  },
+  "timestamp": 1741487947.903044,
+  "version": "1.0.0"
+}
