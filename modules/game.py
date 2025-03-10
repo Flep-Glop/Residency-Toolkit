@@ -682,72 +682,155 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _generate_node_content(self, node, game_state):
-        """Generate content for a node based on its type."""
+        """Generate fun, varied content for a node based on its type."""
         node_type = node.get("type", "question")
         difficulty = node.get("difficulty", 1)
         category = node.get("category", "general")
         
+        # Random flavor scenarios with humor, challenges, and occasional dark humor
+        flavor_scenarios = {
+            "question": [
+                "You're presenting at morning rounds when the attending asks you this question. The resident next to you snickers, knowing you stayed up all night calibrating the linac.",
+                "The physics students are staring at you with wide eyes. This was definitely not covered in the lecture notes.",
+                "The Radiation Safety Officer looks up from their clipboard with a stern expression. Your answer will determine if you're filling out incident reports all day.",
+                "Your coffee hasn't kicked in yet, but the chief resident needs an answer ASAP.",
+                "You're halfway through explaining a concept when someone from administration walks in. Better get this right.",
+                "You left your notes in the car, and now you're winging it in front of the entire department."
+            ],
+            "reference": [
+                "You find a dog-eared textbook in the break room. A note scribbled in the margin reads 'THIS WILL BE ON THE BOARDS!'",
+                "A senior physicist emailed you these notes at 3 AM with the subject line 'MEMORIZE THIS OR ELSE'.",
+                "You discover a hidden folder on the shared drive labeled 'ACTUAL ANSWERS - DO NOT SHARE'.",
+                "While cleaning out an old filing cabinet, you find a set of handwritten notes from a physicist who retired 15 years ago.",
+                "The visiting professor leaves their lecture notes behind. You make a copy before returning them."
+            ],
+            "rest": [
+                "You duck into the supply closet for a quick power nap. No one will notice you're gone for 10 minutes, right?",
+                "The cafeteria is serving your favorite comfort food today. This small joy restores your will to live.",
+                "You find an untouched pot of coffee in the break room. Jackpot!",
+                "Your phone buzzes with a supportive text from a friend: 'You're killing it!' This small encouragement helps you push on.",
+                "You happen upon an empty reading room with a couch. Twenty minutes of closed eyes works wonders."
+            ],
+            "treasure": [
+                "A retiring physicist cleans out their office and hands you a box of 'essentials'.",
+                "You help IT move some old equipment and they let you keep some 'outdated' tools.",
+                "While reorganizing the dosimetry cabinet, you find equipment that's not in the inventory.",
+                "A vendor rep hands you some 'samples' after a lunch presentation.",
+                "You win the department raffle that nobody else remembered to enter."
+            ],
+            "elite": [
+                "The most notorious attending drops by for an unexpected 'casual chat' about your research progress.",
+                "A patient case so complex, the entire tumor board has fallen silent looking at you expectantly.",
+                "The QA results are wildly out of tolerance, and the first treatment is scheduled in one hour.",
+                "The board examiner leans forward with a gleam in their eye: 'Now for a follow-up question...'",
+                "The department head asks you to explain the discrepancy in the annual regulatory report. All eyes are on you."
+            ],
+            "boss": [
+                "It's your final rotation evaluation, and the program director has prepared 'a few scenario questions'.",
+                "The radiation safety inspector has some 'concerns' about your department's protocols.",
+                "A regulatory audit has uncovered some documentation issues that someone needs to explain.",
+                "The hospital administrator is questioning the physics department's budget, and you've been volunteered to justify it.",
+                "A treatment error has occurred, and the root cause analysis points to a physics oversight. You're asked to address it."
+            ],
+            "encounter": [
+                "A vendor offers to demo their new equipment, but you suspect there's fine print you're not seeing.",
+                "A senior physicist invites you to co-author a paper, but you'll need to do the majority of the work.",
+                "A patient has questions about their treatment plan that go beyond the typical explanation.",
+                "You find a concerning pattern in the QA data that nobody else has noticed yet.",
+                "A colleague from another department asks for 'a small favor' that sounds increasingly complicated."
+            ]
+        }
+        
+        # Get random flavor text for this node type
+        if node_type in flavor_scenarios and flavor_scenarios[node_type]:
+            flavor_text = random.choice(flavor_scenarios[node_type])
+        else:
+            flavor_text = "You encounter a challenge to your medical physics knowledge."
+        
         if node_type == "question":
             # Use the question bank to get a suitable question
             question = self.question_bank.get_random_question(category, difficulty)
+            
+            # Add flavor text to the question
+            if question:
+                question["flavor_text"] = flavor_text
+                
             return question if question else {
                 "question": "What is the primary goal of quality assurance in medical physics?",
                 "options": ["To reduce costs", "To ensure patient safety", "To minimize workload", "To satisfy regulations"],
                 "correct_answer": 1,
-                "explanation": "The primary goal of QA is to ensure patient safety and treatment accuracy."
+                "explanation": "The primary goal of QA is to ensure patient safety and treatment accuracy.",
+                "flavor_text": flavor_text
             }
         
         elif node_type == "reference":
+            # Enhanced reference content with insight bonuses based on difficulty
+            insight_gain = 10 * difficulty
             return {
                 "title": "Reference Material",
-                "text": "You study important concepts in medical physics.",
-                "effect": {"type": "gain_insight", "value": 10 * difficulty}
+                "text": flavor_text,
+                "effect": {"type": "gain_insight", "value": insight_gain},
+                "flavor_text": f"You gain {insight_gain} insight from studying this material."
             }
         
         elif node_type == "rest":
+            # Rest nodes with random bonuses
+            effects = []
+            main_effect = {"type": "restore_life", "value": 1}
+            effects.append(main_effect)
+            
+            # Chance for bonus effect
+            if random.random() < 0.3:  # 30% chance
+                bonus_options = [
+                    {"type": "gain_insight", "value": 5, "text": "The break clears your mind, giving you +5 insight."},
+                    {"type": "gain_experience", "value": 10, "text": "While resting, you reflect on recent lessons, gaining +10 experience."},
+                    {"type": "find_item", "rarity": "common", "text": "You find a useful item in the break room."}
+                ]
+                bonus = random.choice(bonus_options)
+                effects.append(bonus)
+                bonus_text = bonus.get("text", "")
+            else:
+                bonus_text = ""
+            
             return {
-                "title": "Break Room",
-                "text": "You take a moment to rest and recover.",
-                "effect": {"type": "restore_life", "value": 1}
+                "title": "Break Time",
+                "text": flavor_text,
+                "effects": effects,
+                "flavor_text": f"You recover 1 life point. {bonus_text}"
             }
         
         elif node_type == "treasure":
+            # Enhanced treasure node with varied rewards
+            reward_options = [
+                {"type": "find_item", "rarity": "common" if difficulty <= 1 else "uncommon", "text": "You find a useful item."},
+                {"type": "gain_insight", "value": 15 * difficulty, "text": f"You gain {15 * difficulty} insight."},
+                {"type": "gain_experience", "value": 20 * difficulty, "text": f"You gain {20 * difficulty} experience."}
+            ]
+            
+            if difficulty >= 2:
+                # Higher difficulty can yield better rewards
+                reward_options.append({"type": "find_relic", "rarity": "uncommon", "text": "You find a rare relic!"})
+            
+            if difficulty >= 3:
+                # Even better rewards for highest difficulty
+                reward_options.append({"type": "find_relic", "rarity": "rare", "text": "You find an exceptional relic!"})
+            
+            reward = random.choice(reward_options)
+            
             return {
-                "title": "Conference",
-                "text": "You attend a conference and make valuable connections.",
-                "effect": {"type": "find_item", "rarity": "common" if difficulty <= 1 else "uncommon"}
+                "title": "Discovery",
+                "text": flavor_text,
+                "effect": reward,
+                "flavor_text": reward.get("text", "")
             }
         
         elif node_type == "elite":
-            # Create multiple questions for elite
+            # Elite nodes with multiple challenging questions and better rewards
             questions = []
             for i in range(2):  # Elite nodes have 2 questions
                 q = self.question_bank.get_random_question(category, difficulty)
                 if q:
-                    questions.append(q)
-            
-            if not questions:
-                # Fallback if no questions found
-                questions = [{
-                    "question": "What principle forms the basis of ALARA in radiation protection?",
-                    "options": ["Maximizing dose", "Minimizing dose", "Optimizing dose", "Standardizing dose"],
-                    "correct_answer": 2,
-                    "explanation": "ALARA (As Low As Reasonably Achievable) is based on optimizing dose."
-                }]
-            
-            return {
-                "title": "Complex Case",
-                "text": "You face a challenging clinical scenario.",
-                "questions": questions,
-                "reward": {"type": "find_relic", "rarity": "uncommon"}
-            }
-        
-        elif node_type == "boss":
-            # Create multiple questions of increasing difficulty for boss
-            questions = []
-            for i in range(3):  # Boss has 3 questions
-                q = self.question_bank.get_random_question(category, min(3, i+1))
-                if q:
+                    q["flavor_text"] = f"Challenge {i+1}/2: {flavor_text}"
                     questions.append(q)
             
             if not questions:
@@ -756,29 +839,492 @@ class GameModule:
                     "question": "What is the primary challenge in IMRT QA?",
                     "options": ["Setup time", "Dose verification", "Record keeping", "Staff training"],
                     "correct_answer": 1,
-                    "explanation": "Verifying the complex dose distribution is the primary challenge in IMRT QA."
+                    "explanation": "Verifying the complex dose distribution is the primary challenge in IMRT QA.",
+                    "flavor_text": flavor_text
                 }]
             
+            # Enhanced rewards for elite nodes
+            rewards = []
+            
+            # Base reward - always get a relic
+            relic_reward = {"type": "find_relic", "rarity": "uncommon" if difficulty < 3 else "rare"}
+            rewards.append(relic_reward)
+            
+            # Additional rewards
+            if random.random() < 0.4:  # 40% chance
+                bonus_options = [
+                    {"type": "gain_insight", "value": 20 * difficulty},
+                    {"type": "gain_experience", "value": 30 * difficulty}
+                ]
+                rewards.append(random.choice(bonus_options))
+            
             return {
-                "title": "Rotation Evaluation",
-                "text": "Your knowledge is being tested as part of your rotation evaluation.",
+                "title": "Complex Challenge",
+                "text": flavor_text,
                 "questions": questions,
-                "reward": {"type": "complete_rotation", "value": game_state.current_floor}
+                "rewards": rewards,
+                "flavor_text": "Succeed and you'll earn valuable rewards."
+            }
+        
+        elif node_type == "boss":
+            # Boss nodes with increasingly difficult questions
+            questions = []
+            for i in range(3):  # Boss has 3 questions of increasing difficulty
+                q = self.question_bank.get_random_question(category, min(3, difficulty + i))
+                if q:
+                    q["flavor_text"] = f"Challenge {i+1}/3: {flavor_text}"
+                    questions.append(q)
+            
+            if not questions:
+                # Fallback
+                questions = [{
+                    "question": "What is the most important consideration when implementing a new radiotherapy technique?",
+                    "options": ["Cost efficiency", "Treatment time", "Patient safety", "Staff workflow"],
+                    "correct_answer": 2,
+                    "explanation": "Patient safety should always be the primary consideration when implementing new techniques.",
+                    "flavor_text": flavor_text
+                }]
+            
+            # Major rewards for boss completion
+            rewards = [
+                {"type": "find_relic", "rarity": "rare"},
+                {"type": "gain_insight", "value": 50},
+                {"type": "gain_experience", "value": 100},
+                {"type": "complete_rotation", "value": game_state.current_floor}
+            ]
+            
+            return {
+                "title": "Major Evaluation",
+                "text": flavor_text,
+                "questions": questions,
+                "rewards": rewards,
+                "flavor_text": "This is a major test of your knowledge and skills."
             }
         
         elif node_type == "encounter":
-            return {
-                "title": "Special Event",
-                "text": "You encounter an interesting situation that tests your knowledge.",
-                "effect": {"type": "gain_insight", "value": 15}
-            }
+            # Varied special encounters
+            encounter_types = ["choice", "shop", "challenge", "mentor"]
+            encounter_type = random.choice(encounter_types)
+            
+            if encounter_type == "shop":
+                return self._generate_shop_encounter(difficulty, flavor_text)
+            elif encounter_type == "choice":
+                return self._generate_choice_encounter(difficulty, flavor_text)
+            elif encounter_type == "mentor":
+                return self._generate_mentor_encounter(difficulty, flavor_text)
+            else:  # challenge
+                return {
+                    "title": "Special Challenge",
+                    "text": flavor_text,
+                    "type": "challenge",
+                    "difficulty": difficulty,
+                    "reward": {"type": "gain_insight", "value": 20 * difficulty},
+                    "flavor_text": "How will you handle this unexpected situation?"
+                }
         
         # Default content if type not recognized
         return {
-            "title": "Unknown Node",
-            "text": "You encounter an unknown situation.",
-            "effect": {"type": "gain_insight", "value": 5}
+            "title": "Unknown Encounter",
+            "text": "You encounter an unexpected situation.",
+            "effect": {"type": "gain_insight", "value": 5},
+            "flavor_text": "This is unusual."
         }
+
+    def _generate_shop_encounter(self, difficulty, flavor_text):
+        """Generate a shop encounter where players can spend insight points."""
+        # Generate items to purchase
+        shop_items = []
+        
+        # Item pools by rarity
+        common_items = [
+            {"id": "coffee", "name": "Coffee", "description": "Skip the next question cooldown", "cost": 5},
+            {"id": "pocket_handbook", "name": "Pocket Handbook", "description": "Reveals one wrong answer", "cost": 10},
+            {"id": "energy_snack", "name": "Energy Snack", "description": "Gain a small amount of experience", "cost": 15}
+        ]
+        
+        uncommon_items = [
+            {"id": "cheat_sheet", "name": "Cheat Sheet", "description": "Reveals two wrong answers", "cost": 20},
+            {"id": "energy_drink", "name": "Energy Drink", "description": "Answer two questions in one turn", "cost": 25},
+            {"id": "conference_badge", "name": "Conference Badge", "description": "Find a special item", "cost": 30}
+        ]
+        
+        rare_items = [
+            {"id": "lucky_dosimeter", "name": "Lucky Dosimeter", "description": "Reroll a question if you don't like it", "cost": 40},
+            {"id": "emergency_protocol", "name": "Emergency Protocol", "description": "Escape any node without penalty", "cost": 50},
+            {"id": "calculator_pro", "name": "Advanced Calculator", "description": "Auto-solve a calculation question", "cost": 60}
+        ]
+        
+        # Add items based on difficulty
+        num_items = 3 + difficulty  # 4-6 items depending on difficulty
+        
+        # Always include some common items
+        for _ in range(2):
+            shop_items.append(random.choice(common_items))
+        
+        # Add uncommon and rare items based on difficulty
+        if difficulty >= 2:
+            shop_items.append(random.choice(uncommon_items))
+            
+        if difficulty >= 3:
+            shop_items.append(random.choice(rare_items))
+        
+        # Fill remaining slots
+        remaining_slots = num_items - len(shop_items)
+        for _ in range(remaining_slots):
+            item_pool = common_items
+            if random.random() < 0.3:  # 30% chance for better item
+                item_pool = uncommon_items if difficulty < 3 else rare_items
+                
+            shop_items.append(random.choice(item_pool))
+        
+        # Ensure items are unique
+        seen_ids = set()
+        unique_items = []
+        for item in shop_items:
+            if item["id"] not in seen_ids:
+                seen_ids.add(item["id"])
+                unique_items.append(item)
+        
+        # Generate shop title and flavor
+        shop_titles = [
+            "Medical Physics Supply Closet",
+            "Departmental Exchange",
+            "Conference Vendor Hall",
+            "University Bookstore",
+            "Resident Trading Post"
+        ]
+        
+        shop_name = random.choice(shop_titles)
+        
+        return {
+            "title": shop_name,
+            "text": flavor_text,
+            "type": "shop",
+            "items": unique_items,
+            "flavor_text": "Spend your insight points on helpful items."
+        }
+
+    def _generate_choice_encounter(self, difficulty, flavor_text):
+        """Generate a choice-based encounter with different outcomes."""
+        # Different scenarios for choice encounters
+        scenarios = [
+            {
+                "title": "Unexpected Responsibility",
+                "text": "The attending physicist calls in sick, and you're asked to cover their responsibilities for the day.",
+                "choices": [
+                    {
+                        "text": "Accept the challenge (harder, bigger reward)",
+                        "difficulty": difficulty + 1,
+                        "success": {
+                            "description": "You manage to handle all the responsibilities successfully!",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 50},
+                                {"type": "find_item", "rarity": "uncommon"}
+                            ]
+                        },
+                        "failure": {
+                            "description": "You become overwhelmed by the workload.",
+                            "penalties": [
+                                {"type": "damage", "value": 1}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Ask for help from another resident (medium challenge, medium reward)",
+                        "difficulty": difficulty,
+                        "success": {
+                            "description": "Together, you handle the workload efficiently.",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 30},
+                                {"type": "gain_insight", "value": 20}
+                            ]
+                        },
+                        "failure": {
+                            "description": "Even with help, some tasks are missed.",
+                            "penalties": [
+                                {"type": "gain_insight", "value": -10}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Recommend postponing non-urgent tasks (safe, small reward)",
+                        "effects": [
+                            {"type": "gain_insight", "value": 10}
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "Conference Opportunity",
+                "text": "You receive a last-minute invitation to present at a prestigious conference.",
+                "choices": [
+                    {
+                        "text": "Prepare an ambitious new presentation (harder, bigger reward)",
+                        "difficulty": difficulty + 1,
+                        "success": {
+                            "description": "Your presentation is well-received and generates exciting discussion!",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 60},
+                                {"type": "find_relic", "rarity": "uncommon"}
+                            ]
+                        },
+                        "failure": {
+                            "description": "Your hastily prepared presentation falls flat.",
+                            "penalties": [
+                                {"type": "damage", "value": 1},
+                                {"type": "gain_insight", "value": -10}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Adapt an existing project (medium challenge, medium reward)",
+                        "difficulty": difficulty,
+                        "success": {
+                            "description": "Your presentation is solid and informative.",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 30},
+                                {"type": "gain_insight", "value": 25}
+                            ]
+                        },
+                        "failure": {
+                            "description": "The adaptation doesn't quite work for this audience.",
+                            "penalties": [
+                                {"type": "gain_insight", "value": -15}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Decline politely (safe, small benefit)",
+                        "effects": [
+                            {"type": "gain_insight", "value": 5},
+                            {"type": "restore_life", "value": 1}
+                        ]
+                    }
+                ]
+            },
+            {
+                "title": "Equipment Malfunction",
+                "text": "Critical QA equipment has malfunctioned just before an important measurement.",
+                "choices": [
+                    {
+                        "text": "Try to fix it yourself (harder, bigger reward)",
+                        "difficulty": difficulty + 1,
+                        "success": {
+                            "description": "You successfully repair the equipment!",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 50},
+                                {"type": "find_item", "rarity": "rare"}
+                            ]
+                        },
+                        "failure": {
+                            "description": "Your attempt makes the problem worse.",
+                            "penalties": [
+                                {"type": "damage", "value": 1}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Find an alternative measurement approach (medium challenge, medium reward)",
+                        "difficulty": difficulty,
+                        "success": {
+                            "description": "Your alternative approach works adequately.",
+                            "rewards": [
+                                {"type": "gain_experience", "value": 30},
+                                {"type": "gain_insight", "value": 20}
+                            ]
+                        },
+                        "failure": {
+                            "description": "The alternative approach gives questionable results.",
+                            "penalties": [
+                                {"type": "gain_insight", "value": -10}
+                            ]
+                        }
+                    },
+                    {
+                        "text": "Call in external service (safe, costs insight)",
+                        "effects": [
+                            {"type": "gain_insight", "value": -20},
+                            {"type": "gain_experience", "value": 15}
+                        ]
+                    }
+                ]
+            }
+        ]
+        
+        # Select a random scenario
+        scenario = random.choice(scenarios)
+        
+        return {
+            "title": scenario["title"],
+            "text": flavor_text + "\n\n" + scenario["text"],
+            "type": "choice",
+            "choices": scenario["choices"],
+            "flavor_text": "Your decision will have consequences."
+        }
+
+    def _generate_mentor_encounter(self, difficulty, flavor_text):
+        """Generate a mentor encounter where the player can learn a new skill."""
+        # Skills that can be learned
+        skills = [
+            {
+                "id": "dosimetry_expert",
+                "name": "Dosimetry Expert",
+                "description": "You gain comprehensive knowledge of measurement techniques.",
+                "perk": "dosimetry_wizard",
+                "requirements": {"insight": 20, "level": 2}
+            },
+            {
+                "id": "qa_specialist",
+                "name": "QA Specialist",
+                "description": "You develop a keen eye for quality assurance protocols.",
+                "perk": "qa_specialist",
+                "requirements": {"insight": 25, "level": 2}
+            },
+            {
+                "id": "clinical_intuition",
+                "name": "Clinical Intuition",
+                "description": "You gain better understanding of clinical applications.",
+                "perk": "clinical_experience",
+                "requirements": {"insight": 30, "level": 3}
+            },
+            {
+                "id": "research_mindset",
+                "name": "Research Mindset",
+                "description": "You develop skills in designing and analyzing experiments.",
+                "perk": "research_mindset",
+                "requirements": {"insight": 40, "level": 3}
+            },
+            {
+                "id": "radiation_safety",
+                "name": "Radiation Safety Officer",
+                "description": "You become an expert in radiation protection protocols.",
+                "perk": "radiation_safety_officer",
+                "requirements": {"insight": 30, "level": 2}
+            }
+        ]
+        
+        # Select skills based on difficulty
+        available_skills = []
+        for skill in skills:
+            # Higher difficulty offers better skills
+            if difficulty >= 2 or skill["requirements"]["level"] <= 2:
+                available_skills.append(skill)
+        
+        # Choose 2-3 skills to offer
+        num_skills = min(len(available_skills), random.randint(2, 3))
+        offered_skills = random.sample(available_skills, num_skills)
+        
+        # Generate mentor titles and names
+        mentor_titles = [
+            "Senior Physicist",
+            "Program Director",
+            "Visiting Professor",
+            "Chief Medical Physicist",
+            "Research Director"
+        ]
+        
+        mentor_names = [
+            "Dr. Thompson",
+            "Dr. Chen",
+            "Dr. Rodríguez",
+            "Dr. Smith",
+            "Dr. Johnson",
+            "Dr. Patel"
+        ]
+        
+        mentor = f"{random.choice(mentor_titles)} {random.choice(mentor_names)}"
+        
+        return {
+            "title": "Mentorship Opportunity",
+            "text": f"{mentor} offers to share their expertise with you.\n\n{flavor_text}",
+            "type": "training",
+            "skill_options": offered_skills,
+            "flavor_text": "Choose a skill to develop under their guidance."
+        }
+
+    def _render_shop_encounter(self, encounter):
+        """Render a shop encounter where players can buy items with insight."""
+        st.subheader(encounter["title"])
+        st.markdown(encounter["text"])
+        
+        if "flavor_text" in encounter:
+            st.markdown(f"*{encounter['flavor_text']}*")
+        
+        # Show player's current insight
+        character = st.session_state.current_character
+        st.markdown(f"### Available Insight: {character.insight}")
+        
+        # Display shop items
+        items = encounter.get("items", [])
+        
+        if not items:
+            st.warning("There are no items available in this shop.")
+            if st.button("Leave Shop"):
+                st.session_state.encountering_event = None
+                self.continue_after_node()
+            return
+        
+        # Create a nice display for items
+        cols = st.columns(2)
+        
+        for i, item in enumerate(items):
+            with cols[i % 2]:
+                # Get item rarity for styling
+                rarity = "common"
+                if item["cost"] >= 40:
+                    rarity = "rare"
+                elif item["cost"] >= 20:
+                    rarity = "uncommon"
+                
+                # Display item card
+                st.markdown(f"""
+                <div class="item-card rarity-{rarity}">
+                    <h4>{item["name"]}</h4>
+                    <p>{item["description"]}</p>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span><strong>Cost:</strong> {item["cost"]} insight</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Purchase button
+                can_afford = character.insight >= item["cost"]
+                
+                if can_afford:
+                    if st.button(f"Purchase", key=f"buy_{i}"):
+                        # Purchase logic
+                        character.insight -= item["cost"]
+                        
+                        # Add the item to inventory (would need to retrieve actual item data)
+                        consumable = next((c for c in self.consumables if c["id"] == item["id"]), None)
+                        if consumable:
+                            character.add_to_inventory(consumable)
+                            st.success(f"Purchased {item['name']}!")
+                        else:
+                            # Create a basic item if not found in the database
+                            basic_item = {
+                                "id": item["id"],
+                                "name": item["name"],
+                                "description": item["description"],
+                                "rarity": rarity,
+                                "uses": 1,
+                                "effect": {"type": "special", "description": item["description"]}
+                            }
+                            character.add_to_inventory(basic_item)
+                            st.success(f"Purchased {item['name']}!")
+                        
+                        # Record item discovery
+                        if "discovered_items" in st.session_state:
+                            st.session_state.discovered_items.add(item["id"])
+                        
+                        st.rerun()
+                else:
+                    st.button(f"Cannot Afford", key=f"cant_buy_{i}", disabled=True)
+        
+        # Leave shop button
+        if st.button("Leave Shop"):
+            st.session_state.encountering_event = None
+            self.continue_after_node()
 
     def _init_session_state(self):
         """Initialize session state for game data if not already done."""
@@ -1087,35 +1633,16 @@ class GameModule:
         ]
 
     def _render_hub_interface(self):
-        """Render the hub (department) interface with a robust ASCII title."""
-        # Simpler ASCII Art Title that won't break formatting
+        """Render a condensed hub interface with quick navigation."""
+        # Simple Banner Title
         st.markdown("""
-        <div style="text-align:center; font-family:monospace; font-size:14px; line-height:1.2; margin:20px 0; padding:15px; background-color:var(--card-bg, #f8f9fa); border-radius:10px; color:var(--text-color, #333);">
-            <div style="font-weight:bold; font-size:1.1em; margin-bottom:5px;">
-                MEDICAL PHYSICS RESIDENCY GAME
-            </div>
-            <div style="font-size:0.9em; color:#3498db;">
-                ================================================
-            </div>
-            <div style="margin:10px 0;">
-                Learn · Challenge · Advance
-            </div>
-            <div style="font-size:0.9em; color:#3498db;">
-                ================================================
-            </div>
+        <div style="text-align:center; font-family:monospace; padding:10px; background-color:var(--card-bg, #f8f9fa); border-radius:10px; margin-bottom:15px;">
+            <div style="font-weight:bold; font-size:1.5em;">MEDICAL PHYSICS RESIDENCY GAME</div>
+            <div style="font-size:0.9em; color:#3498db;">Learn · Challenge · Advance</div>
         </div>
         """, unsafe_allow_html=True)
         
-        st.subheader("Memorial Hospital Physics Department")
-        
-        # Add a prominent instructions button
-        col1, col2 = st.columns([3, 1])
-        with col2:
-            if st.button("📚 Game Instructions", key="show_instructions", use_container_width=True):
-                st.session_state.game_view = "instructions"
-                return
-        
-        # Show player stats
+        # Player stats in a condensed row
         if st.session_state.player_data["completed_runs"] > 0:
             stats_col1, stats_col2, stats_col3 = st.columns(3)
             with stats_col1:
@@ -1125,50 +1652,60 @@ class GameModule:
             with stats_col3:
                 st.metric("Highest Floor", st.session_state.player_data["highest_floor"])
         
-        st.markdown("Your medical physics journey begins here. Choose an area to explore.")
-        
-        # Check for newly unlocked areas
-        if hasattr(st.session_state, 'new_area_unlocked'):
-            area_name = next((a["name"] for a in self._get_hub_areas() if a["id"] == st.session_state.new_area_unlocked), "New Area")
-            st.success(f"🎉 Congratulations! You've unlocked a new area: {area_name}")
-            # Clear the notification after showing
-            delattr(st.session_state, 'new_area_unlocked')
-        
         # Get only implemented hub areas
         hub_areas = [area for area in self._get_hub_areas() if area["implemented"]]
         
-        # Arrange hub areas in a grid
-        cols = st.columns(len(hub_areas))  # One column per implemented area for better spacing
+        # Use a grid layout for better space usage
+        st.markdown("""
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-top:20px;">
+        """, unsafe_allow_html=True)
         
+        # Use direct HTML for the cards to make them more compact
         for i, area in enumerate(hub_areas):
-            with cols[i]:
-                # Check if area is unlocked
-                is_unlocked = area["id"] in st.session_state.hub_unlocked
-                
-                # Create the hub area card
-                with st.container():
-                    st.markdown(f"""
-                    <div class="hub-card {'' if is_unlocked else 'locked'}">
-                        <h3>{area["icon"]} {area["name"]} {' 🔒' if not is_unlocked else ''}</h3>
-                        <p>{area["description"]}</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Only make the button work if area is unlocked
-                    if is_unlocked:
-                        if st.button(f"Enter {area['name']}", key=f"area_{area['id']}"):
-                            if area["id"] == "clinical_area":
-                                # Go to character selection
-                                st.session_state.game_view = "character_select"
-                            elif area["id"] == "achievements":
-                                # View achievements
-                                st.session_state.game_view = "achievements"
-                            elif area["id"] == "collections":
-                                # View collections
-                                st.session_state.game_view = "collections"
-                            else:
-                                # Other areas would have their own functions
-                                st.info(f"Entering {area['name']} - Feature coming soon!")
+            # Check if area is unlocked
+            is_unlocked = area["id"] in st.session_state.hub_unlocked
+            
+            # Card HTML with on-click functionality
+            card_html = f"""
+            <div onclick="document.getElementById('btn_{area['id']}').click();" 
+                style="cursor:pointer; padding:15px; background-color:white; border-radius:10px; 
+                    box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:transform 0.2s, box-shadow 0.2s;
+                    {'opacity:0.6; filter:grayscale(70%);' if not is_unlocked else ''}">
+                <div style="font-size:2em; text-align:center; margin-bottom:10px;">{area["icon"]} {' 🔒' if not is_unlocked else ''}</div>
+                <h3 style="text-align:center; margin-bottom:5px;">{area["name"]}</h3>
+                <p style="font-size:0.9em; text-align:center;">{area["description"]}</p>
+            </div>
+            """
+            st.markdown(card_html, unsafe_allow_html=True)
+            
+            # Hidden button that gets triggered by clicking the card
+            if is_unlocked:
+                if st.button("Enter", key=f"btn_{area['id']}", label_visibility="collapsed"):
+                    if area["id"] == "clinical_area":
+                        st.session_state.game_view = "character_select"
+                    elif area["id"] == "achievements":
+                        st.session_state.game_view = "achievements"
+                    elif area["id"] == "collections":
+                        st.session_state.game_view = "collections"
+                    else:
+                        st.info(f"Entering {area['name']} - Feature coming soon!")
+        
+        # Close the grid div
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Quick access buttons for other functions
+        st.markdown("<hr style='margin:20px 0;'>", unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("📚 Game Instructions", key="show_instructions", use_container_width=True):
+                st.session_state.game_view = "instructions"
+        with col2:
+            if st.button("⚙️ Settings", key="show_settings", use_container_width=True):
+                st.session_state.game_view = "settings"
+        with col3:
+            if st.button("❓ Help", key="show_help", use_container_width=True):
+                st.session_state.game_view = "help"
     
     def _render_collections_interface(self):
         """Render the collections interface for discovered items and relics."""
@@ -1592,7 +2129,7 @@ class GameModule:
         return relic["name"] if relic else "Unknown Relic"
     
     def _render_game_interface(self):
-        """Render the main game (run) interface."""
+        """Render the main game (run) interface with pause and restart options."""
         game_state = st.session_state.game_state
         character = st.session_state.current_character
         
@@ -1600,7 +2137,66 @@ class GameModule:
             self._render_error_state()
             return
         
-        # Visual path map - NEW!
+        # Game control buttons in header
+        col1, col2, col3, col4 = st.columns([1, 1, 1, 3])
+        
+        with col1:
+            if st.button("⏸️ Pause", key="pause_game"):
+                # Save the current state
+                self._pause_game()
+                st.rerun()
+                
+        with col2:
+            if st.button("🔄 Restart", key="restart_game"):
+                if st.session_state.get('confirm_restart', False):
+                    self._restart_game()
+                    st.rerun()
+                else:
+                    # Set flag to show confirmation
+                    st.session_state.confirm_restart = True
+                    st.rerun()
+                    
+        with col3:
+            if st.button("🏠 Menu", key="exit_to_menu"):
+                if st.session_state.get('confirm_exit', False):
+                    self.return_to_hub()
+                    st.rerun()
+                else:
+                    # Set flag to show confirmation
+                    st.session_state.confirm_exit = True
+                    st.rerun()
+        
+        # Confirmation dialogs
+        if st.session_state.get('confirm_restart', False):
+            st.warning("Are you sure you want to restart? All progress will be lost.")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Yes, Restart", key="confirm_restart_yes"):
+                    self._restart_game()
+                    st.rerun()
+            with col2:
+                if st.button("Cancel", key="confirm_restart_no"):
+                    st.session_state.confirm_restart = False
+                    st.rerun()
+                    
+        if st.session_state.get('confirm_exit', False):
+            st.warning("Are you sure you want to exit? Progress will be saved.")
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Yes, Exit", key="confirm_exit_yes"):
+                    self.return_to_hub()
+                    st.rerun()
+            with col2:
+                if st.button("Cancel", key="confirm_exit_no"):
+                    st.session_state.confirm_exit = False
+                    st.rerun()
+        
+        # If game is paused, show pause screen
+        if st.session_state.get('game_paused', False):
+            self._render_pause_screen()
+            return
+        
+        # Visual path map - if not paused
         self._render_visual_path_map(game_state)
         
         # Game board - current floor
@@ -1608,6 +2204,76 @@ class GameModule:
         
         # Inventory and relics
         self._render_inventory_and_relics(character)
+
+    def _pause_game(self):
+        """Pause the current game."""
+        # Save game state automatically
+        save_name = f"autosave_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        self.save_manager.save_game(
+            st.session_state.game_state,
+            st.session_state.player_data,
+            st.session_state.achievement_manager,
+            save_name
+        )
+        
+        # Set pause flag
+        st.session_state.game_paused = True
+        st.session_state.pause_save_name = save_name
+
+    def _render_pause_screen(self):
+        """Render the pause screen."""
+        st.markdown("""
+        <div style="text-align:center; padding:30px; margin:20px auto; max-width:600px; 
+                background-color:var(--card-bg); border-radius:10px; box-shadow:0 2px 10px var(--card-border);">
+            <h1 style="margin-bottom:20px;">Game Paused</h1>
+            <p style="margin-bottom:30px;">Your game has been automatically saved.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("▶️ Resume Game", key="resume_game", use_container_width=True):
+                st.session_state.game_paused = False
+                st.rerun()
+        
+        with col2:
+            if st.button("🏠 Exit to Menu", key="exit_from_pause", use_container_width=True):
+                self.return_to_hub()
+                st.rerun()
+
+    def _restart_game(self):
+        """Restart the current game with the same character class."""
+        # Store the current character class
+        current_class = st.session_state.selected_character_class
+        
+        # Reset game state
+        st.session_state.game_state = None
+        st.session_state.current_character = None
+        st.session_state.confirm_restart = False
+        st.session_state.game_paused = False
+        
+        # Start a new run with the same class
+        st.session_state.selected_character_class = current_class
+        self.start_new_run()
+
+    def return_to_hub(self):
+        """Return to the hub interface."""
+        # If game is paused, save before returning
+        if st.session_state.get('game_paused', False) and st.session_state.game_state:
+            self.save_manager.save_game(
+                st.session_state.game_state,
+                st.session_state.player_data,
+                st.session_state.achievement_manager,
+                f"hub_exit_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            )
+        
+        # Reset state
+        st.session_state.game_view = "hub"
+        st.session_state.game_paused = False
+        st.session_state.confirm_exit = False
+        
+        # Keep character and game state for resume functionality
+        # We won't set them to None so they can be accessed later if needed
     
     def _render_error_state(self):
         """Render error state when no active game is found."""
