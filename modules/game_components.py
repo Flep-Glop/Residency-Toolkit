@@ -695,22 +695,28 @@ class GameState:
         # Otherwise, only nodes connected to visited nodes on previous floor
         available_nodes = []
         
-        if not hasattr(self, 'path_connections'):
-            # Fallback if no connection data
+        if not hasattr(self, 'path_connections') or not self.path_connections:
+            # Fallback if no connection data - show all nodes
             return self.path[self.current_floor - 1]
         
         # Get all visited nodes from previous floor
         prev_floor_nodes = self.path[self.current_floor - 2]
         visited_prev_nodes = [node for node in prev_floor_nodes if node["visited"]]
         
+        # Get current floor nodes
+        current_floor_nodes = self.path[self.current_floor - 1]
+        
         # Get all nodes connected to any visited node
         for source_node in visited_prev_nodes:
-            for target_id in self.path_connections.get(source_node["id"], []):
-                # Find the target node
-                for node in self.path[self.current_floor - 1]:
-                    if node["id"] == target_id:
-                        available_nodes.append(node)
-                        break
+            source_id = source_node["id"]
+            if source_id in self.path_connections:
+                for target_id in self.path_connections[source_id]:
+                    for node in current_floor_nodes:
+                        if node["id"] == target_id and node not in available_nodes:
+                            available_nodes.append(node)
+        
+        # Debug print to see what's being found
+        print(f"Found {len(available_nodes)} available nodes out of {len(current_floor_nodes)}")
         
         return available_nodes
 

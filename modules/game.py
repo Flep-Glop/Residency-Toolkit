@@ -181,81 +181,52 @@ class GameModule:
             Experience: {character.experience} / {character.experience_to_next_level}
         </div>
         """, unsafe_allow_html=True)
+
     def _render_character_animation(self):
-        """Render a multi-frame ASCII character animation."""
+        """Render a simpler ASCII character animation."""
         character = st.session_state.current_character
         
         if not character:
             return
         
-        # Define different frames based on character type
-        frames = {
-            "therapy_newbie": [
-                "   o   \n  /|\\  \n  / \\  ",
-                "   o   \n  /|\\  \n  / >  ",
-                "   o   \n  /|\\  \n  < \\  ",
-                "   o   \n  /|\\  \n  > \\  "
-            ],
-            "qa_specialist": [
-                "   O   \n  /|\\  \n  / \\  ",
-                "   O   \n -/|\\  \n  / \\  ",
-                "   O   \n  /|\\ -\n  / \\  ",
-                "   O   \n -/|\\ -\n  / \\  "
-            ],
-            "dosimetry_wizard": [
-                "  <O>  \n  /|\\  \n  / \\  ",
-                "  <O>  \n -/|\\  \n  / \\  ",
-                "  <O>  \n  /|\\ -\n  / \\  ",
-                "  <O>~ \n  /|\\  \n  / \\  "
-            ],
-            "medical_physics_resident": [
-                "   ◊   \n  /|\\  \n  / \\  ",
-                "   ◊   \n  /|\\  \n  / >  ",
-                "   ◊   \n  /|\\  \n  < \\  ",
-                "   ◊~  \n  /|\\  \n  / \\  "
-            ]
-        }
+        # Simple frames that should work reliably
+        frames = [
+            "  O  \n /|\\ \n / \\ ",
+            "  O  \n /|\\ \n / > ",
+            "  O  \n /|\\ \n < \\ ",
+            "  O  \n /|\\\\ \n / \\ "
+        ]
         
-        # Get frames for this character or use default
-        char_frames = frames.get(character.id, frames["therapy_newbie"])
-        char_frames_escaped = [frame.replace("\n", "\\A ") for frame in char_frames]
-        
-        # Frame CSS animation
-        frame_css = ""
-        for i, frame in enumerate(char_frames_escaped):
-            percentage = i * (100 / len(char_frames_escaped))
-            next_percentage = (i + 1) * (100 / len(char_frames_escaped))
-            if i < len(char_frames_escaped) - 1:
-                frame_css += f"{percentage}%, {next_percentage - 0.1}% {{ content: '{frame}'; }}\n"
-            else:
-                frame_css += f"{percentage}%, 100% {{ content: '{frame}'; }}\n"
-        
-        st.sidebar.markdown(f"""
+        # CSS for animation
+        st.sidebar.markdown("""
         <style>
-            @keyframes characterAnimation {{
-                {frame_css}
-            }}
+            @keyframes walk {
+                0% { content: "  O  \\A /|\\ \\A / \\ "; }
+                25% { content: "  O  \\A /|\\ \\A / > "; }
+                50% { content: "  O  \\A /|\\ \\A < \\ "; }
+                75% { content: "  O  \\A /|\\\\ \\A / \\ "; }
+            }
             
-            .ascii-character {{
+            .character-animation {
                 font-family: monospace;
                 white-space: pre;
                 display: block;
-                margin: 15px auto;
-                font-size: 18px;
-                line-height: 1.2;
+                margin: 15px 0;
                 text-align: center;
-                color: var(--text-color);
-                position: relative;
-            }}
+            }
             
-            .ascii-character::before {{
-                content: '{char_frames_escaped[0]}';
-                animation: characterAnimation 1.5s steps(1) infinite;
-            }}
+            .character-animation::before {
+                content: "  O  \\A /|\\ \\A / \\ ";
+                animation: walk 1s infinite steps(1);
+                white-space: pre;
+            }
         </style>
         
-        <div class="ascii-character"></div>
+        <div class="character-animation"></div>
         """, unsafe_allow_html=True)
+
+
+
     # ===== STYLE AND INITIALIZATION =====
     
     def _add_custom_css(self):
@@ -1528,13 +1499,17 @@ class GameModule:
         # Filter to only show available or already visited nodes
         nodes_to_display = [node for node in current_floor_nodes if node in available_nodes or node["visited"]]
         
-        # Create columns for nodes
-        if nodes_to_display:
-            cols = st.columns(len(nodes_to_display))
+        # Important: Check if there are nodes to display
+        if not nodes_to_display:
+            st.info("No available nodes found on this floor.")
+            return
         
-        for i, node in enumerate(current_floor_nodes):
+        # Create columns for nodes AFTER filtering
+        cols = st.columns(len(nodes_to_display))
+        
+        # Now iterate only through the nodes we're displaying
+        for i, node in enumerate(nodes_to_display):
             with cols[i]:
-                # Determine if node is available
                 is_available = node in available_nodes
                 
                 # Get node info
@@ -1691,43 +1666,50 @@ class GameModule:
         
         # Display each item
         for i, item in enumerate(character.inventory):
-            rarity_class = f"rarity-{item.get('rarity', 'common')}"
-            
-            # Add usage instructions based on effect type
-            usage_tip = ""
-            if "effect" in item:
-                effect = item["effect"]
-                if effect["type"] == "skip_cooldown":
-                    usage_tip = "Use this to skip waiting between questions."
-                elif effect["type"] == "reveal_wrong_answers":
-                    usage_tip = f"Reveals {effect.get('value', 1)} wrong answer options on a question."
-                elif effect["type"] == "escape_node":
-                    usage_tip = "Allows you to leave any node without penalties."
-                elif effect["type"] == "find_errors":
-                    usage_tip = "Automatically identifies errors in a question scenario."
-                elif effect["type"] == "extra_action":
-                    usage_tip = "Lets you answer two questions in one turn."
-                elif effect["type"] == "show_hint":
-                    usage_tip = "Provides a hint for the current question."
-                elif effect["type"] == "find_item":
-                    usage_tip = "Provides a special item when used."
-                elif effect["type"] == "reroll_question":
-                    usage_tip = "Changes the current question to a different one."
+            try:
+                # Safely get item properties
+                rarity = item.get("rarity", "common")
+                rarity_class = f"rarity-{rarity}"
+                item_name = item.get("name", "Item")
+                item_desc = item.get("description", "No description available")
+                item_icon = item.get("icon", "🔮")
                 
-            
-            st.markdown(f"""
-            <div class="item-card {rarity_class}">
-                <h4>{item.get('icon', '🔮')} {item['name']}</h4>
-                <p>{item['description']}</p>
-                <p><em style="color: #3498db;">Usage: {usage_tip}</em></p>
-                <p><small>Uses remaining: {item.get('uses', 1)}</small></p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            if st.button("Use", key=f"use_item_{i}"):
-                # Apply item effect
-                character.use_item(i)
-                st.rerun()
+                # Determine usage tip based on effect type
+                usage_tip = "Use for an advantage"
+                if "effect" in item:
+                    effect = item["effect"]
+                    effect_type = effect.get("type", "")
+                    
+                    if effect_type == "skip_cooldown":
+                        usage_tip = "Skip waiting between questions"
+                    elif effect_type == "reveal_wrong_answers":
+                        usage_tip = f"Reveal wrong answer options"
+                    elif effect_type == "escape_node":
+                        usage_tip = "Escape any node without penalties"
+                    elif effect_type == "extra_action":
+                        usage_tip = "Answer two questions in one turn"
+                    elif effect_type == "show_hint":
+                        usage_tip = "Get a hint for the current question"
+                    elif effect_type == "reroll_question":
+                        usage_tip = "Get a different question"
+                
+                # Render the item safely
+                st.markdown(f"""
+                <div class="item-card {rarity_class}">
+                    <h4>{item_icon} {item_name}</h4>
+                    <p>{item_desc}</p>
+                    <p><em>Usage: {usage_tip}</em></p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Use button
+                if st.button("Use", key=f"use_item_{i}"):
+                    character.use_item(i)
+                    st.rerun()
+                    
+            except Exception as e:
+                # Safely handle any issues with item rendering
+                st.error(f"Error displaying item: {str(e)}")
     
     def _render_relics(self, character):
         """Render the player's relics."""
