@@ -226,20 +226,19 @@ if st.session_state.show_landing_page:
     # Create a grid layout with 3 columns
     cols = st.columns(3)
     
-    # Display modules in columns
+    # Display modules in columns with explicit buttons
     for i, module in enumerate(implemented_modules):
         with cols[i % 3]:
-            # Module card with icon, title, and description
             st.markdown(f"""
-            <div class="module-card" onclick="document.getElementById('btn_{module['id']}').click();">
+            <div class="module-card">
                 <div class="module-icon">{module['icon']}</div>
                 <div class="module-title">{module['name']}</div>
                 <div class="module-desc">{module['description']}</div>
             </div>
             """, unsafe_allow_html=True)
             
-            # Hidden button
-            if st.button("Open", key=f"btn_{module['id']}", label_visibility="collapsed"):
+            # Regular button with clear text
+            if st.button(f"Open {module['name']}", key=f"btn_{module['id']}"):
                 go_to_module(module['name'])
             
 else:
