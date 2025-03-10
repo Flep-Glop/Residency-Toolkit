@@ -1,0 +1,1335 @@
+{
+  "game_state": {
+    "character": {
+      "id": "therapy_newbie",
+      "name": "Therapy Newbie",
+      "icon": "/-\\",
+      "lives": 1,
+      "max_lives": 3,
+      "insight": 10,
+      "level": 2,
+      "experience": 0,
+      "experience_to_next_level": 96,
+      "active_perks": [
+        {
+          "id": "efficiency_expert",
+          "name": "Efficiency Expert",
+          "description": "You've learned to handle multiple tasks at once.",
+          "rarity": "uncommon",
+          "effect": {
+            "type": "multi_node_chance",
+            "value": 0.2,
+            "description": "20% chance to attempt two nodes with one action"
+          }
+        }
+      ],
+      "inventory": [],
+      "relics": [
+        {
+          "id": "dog_eared_tg51",
+          "name": "Dog-eared TG-51 Protocol",
+          "description": "This well-used protocol guide has seen better days, but the knowledge remains.",
+          "rarity": "starter",
+          "icon": "[TG51]",
+          "effect": {
+            "type": "question_bonus",
+            "condition": "topic",
+            "condition_value": "calibration",
+            "value": 0.15,
+            "description": "+15% on output calibration questions"
+          }
+        }
+      ]
+    },
+    "current_floor": 10,
+    "max_floor": 10,
+    "nodes_per_floor": 3,
+    "path": [
+      [
+        {
+          "id": "node_0_0_4900",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": true,
+          "floor": 0,
+          "position": 0,
+          "content": {
+            "id": "imaging-2",
+            "category": "imaging",
+            "difficulty": 1,
+            "question": "What is the typical slice thickness used in CT simulation for radiotherapy planning?",
+            "options": [
+              "0.5-1 mm",
+              "2-3 mm",
+              "5-10 mm",
+              "15-20 mm"
+            ],
+            "correct_answer": 1,
+            "explanation": "Typical slice thickness for CT simulation in radiotherapy planning is 2-3 mm, balancing spatial resolution with imaging dose and data size."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_1_0_9543",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": true,
+          "floor": 1,
+          "position": 0,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_1_1_7462",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "radiation",
+          "visited": false,
+          "floor": 1,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_2_0_5033",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "qa",
+          "visited": true,
+          "floor": 2,
+          "position": 0,
+          "content": {
+            "id": "qa-1",
+            "category": "qa",
+            "difficulty": 1,
+            "question": "Which of the following is typically measured in monthly linac QA?",
+            "options": [
+              "Electron contamination",
+              "Output constancy",
+              "Leakage radiation",
+              "Housing integrity"
+            ],
+            "correct_answer": 1,
+            "explanation": "Output constancy is a critical parameter checked during monthly QA to ensure the linac is delivering the expected dose."
+          }
+        },
+        {
+          "id": "node_2_1_9596",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": false,
+          "floor": 2,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_2_2_9949",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 2,
+          "position": 2,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_3_0_8958",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 3,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_3_1_1727",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": true,
+          "floor": 3,
+          "position": 1,
+          "content": {
+            "title": "Conference",
+            "text": "You attend a conference and make valuable connections.",
+            "effect": {
+              "type": "find_item",
+              "rarity": "uncommon"
+            }
+          }
+        },
+        {
+          "id": "node_3_2_5803",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 3,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_3_3_7991",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 2,
+          "category": "calculation",
+          "visited": false,
+          "floor": 3,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_4_0_1685",
+          "type": "encounter",
+          "name": "Special Event",
+          "icon": "\ud83d\udd0d",
+          "difficulty": 2,
+          "category": "qa",
+          "visited": false,
+          "floor": 4,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_4_1_6907",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": true,
+          "floor": 4,
+          "position": 1,
+          "content": {
+            "id": "dosimetry-4",
+            "category": "dosimetry",
+            "difficulty": 2,
+            "question": "Which of the following electron beam parameters is characterized by R50?",
+            "options": [
+              "The practical range",
+              "The depth of maximum dose",
+              "The half-value depth",
+              "The depth where the dose falls to 50% of its maximum value"
+            ],
+            "correct_answer": 3,
+            "explanation": "R50 is the depth where the electron dose falls to 50% of its maximum value, and it is used to characterize the electron beam quality."
+          }
+        },
+        {
+          "id": "node_4_2_6246",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 4,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_4_3_1318",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": false,
+          "floor": 4,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_5_0_6847",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "calculation",
+          "visited": true,
+          "floor": 5,
+          "position": 0,
+          "content": {
+            "id": "calculation-3",
+            "category": "calculation",
+            "difficulty": 2,
+            "question": "A 6 MV photon beam has a PDD of 67.3% at 10 cm depth and 100 cm SSD. What is the approximate TMR at 10 cm depth and 100 cm SAD?",
+            "options": [
+              "0.673",
+              "0.750",
+              "0.806",
+              "0.900"
+            ],
+            "correct_answer": 2,
+            "explanation": "The TMR can be calculated from PDD using the relationship TMR = PDD \u00d7 ((100+d)/100)\u00b2. For 10 cm depth, TMR \u2248 0.673 \u00d7 (110/100)\u00b2 \u2248 0.806"
+          }
+        },
+        {
+          "id": "node_5_1_1718",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 5,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_5_2_4131",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "calculation",
+          "visited": false,
+          "floor": 5,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_5_3_5763",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": false,
+          "floor": 5,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_6_0_5373",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "qa",
+          "visited": false,
+          "floor": 6,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_6_1_5923",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": true,
+          "floor": 6,
+          "position": 1,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_6_2_5065",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 6,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_6_3_8902",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "floor": 6,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_7_0_6255",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": false,
+          "floor": 7,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_7_1_2095",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 7,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_7_2_1747",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "radiation",
+          "visited": true,
+          "floor": 7,
+          "position": 2,
+          "content": {
+            "title": "Complex Case",
+            "text": "You face a challenging clinical scenario.",
+            "questions": [
+              {
+                "id": "radiation-5",
+                "category": "radiation",
+                "difficulty": 3,
+                "question": "What is the primary factor that determines induced activity in a linear accelerator during high-energy photon beam operation?",
+                "options": [
+                  "Beam energy",
+                  "Dose rate",
+                  "Field size",
+                  "Beam symmetry"
+                ],
+                "correct_answer": 0,
+                "explanation": "Beam energy is the primary factor that determines photonuclear reactions leading to induced activity in a linear accelerator. Energies above 10 MV can produce photoneutrons that cause activation."
+              },
+              {
+                "id": "radiation-5",
+                "category": "radiation",
+                "difficulty": 3,
+                "question": "What is the primary factor that determines induced activity in a linear accelerator during high-energy photon beam operation?",
+                "options": [
+                  "Beam energy",
+                  "Dose rate",
+                  "Field size",
+                  "Beam symmetry"
+                ],
+                "correct_answer": 0,
+                "explanation": "Beam energy is the primary factor that determines photonuclear reactions leading to induced activity in a linear accelerator. Energies above 10 MV can produce photoneutrons that cause activation."
+              }
+            ],
+            "reward": {
+              "type": "find_relic",
+              "rarity": "uncommon"
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_8_0_2031",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "qa",
+          "visited": true,
+          "floor": 8,
+          "position": 0,
+          "content": {
+            "id": "qa-5",
+            "category": "qa",
+            "difficulty": 3,
+            "question": "According to TG-218, what is the recommended gamma criteria for IMRT/VMAT patient-specific QA?",
+            "options": [
+              "2%/1mm with 95% passing rate",
+              "3%/2mm with 90% passing rate",
+              "3%/3mm with 95% passing rate",
+              "5%/3mm with 90% passing rate"
+            ],
+            "correct_answer": 2,
+            "explanation": "TG-218 recommends a gamma criteria of 3%/3mm with a 95% passing rate, but also notes that each clinic should establish its own action levels based on their specific equipment and procedures."
+          }
+        },
+        {
+          "id": "node_8_1_6804",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "calculation",
+          "visited": false,
+          "floor": 8,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_9_0_9905",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": true,
+          "floor": 9,
+          "position": 0,
+          "content": {
+            "title": "Rotation Evaluation",
+            "text": "Your knowledge is being tested as part of your rotation evaluation.",
+            "questions": [
+              {
+                "id": "planning-1",
+                "category": "planning",
+                "difficulty": 1,
+                "question": "Which of the following dose-volume metrics would be most relevant for evaluating the risk of radiation pneumonitis?",
+                "options": [
+                  "Lung V5",
+                  "Lung V20",
+                  "Lung V50",
+                  "Lung Dmax"
+                ],
+                "correct_answer": 1,
+                "explanation": "Lung V20 (the volume of lung receiving \u226520 Gy) is commonly used to evaluate the risk of radiation pneumonitis."
+              },
+              {
+                "id": "planning-3",
+                "category": "planning",
+                "difficulty": 2,
+                "question": "Which of the following is a potential disadvantage of using a non-coplanar beam arrangement?",
+                "options": [
+                  "Reduced dose conformity",
+                  "Increased treatment time",
+                  "Reduced skin sparing",
+                  "Increased heterogeneity corrections"
+                ],
+                "correct_answer": 1,
+                "explanation": "Non-coplanar beam arrangements generally increase treatment time due to the need for couch rotations between fields, although they may provide dosimetric advantages in certain cases."
+              },
+              {
+                "id": "planning-5",
+                "category": "planning",
+                "difficulty": 3,
+                "question": "Which of the following optimization objectives would be LEAST appropriate for a prostate IMRT plan?",
+                "options": [
+                  "Maximize target coverage with 95% of prescription dose",
+                  "Minimize rectal volume receiving >70 Gy",
+                  "Minimize femoral head maximum dose to <45 Gy",
+                  "Maximize dose conformity to femoral heads"
+                ],
+                "correct_answer": 3,
+                "explanation": "Maximizing dose conformity to femoral heads would be inappropriate as the femoral heads are critical structures to avoid, not targets for dose delivery."
+              }
+            ],
+            "reward": {
+              "type": "complete_rotation",
+              "value": 10
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_2_9495",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "id": "dosimetry-1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_2_2118",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "id": "dosimetry-2",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "Which of the following chambers is typically used for reference dosimetry in external beam radiotherapy?",
+            "options": [
+              "Parallel plate chamber",
+              "Farmer-type cylindrical chamber",
+              "Micro-chamber",
+              "Diamond detector"
+            ],
+            "correct_answer": 1,
+            "explanation": "Farmer-type cylindrical chambers are commonly used for reference dosimetry in external beam radiotherapy due to their stability and well-characterized response."
+          }
+        },
+        {
+          "id": "node_2_5656",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "id": "calculation-1",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "What is the equivalent dose in Sv for a tissue exposed to 2 Gy of proton radiation with a radiation weighting factor of 2?",
+            "options": [
+              "1 Sv",
+              "2 Sv",
+              "4 Sv",
+              "8 Sv"
+            ],
+            "correct_answer": 2,
+            "explanation": "Equivalent dose (Sv) = Absorbed dose (Gy) \u00d7 Radiation weighting factor. So, 2 Gy \u00d7 2 = 4 Sv."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_4741",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "id": "planning-2",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "What is the main advantage of IMRT over 3D conformal radiotherapy?",
+            "options": [
+              "Lower monitor units",
+              "Faster treatment delivery",
+              "Better dose conformity to the target",
+              "Simplified quality assurance"
+            ],
+            "correct_answer": 2,
+            "explanation": "The main advantage of IMRT over 3D conformal radiotherapy is better dose conformity to the target volume, especially for complex shapes, allowing better sparing of adjacent normal tissues."
+          }
+        },
+        {
+          "id": "node_3_9386",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 0,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_3_8175",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "id": "regulations-2",
+            "category": "regulations",
+            "difficulty": 1,
+            "question": "According to regulatory requirements, how often must a linear accelerator's calibration be verified?",
+            "options": [
+              "Daily",
+              "Weekly",
+              "Monthly",
+              "Annually"
+            ],
+            "correct_answer": 0,
+            "explanation": "Daily output constancy checks are required by regulatory agencies to ensure that the linear accelerator's calibration remains within acceptable limits."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_4_1255",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "id": "dosimetry-4",
+            "category": "dosimetry",
+            "difficulty": 2,
+            "question": "Which of the following electron beam parameters is characterized by R50?",
+            "options": [
+              "The practical range",
+              "The depth of maximum dose",
+              "The half-value depth",
+              "The depth where the dose falls to 50% of its maximum value"
+            ],
+            "correct_answer": 3,
+            "explanation": "R50 is the depth where the electron dose falls to 50% of its maximum value, and it is used to characterize the electron beam quality."
+          }
+        },
+        {
+          "id": "node_4_8740",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "imaging",
+          "visited": false,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        },
+        {
+          "id": "node_4_5245",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "id": "calculation-3",
+            "category": "calculation",
+            "difficulty": 2,
+            "question": "A 6 MV photon beam has a PDD of 67.3% at 10 cm depth and 100 cm SSD. What is the approximate TMR at 10 cm depth and 100 cm SAD?",
+            "options": [
+              "0.673",
+              "0.750",
+              "0.806",
+              "0.900"
+            ],
+            "correct_answer": 2,
+            "explanation": "The TMR can be calculated from PDD using the relationship TMR = PDD \u00d7 ((100+d)/100)\u00b2. For 10 cm depth, TMR \u2248 0.673 \u00d7 (110/100)\u00b2 \u2248 0.806"
+          }
+        }
+      ],
+      [
+        {
+          "id": "boss_5_1920",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "multi",
+          "visited": false,
+          "content": {
+            "title": "Rotation Evaluation",
+            "text": "Your knowledge is being tested as part of your rotation evaluation.",
+            "questions": [
+              {
+                "id": "regulations-2",
+                "category": "regulations",
+                "difficulty": 1,
+                "question": "According to regulatory requirements, how often must a linear accelerator's calibration be verified?",
+                "options": [
+                  "Daily",
+                  "Weekly",
+                  "Monthly",
+                  "Annually"
+                ],
+                "correct_answer": 0,
+                "explanation": "Daily output constancy checks are required by regulatory agencies to ensure that the linear accelerator's calibration remains within acceptable limits."
+              },
+              {
+                "id": "regulations-3",
+                "category": "regulations",
+                "difficulty": 2,
+                "question": "According to NRC regulations, how soon must a medical event be reported to the NRC Operations Center?",
+                "options": [
+                  "Immediately",
+                  "Within 24 hours",
+                  "Within 48 hours",
+                  "Within 30 days"
+                ],
+                "correct_answer": 1,
+                "explanation": "According to NRC regulations, a medical event must be reported to the NRC Operations Center within 24 hours of discovery."
+              },
+              {
+                "id": "dosimetry-5",
+                "category": "dosimetry",
+                "difficulty": 3,
+                "question": "A 10\u00d710 cm\u00b2 field is measured to have a PDD(10) of 66.8%. What is the approximate beam quality specifier (TPR20,10) for this beam?",
+                "options": [
+                  "0.628",
+                  "0.668",
+                  "0.733",
+                  "0.768"
+                ],
+                "correct_answer": 2,
+                "explanation": "The approximate conversion from PDD(10) to TPR20,10 for a 10\u00d710 cm\u00b2 field is given by TPR20,10 \u2248 1.2661 \u00d7 PDD(10) - 0.0595, which gives 0.733 for a PDD(10) of 66.8%."
+              }
+            ],
+            "reward": {
+              "type": "complete_rotation",
+              "value": 5
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_6_2592",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "title": "Complex Case",
+            "text": "You face a particularly challenging clinical scenario.",
+            "questions": [
+              {
+                "id": "dosimetry-5",
+                "category": "dosimetry",
+                "difficulty": 3,
+                "question": "A 10\u00d710 cm\u00b2 field is measured to have a PDD(10) of 66.8%. What is the approximate beam quality specifier (TPR20,10) for this beam?",
+                "options": [
+                  "0.628",
+                  "0.668",
+                  "0.733",
+                  "0.768"
+                ],
+                "correct_answer": 2,
+                "explanation": "The approximate conversion from PDD(10) to TPR20,10 for a 10\u00d710 cm\u00b2 field is given by TPR20,10 \u2248 1.2661 \u00d7 PDD(10) - 0.0595, which gives 0.733 for a PDD(10) of 66.8%."
+              },
+              {
+                "id": "qa-5",
+                "category": "qa",
+                "difficulty": 3,
+                "question": "According to TG-218, what is the recommended gamma criteria for IMRT/VMAT patient-specific QA?",
+                "options": [
+                  "2%/1mm with 95% passing rate",
+                  "3%/2mm with 90% passing rate",
+                  "3%/3mm with 95% passing rate",
+                  "5%/3mm with 90% passing rate"
+                ],
+                "correct_answer": 2,
+                "explanation": "TG-218 recommends a gamma criteria of 3%/3mm with a 95% passing rate, but also notes that each clinic should establish its own action levels based on their specific equipment and procedures."
+              }
+            ],
+            "reward": {
+              "type": "find_relic",
+              "rarity": "uncommon"
+            }
+          }
+        },
+        {
+          "id": "node_6_1924",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "title": "Complex Case",
+            "text": "You face a particularly challenging clinical scenario.",
+            "questions": [
+              {
+                "id": "qa-5",
+                "category": "qa",
+                "difficulty": 3,
+                "question": "According to TG-218, what is the recommended gamma criteria for IMRT/VMAT patient-specific QA?",
+                "options": [
+                  "2%/1mm with 95% passing rate",
+                  "3%/2mm with 90% passing rate",
+                  "3%/3mm with 95% passing rate",
+                  "5%/3mm with 90% passing rate"
+                ],
+                "correct_answer": 2,
+                "explanation": "TG-218 recommends a gamma criteria of 3%/3mm with a 95% passing rate, but also notes that each clinic should establish its own action levels based on their specific equipment and procedures."
+              },
+              {
+                "id": "qa-5",
+                "category": "qa",
+                "difficulty": 3,
+                "question": "According to TG-218, what is the recommended gamma criteria for IMRT/VMAT patient-specific QA?",
+                "options": [
+                  "2%/1mm with 95% passing rate",
+                  "3%/2mm with 90% passing rate",
+                  "3%/3mm with 95% passing rate",
+                  "5%/3mm with 90% passing rate"
+                ],
+                "correct_answer": 2,
+                "explanation": "TG-218 recommends a gamma criteria of 3%/3mm with a 95% passing rate, but also notes that each clinic should establish its own action levels based on their specific equipment and procedures."
+              }
+            ],
+            "reward": {
+              "type": "find_relic",
+              "rarity": "uncommon"
+            }
+          }
+        },
+        {
+          "id": "node_6_7601",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_7_5259",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "qa",
+          "visited": false,
+          "content": {
+            "title": "Complex Case",
+            "text": "You face a particularly challenging clinical scenario.",
+            "questions": [
+              {
+                "id": "planning-5",
+                "category": "planning",
+                "difficulty": 3,
+                "question": "Which of the following optimization objectives would be LEAST appropriate for a prostate IMRT plan?",
+                "options": [
+                  "Maximize target coverage with 95% of prescription dose",
+                  "Minimize rectal volume receiving >70 Gy",
+                  "Minimize femoral head maximum dose to <45 Gy",
+                  "Maximize dose conformity to femoral heads"
+                ],
+                "correct_answer": 3,
+                "explanation": "Maximizing dose conformity to femoral heads would be inappropriate as the femoral heads are critical structures to avoid, not targets for dose delivery."
+              },
+              {
+                "id": "imaging-5",
+                "category": "imaging",
+                "difficulty": 3,
+                "question": "In cone-beam CT reconstruction, what artifact can occur due to insufficient projection data when scanning long objects?",
+                "options": [
+                  "Ring artifacts",
+                  "Beam hardening",
+                  "Scatter artifacts",
+                  "Truncation artifacts"
+                ],
+                "correct_answer": 3,
+                "explanation": "Truncation artifacts occur in cone-beam CT when the object extends beyond the field of view, resulting in incomplete projection data and reconstruction errors at the edges."
+              }
+            ],
+            "reward": {
+              "type": "find_relic",
+              "rarity": "uncommon"
+            }
+          }
+        },
+        {
+          "id": "node_7_2722",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "radiation",
+          "visited": false,
+          "content": {
+            "id": "radiation-3",
+            "category": "radiation",
+            "difficulty": 2,
+            "question": "Which of the following is the most effective shielding material for gamma radiation?",
+            "options": [
+              "Concrete",
+              "Lead",
+              "Aluminum",
+              "Water"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lead is the most effective shielding material for gamma radiation due to its high density and high atomic number."
+          }
+        },
+        {
+          "id": "node_7_3560",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "id": "regulations-3",
+            "category": "regulations",
+            "difficulty": 2,
+            "question": "According to NRC regulations, how soon must a medical event be reported to the NRC Operations Center?",
+            "options": [
+              "Immediately",
+              "Within 24 hours",
+              "Within 48 hours",
+              "Within 30 days"
+            ],
+            "correct_answer": 1,
+            "explanation": "According to NRC regulations, a medical event must be reported to the NRC Operations Center within 24 hours of discovery."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_8_2847",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 0,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "title": "Conference",
+            "text": "You attend a conference and make valuable connections.",
+            "effect": {
+              "type": "find_item",
+              "rarity": "common"
+            }
+          }
+        },
+        {
+          "id": "node_8_6705",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "qa",
+          "visited": false,
+          "content": {
+            "id": "qa-5",
+            "category": "qa",
+            "difficulty": 3,
+            "question": "According to TG-218, what is the recommended gamma criteria for IMRT/VMAT patient-specific QA?",
+            "options": [
+              "2%/1mm with 95% passing rate",
+              "3%/2mm with 90% passing rate",
+              "3%/3mm with 95% passing rate",
+              "5%/3mm with 90% passing rate"
+            ],
+            "correct_answer": 2,
+            "explanation": "TG-218 recommends a gamma criteria of 3%/3mm with a 95% passing rate, but also notes that each clinic should establish its own action levels based on their specific equipment and procedures."
+          }
+        },
+        {
+          "id": "node_8_2509",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "radiation",
+          "visited": false,
+          "content": {
+            "id": "radiation-5",
+            "category": "radiation",
+            "difficulty": 3,
+            "question": "What is the primary factor that determines induced activity in a linear accelerator during high-energy photon beam operation?",
+            "options": [
+              "Beam energy",
+              "Dose rate",
+              "Field size",
+              "Beam symmetry"
+            ],
+            "correct_answer": 0,
+            "explanation": "Beam energy is the primary factor that determines photonuclear reactions leading to induced activity in a linear accelerator. Energies above 10 MV can produce photoneutrons that cause activation."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_9_9168",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "id": "regulations-5",
+            "category": "regulations",
+            "difficulty": 3,
+            "question": "According to TG-100, what is the primary method recommended for identifying potential failure modes in a radiotherapy process?",
+            "options": [
+              "Root Cause Analysis (RCA)",
+              "Failure Mode and Effects Analysis (FMEA)",
+              "Process Mapping",
+              "Fault Tree Analysis (FTA)"
+            ],
+            "correct_answer": 1,
+            "explanation": "TG-100 recommends Failure Mode and Effects Analysis (FMEA) as the primary method for proactively identifying potential failure modes in radiotherapy processes."
+          }
+        },
+        {
+          "id": "node_9_4381",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 0,
+          "category": "radiation",
+          "visited": false,
+          "content": {
+            "title": "Break Room",
+            "text": "You take a moment to rest and recover.",
+            "effect": {
+              "type": "restore_life",
+              "value": 1
+            }
+          }
+        },
+        {
+          "id": "node_9_9300",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 0,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "title": "Conference",
+            "text": "You attend a conference and make valuable connections.",
+            "effect": {
+              "type": "find_item",
+              "rarity": "common"
+            }
+          }
+        }
+      ],
+      [
+        {
+          "id": "boss_10_6270",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "multi",
+          "visited": false,
+          "content": {
+            "title": "Rotation Evaluation",
+            "text": "Your knowledge is being tested as part of your rotation evaluation.",
+            "questions": [
+              {
+                "id": "dosimetry-1",
+                "category": "dosimetry",
+                "difficulty": 1,
+                "question": "What is the correction factor for temperature and pressure called in TG-51?",
+                "options": [
+                  "PTP",
+                  "kTP",
+                  "CTP",
+                  "PTC"
+                ],
+                "correct_answer": 1,
+                "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+              },
+              {
+                "id": "imaging-3",
+                "category": "imaging",
+                "difficulty": 2,
+                "question": "Which of the following parameters is NOT directly adjusted by the automatic exposure control (AEC) in a CT scanner?",
+                "options": [
+                  "Tube current (mA)",
+                  "Tube voltage (kVp)",
+                  "Pitch",
+                  "Rotation time"
+                ],
+                "correct_answer": 3,
+                "explanation": "Automatic exposure control (AEC) in CT primarily modulates the tube current (mA) based on patient attenuation to maintain image quality. Rotation time is typically set manually."
+              },
+              {
+                "id": "imaging-5",
+                "category": "imaging",
+                "difficulty": 3,
+                "question": "In cone-beam CT reconstruction, what artifact can occur due to insufficient projection data when scanning long objects?",
+                "options": [
+                  "Ring artifacts",
+                  "Beam hardening",
+                  "Scatter artifacts",
+                  "Truncation artifacts"
+                ],
+                "correct_answer": 3,
+                "explanation": "Truncation artifacts occur in cone-beam CT when the object extends beyond the field of view, resulting in incomplete projection data and reconstruction errors at the edges."
+              }
+            ],
+            "reward": {
+              "type": "complete_rotation",
+              "value": 10
+            }
+          }
+        }
+      ]
+    ],
+    "visited_nodes": [
+      "node_5_0_6847",
+      "node_2_0_5033",
+      "node_4_1_6907",
+      "node_1_0_9543",
+      "node_7_2_1747",
+      "node_8_0_2031",
+      "node_9_0_9905",
+      "node_3_1_1727",
+      "node_0_0_4900",
+      "node_6_1_5923"
+    ],
+    "current_node": {
+      "id": "node_9_0_9905",
+      "type": "boss",
+      "name": "Rotation Evaluation",
+      "icon": "\u2b50",
+      "difficulty": 3,
+      "category": "planning",
+      "visited": true,
+      "floor": 9,
+      "position": 0,
+      "content": {
+        "title": "Rotation Evaluation",
+        "text": "Your knowledge is being tested as part of your rotation evaluation.",
+        "questions": [
+          {
+            "id": "planning-1",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "Which of the following dose-volume metrics would be most relevant for evaluating the risk of radiation pneumonitis?",
+            "options": [
+              "Lung V5",
+              "Lung V20",
+              "Lung V50",
+              "Lung Dmax"
+            ],
+            "correct_answer": 1,
+            "explanation": "Lung V20 (the volume of lung receiving \u226520 Gy) is commonly used to evaluate the risk of radiation pneumonitis."
+          },
+          {
+            "id": "planning-3",
+            "category": "planning",
+            "difficulty": 2,
+            "question": "Which of the following is a potential disadvantage of using a non-coplanar beam arrangement?",
+            "options": [
+              "Reduced dose conformity",
+              "Increased treatment time",
+              "Reduced skin sparing",
+              "Increased heterogeneity corrections"
+            ],
+            "correct_answer": 1,
+            "explanation": "Non-coplanar beam arrangements generally increase treatment time due to the need for couch rotations between fields, although they may provide dosimetric advantages in certain cases."
+          },
+          {
+            "id": "planning-5",
+            "category": "planning",
+            "difficulty": 3,
+            "question": "Which of the following optimization objectives would be LEAST appropriate for a prostate IMRT plan?",
+            "options": [
+              "Maximize target coverage with 95% of prescription dose",
+              "Minimize rectal volume receiving >70 Gy",
+              "Minimize femoral head maximum dose to <45 Gy",
+              "Maximize dose conformity to femoral heads"
+            ],
+            "correct_answer": 3,
+            "explanation": "Maximizing dose conformity to femoral heads would be inappropriate as the femoral heads are critical structures to avoid, not targets for dose delivery."
+          }
+        ],
+        "reward": {
+          "type": "complete_rotation",
+          "value": 10
+        }
+      }
+    },
+    "score": 22,
+    "streak": 1,
+    "start_time": 1741575910.889106,
+    "end_time": 1741576406.003032,
+    "is_completed": true,
+    "is_successful": true
+  },
+  "player_data": {
+    "class": null,
+    "level": 1,
+    "completed_runs": 1,
+    "total_score": 1042,
+    "highest_score": 1042,
+    "highest_floor": 10
+  },
+  "achievements": {
+    "unlocked_achievements": [
+      "first_run"
+    ]
+  },
+  "timestamp": 1741576406.003693,
+  "version": "1.0.0"
+}
