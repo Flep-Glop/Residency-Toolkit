@@ -105,26 +105,20 @@ class GameModule:
         # Initialize session state if not already done
         self._init_session_state()
         
-        # Add character visualization - NEW FEATURE
-        if st.session_state.game_view == "game" and st.session_state.current_character:
+        # Always show character info if in a game
+        if (st.session_state.game_view != "hub" and 
+            st.session_state.game_view != "character_select" and 
+            st.session_state.game_view != "run_end" and
+            hasattr(st.session_state, 'current_character') and 
+            st.session_state.current_character):
+            
+            # Render character visualization and animation
             self._render_character_visualization()
+            self._render_character_animation()
         
         # Render the appropriate view
         view_renderers = {
-            "hub": self._render_hub_interface,
-            "character_select": self._render_character_select,
-            "game": self._render_game_interface,
-            "question": self._render_question_interface,
-            "result": self._render_question_result,
-            "level_up": self._render_level_up_interface,
-            "encounter": self._render_encounter_interface,
-            "elite": self._render_elite_interface,
-            "boss": self._render_boss_interface,
-            "run_end": self._render_run_end_interface,
-            "achievements": self._render_achievements_interface,
-            "settings": self._render_settings_interface,
-            "help": self._render_help_interface,
-            "instructions": self._render_instructions_interface  # NEW VIEW
+            # Your existing renderers
         }
         
         # Get the current view and render it
