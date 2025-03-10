@@ -1,0 +1,628 @@
+{
+  "game_state": {
+    "character": {
+      "id": "dosimetry_wizard",
+      "name": "Dosimetry Wizard",
+      "icon": "(o o)",
+      "lives": 0,
+      "max_lives": 2,
+      "insight": 20,
+      "level": 1,
+      "experience": 0,
+      "experience_to_next_level": 90,
+      "active_perks": [],
+      "inventory": [
+        {
+          "id": "pocket_handbook",
+          "name": "Pocket Handbook",
+          "description": "A concise reference guide that fits in your pocket.",
+          "rarity": "common",
+          "icon": "[--]",
+          "effect": {
+            "type": "reveal_wrong_answer",
+            "value": 1,
+            "description": "Reveals one wrong answer"
+          },
+          "uses": 3
+        }
+      ],
+      "relics": [
+        {
+          "id": "calibrated_calculator",
+          "name": "Calibrated Calculator",
+          "description": "This specialized calculator has dose calculation formulas pre-programmed.",
+          "rarity": "starter",
+          "icon": "[0.00]",
+          "effect": {
+            "type": "auto_solve",
+            "condition": "question_type",
+            "condition_value": "calculation",
+            "difficulty_max": 1,
+            "description": "Auto-solves basic dose calculations"
+          }
+        }
+      ]
+    },
+    "current_floor": 3,
+    "max_floor": 10,
+    "nodes_per_floor": 3,
+    "path": [
+      [
+        {
+          "id": "node_0_0_3292",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "regulations",
+          "visited": true,
+          "floor": 0,
+          "position": 0,
+          "content": {
+            "id": "regulations-2",
+            "category": "regulations",
+            "difficulty": 1,
+            "question": "According to regulatory requirements, how often must a linear accelerator's calibration be verified?",
+            "options": [
+              "Daily",
+              "Weekly",
+              "Monthly",
+              "Annually"
+            ],
+            "correct_answer": 0,
+            "explanation": "Daily output constancy checks are required by regulatory agencies to ensure that the linear accelerator's calibration remains within acceptable limits."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_1_0_6589",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 1,
+          "category": "imaging",
+          "visited": true,
+          "floor": 1,
+          "position": 0,
+          "content": {
+            "title": "Conference",
+            "text": "You attend a conference and make valuable connections.",
+            "effect": {
+              "type": "find_item",
+              "rarity": "common"
+            }
+          }
+        },
+        {
+          "id": "node_1_1_7119",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "floor": 1,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_2_0_3131",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": false,
+          "floor": 2,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_2_1_6354",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": true,
+          "floor": 2,
+          "position": 1,
+          "content": {
+            "id": "calculation-2",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "If a radioisotope has a half-life of 8 days, approximately what fraction of the original activity will remain after 24 days?",
+            "options": [
+              "1/8",
+              "1/4",
+              "1/6",
+              "1/3"
+            ],
+            "correct_answer": 0,
+            "explanation": "After 24 days (3 half-lives), the remaining activity is (1/2)\u00b3 = 1/8 of the original activity."
+          }
+        },
+        {
+          "id": "node_2_2_4453",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "floor": 2,
+          "position": 2,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_3_0_5010",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 3,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_3_1_8636",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 3,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_3_2_7621",
+          "type": "encounter",
+          "name": "Special Event",
+          "icon": "\ud83d\udd0d",
+          "difficulty": 2,
+          "category": "qa",
+          "visited": false,
+          "floor": 3,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_3_3_3739",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 2,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 3,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_4_0_5178",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 4,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_4_1_2545",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": false,
+          "floor": 4,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_4_2_5682",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": false,
+          "floor": 4,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_4_3_5628",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 2,
+          "category": "imaging",
+          "visited": false,
+          "floor": 4,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_5_0_4637",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 2,
+          "category": "regulations",
+          "visited": false,
+          "floor": 5,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_5_1_2391",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 2,
+          "category": "radiation",
+          "visited": false,
+          "floor": 5,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_5_2_2806",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 2,
+          "category": "planning",
+          "visited": false,
+          "floor": 5,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_5_3_4166",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 5,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_6_0_6774",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "imaging",
+          "visited": false,
+          "floor": 6,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_6_1_3886",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 6,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_6_2_9579",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "qa",
+          "visited": false,
+          "floor": 6,
+          "position": 2,
+          "content": null
+        },
+        {
+          "id": "node_6_3_5383",
+          "type": "elite",
+          "name": "Complex Case",
+          "icon": "\u26a0\ufe0f",
+          "difficulty": 3,
+          "category": "calculation",
+          "visited": false,
+          "floor": 6,
+          "position": 3,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_7_0_4583",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 7,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_7_1_2682",
+          "type": "treasure",
+          "name": "Conference",
+          "icon": "\ud83c\udf81",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "floor": 7,
+          "position": 1,
+          "content": null
+        },
+        {
+          "id": "node_7_2_5443",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "floor": 7,
+          "position": 2,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_8_0_2695",
+          "type": "encounter",
+          "name": "Special Event",
+          "icon": "\ud83d\udd0d",
+          "difficulty": 3,
+          "category": "dosimetry",
+          "visited": false,
+          "floor": 8,
+          "position": 0,
+          "content": null
+        },
+        {
+          "id": "node_8_1_2391",
+          "type": "rest",
+          "name": "Break Room",
+          "icon": "\u2615",
+          "difficulty": 3,
+          "category": "regulations",
+          "visited": false,
+          "floor": 8,
+          "position": 1,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_9_0_6004",
+          "type": "boss",
+          "name": "Rotation Evaluation",
+          "icon": "\u2b50",
+          "difficulty": 3,
+          "category": "radiation",
+          "visited": false,
+          "floor": 9,
+          "position": 0,
+          "content": null
+        }
+      ],
+      [
+        {
+          "id": "node_2_2294",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "id": "calculation-1",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "What is the equivalent dose in Sv for a tissue exposed to 2 Gy of proton radiation with a radiation weighting factor of 2?",
+            "options": [
+              "1 Sv",
+              "2 Sv",
+              "4 Sv",
+              "8 Sv"
+            ],
+            "correct_answer": 2,
+            "explanation": "Equivalent dose (Sv) = Absorbed dose (Gy) \u00d7 Radiation weighting factor. So, 2 Gy \u00d7 2 = 4 Sv."
+          }
+        },
+        {
+          "id": "node_2_1437",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "planning",
+          "visited": false,
+          "content": {
+            "id": "planning-2",
+            "category": "planning",
+            "difficulty": 1,
+            "question": "What is the main advantage of IMRT over 3D conformal radiotherapy?",
+            "options": [
+              "Lower monitor units",
+              "Faster treatment delivery",
+              "Better dose conformity to the target",
+              "Simplified quality assurance"
+            ],
+            "correct_answer": 2,
+            "explanation": "The main advantage of IMRT over 3D conformal radiotherapy is better dose conformity to the target volume, especially for complex shapes, allowing better sparing of adjacent normal tissues."
+          }
+        },
+        {
+          "id": "node_2_5812",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "regulations",
+          "visited": false,
+          "content": {
+            "id": "regulations-2",
+            "category": "regulations",
+            "difficulty": 1,
+            "question": "According to regulatory requirements, how often must a linear accelerator's calibration be verified?",
+            "options": [
+              "Daily",
+              "Weekly",
+              "Monthly",
+              "Annually"
+            ],
+            "correct_answer": 0,
+            "explanation": "Daily output constancy checks are required by regulatory agencies to ensure that the linear accelerator's calibration remains within acceptable limits."
+          }
+        }
+      ],
+      [
+        {
+          "id": "node_3_1054",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "dosimetry",
+          "visited": false,
+          "content": {
+            "id": "dosimetry-1",
+            "category": "dosimetry",
+            "difficulty": 1,
+            "question": "What is the correction factor for temperature and pressure called in TG-51?",
+            "options": [
+              "PTP",
+              "kTP",
+              "CTP",
+              "PTC"
+            ],
+            "correct_answer": 1,
+            "explanation": "kTP is the temperature-pressure correction factor in TG-51 that adjusts for the difference between calibration and measurement conditions."
+          }
+        },
+        {
+          "id": "node_3_4602",
+          "type": "question",
+          "name": "Question",
+          "icon": "\ud83d\udcdd",
+          "difficulty": 1,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "id": "calculation-1",
+            "category": "calculation",
+            "difficulty": 1,
+            "question": "What is the equivalent dose in Sv for a tissue exposed to 2 Gy of proton radiation with a radiation weighting factor of 2?",
+            "options": [
+              "1 Sv",
+              "2 Sv",
+              "4 Sv",
+              "8 Sv"
+            ],
+            "correct_answer": 2,
+            "explanation": "Equivalent dose (Sv) = Absorbed dose (Gy) \u00d7 Radiation weighting factor. So, 2 Gy \u00d7 2 = 4 Sv."
+          }
+        },
+        {
+          "id": "node_3_8553",
+          "type": "reference",
+          "name": "Reference",
+          "icon": "\ud83d\udcda",
+          "difficulty": 0,
+          "category": "calculation",
+          "visited": false,
+          "content": {
+            "title": "Reference Material",
+            "text": "You study important concepts in your textbook.",
+            "effect": {
+              "type": "gain_insight",
+              "value": 0
+            }
+          }
+        }
+      ]
+    ],
+    "visited_nodes": [
+      "node_2_1_6354",
+      "node_0_0_3292",
+      "node_1_0_6589"
+    ],
+    "current_node": {
+      "id": "node_2_1_6354",
+      "type": "question",
+      "name": "Question",
+      "icon": "\ud83d\udcdd",
+      "difficulty": 1,
+      "category": "calculation",
+      "visited": true,
+      "floor": 2,
+      "position": 1,
+      "content": {
+        "id": "calculation-2",
+        "category": "calculation",
+        "difficulty": 1,
+        "question": "If a radioisotope has a half-life of 8 days, approximately what fraction of the original activity will remain after 24 days?",
+        "options": [
+          "1/8",
+          "1/4",
+          "1/6",
+          "1/3"
+        ],
+        "correct_answer": 0,
+        "explanation": "After 24 days (3 half-lives), the remaining activity is (1/2)\u00b3 = 1/8 of the original activity."
+      }
+    },
+    "score": 0,
+    "streak": 0,
+    "start_time": 1741631691.660045,
+    "end_time": 1741631958.574569,
+    "is_completed": true,
+    "is_successful": false
+  },
+  "player_data": {
+    "class": null,
+    "level": 1,
+    "completed_runs": 1,
+    "total_score": 150,
+    "highest_score": 150,
+    "highest_floor": 3
+  },
+  "achievements": {
+    "unlocked_achievements": [
+      "first_run"
+    ]
+  },
+  "timestamp": 1741631958.575263,
+  "version": "1.0.0"
+}

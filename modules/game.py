@@ -265,105 +265,44 @@ class GameModule:
         """, unsafe_allow_html=True)
 
     def _render_character_animation(self):
-        """Render a higher fidelity ASCII character animation with class-specific head."""
+        """Render a robust ASCII character animation with class-specific head."""
         character = st.session_state.current_character
         
         if not character:
             return
         
-        # Class-specific head representations
+        # Class-specific head representations - simpler versions
         class_heads = {
-            "therapy_newbie": "/-\\",
-            "qa_specialist": "|QA|",
-            "dosimetry_wizard": "(o o)",
-            "regulatory_expert": "[TPS]",
-            "medical_physics_resident": "[ABR]"
+            "therapy_newbie": "/^\\",
+            "qa_specialist": "[Q]",
+            "dosimetry_wizard": "(o_o)",
+            "regulatory_expert": "[T]",
+            "medical_physics_resident": "[A]"
         }
         
         # Get the appropriate head or use a default
         char_head = class_heads.get(character.id, "O")
         
-        # Higher fidelity animation frames - with class-specific head
-        frames = [
-            f"   {char_head}    \n"
-            "   /|\\    \n"
-            "   / \\    \n"
-            "  _/ \\_   ",
-            
-            f"   {char_head}    \n"
-            "   /|\\    \n"
-            "   / \\    \n"
-            "  /   \\_  ",
-            
-            f"   {char_head}    \n"
-            "   /|\\    \n"
-            "   / \\    \n"
-            "  _/   \\  ",
-            
-            f"   {char_head}    \n"
-            "   /|\\\\   \n"
-            "   / \\    \n"
-            "  _/ \\_   "
-        ]
-        
-        # Add consistent CSS with better specificity
-        st.sidebar.markdown("""
-        <style>
-        /* Character animation container */
-        .char-animation-container {
-            font-family: monospace;
-            text-align: center;
-            padding: 15px;
-            margin: 15px auto;
-            background-color: var(--card-bg, #f8f9fa);
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            position: relative;
-            max-width: 200px;
-        }
-        
-        /* Animation keyframes */
-        @keyframes char-walking {
-            0% { content: "FRAME0"; transform: translateY(0px); }
-            25% { content: "FRAME1"; transform: translateY(-2px); }
-            50% { content: "FRAME2"; transform: translateY(0px); }
-            75% { content: "FRAME3"; transform: translateY(-1px); }
-            100% { content: "FRAME0"; transform: translateY(0px); }
-        }
-        
-        /* Animation element */
-        .char-animation {
-            display: block;
-            white-space: pre;
-            line-height: 1.2;
-            min-height: 80px;
-            font-size: 16px;
-            color: var(--text-color, #333);
-        }
-        
-        /* Animation before element */
-        .char-animation::before {
-            content: "FRAME0";
-            display: block;
-            animation: char-walking 1.2s infinite steps(1);
-            white-space: pre;
-        }
-        </style>
-        """.replace("FRAME0", frames[0].replace("\n", "\\A "))
-        .replace("FRAME1", frames[1].replace("\n", "\\A "))
-        .replace("FRAME2", frames[2].replace("\n", "\\A "))
-        .replace("FRAME3", frames[3].replace("\n", "\\A ")), 
-        unsafe_allow_html=True)
-        
-        # Get title for display
+        # Get title for character
         title = self._get_character_title(character)
         
-        # Render animation container
+        # Use a simpler approach with properly escaped html characters
         st.sidebar.markdown(f"""
-        <div class="char-animation-container">
-            <div style="font-size: 0.9em; margin-bottom: 5px; color: var(--text-color, #333);">{title}</div>
-            <div class="char-animation"></div>
+        <div style="text-align:center; margin:10px 0; padding:10px; background-color:var(--card-bg, #f8f9fa); border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+            <div style="font-size:0.9em; margin-bottom:5px; color:var(--text-color, #333);">{title}</div>
+            <div style="font-family:monospace; line-height:1.2; font-size:16px; animation:bounce 1s infinite;">
+                {char_head}<br>
+                /|\\<br>
+                / \\<br>
+                _/ \\_
+            </div>
         </div>
+        <style>
+            @keyframes bounce {{
+                0%, 100% {{ transform: translateY(0); }}
+                50% {{ transform: translateY(-3px); }}
+            }}
+        </style>
         """, unsafe_allow_html=True)
 
     def _get_character_title(self, character):
@@ -1148,23 +1087,23 @@ class GameModule:
         ]
 
     def _render_hub_interface(self):
-        """Render the hub (department) interface with ASCII art title."""
-        # ASCII Art Title
+        """Render the hub (department) interface with a robust ASCII title."""
+        # Simpler ASCII Art Title that won't break formatting
         st.markdown("""
-        <pre style="text-align: center; line-height: 1.2; font-family: monospace; margin-bottom: 20px; color: var(--text-color);">
-        ███╗   ███╗███████╗██████╗ ██╗ ██████╗ █████╗ ██╗         ██████╗ ██╗  ██╗██╗   ██╗███████╗██╗ ██████╗███████╗
-        ████╗ ████║██╔════╝██╔══██╗██║██╔════╝██╔══██╗██║         ██╔══██╗██║  ██║╚██╗ ██╔╝██╔════╝██║██╔════╝██╔════╝
-        ██╔████╔██║█████╗  ██║  ██║██║██║     ███████║██║         ██████╔╝███████║ ╚████╔╝ ███████╗██║██║     ███████╗
-        ██║╚██╔╝██║██╔══╝  ██║  ██║██║██║     ██╔══██║██║         ██╔═══╝ ██╔══██║  ╚██╔╝  ╚════██║██║██║     ╚════██║
-        ██║ ╚═╝ ██║███████╗██████╔╝██║╚██████╗██║  ██║███████╗    ██║     ██║  ██║   ██║   ███████║██║╚██████╗███████║
-        ╚═╝     ╚═╝╚══════╝╚═════╝ ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝ ╚═════╝╚══════╝
-        ██████╗ ███████╗███████╗██╗██████╗ ███████╗███╗   ██╗ ██████╗██╗   ██╗     ██████╗  █████╗ ███╗   ███╗███████╗ 
-        ██╔══██╗██╔════╝██╔════╝██║██╔══██╗██╔════╝████╗  ██║██╔════╝╚██╗ ██╔╝    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝ 
-        ██████╔╝█████╗  ███████╗██║██║  ██║█████╗  ██╔██╗ ██║██║      ╚████╔╝     ██║  ███╗███████║██╔████╔██║█████╗   
-        ██╔══██╗██╔══╝  ╚════██║██║██║  ██║██╔══╝  ██║╚██╗██║██║       ╚██╔╝      ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝   
-        ██║  ██║███████╗███████║██║██████╔╝███████╗██║ ╚████║╚██████╗   ██║       ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗ 
-        ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝   ╚═╝        ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ 
-        </pre>
+        <div style="text-align:center; font-family:monospace; font-size:14px; line-height:1.2; margin:20px 0; padding:15px; background-color:var(--card-bg, #f8f9fa); border-radius:10px; color:var(--text-color, #333);">
+            <div style="font-weight:bold; font-size:1.1em; margin-bottom:5px;">
+                MEDICAL PHYSICS RESIDENCY GAME
+            </div>
+            <div style="font-size:0.9em; color:#3498db;">
+                ================================================
+            </div>
+            <div style="margin:10px 0;">
+                Learn · Challenge · Advance
+            </div>
+            <div style="font-size:0.9em; color:#3498db;">
+                ================================================
+            </div>
+        </div>
         """, unsafe_allow_html=True)
         
         st.subheader("Memorial Hospital Physics Department")
@@ -1575,7 +1514,7 @@ class GameModule:
         st.button("Start Playing!", key="start_playing_from_instructions", on_click=lambda: setattr(st.session_state, 'game_view', 'hub'))
     
     def _render_character_select(self):
-        """Render the character selection interface."""
+        """Render a more compact and streamlined character selection interface."""
         st.subheader("Select Your Character")
         st.markdown("Choose your character class to begin a new rotation.")
         
@@ -1590,16 +1529,34 @@ class GameModule:
             st.error("No character classes found. Please check the game data.")
             return
         
-        # Use a 2-column layout for character cards
-        self._render_character_selection_cards(classes)
+        # Use a 3-column layout for more compact character cards
+        cols = st.columns(3)
         
-        # Start button (only enabled if a character is selected)
-        st.markdown("---")
-        if st.session_state.selected_character_class:
-            if st.button("Start Rotation", key="start_rotation", type="primary"):
-                self.start_new_run()
-        else:
-            st.warning("Please select a character class to begin.")
+        for i, char_class in enumerate(classes):
+            with cols[i % 3]:
+                # Check if this class is selected
+                is_selected = st.session_state.selected_character_class == char_class["id"]
+                
+                # More compact character card
+                st.markdown(f"""
+                <div class="character-card {'selected' if is_selected else ''}" style="padding:12px; min-height:200px;">
+                    <h4 style="margin-bottom:5px;">{char_class["name"]}</h4>
+                    <div style="font-family:monospace; font-size:1.2em; text-align:center; margin:5px 0;">
+                        {char_class["icon"]}
+                    </div>
+                    <p style="font-size:0.8em; margin-bottom:5px;">{char_class["description"]}</p>
+                    <div style="font-size:0.75em; margin-bottom:3px;"><strong>Starting:</strong> {self._get_relic_name(char_class["starting_relic"])}</div>
+                    <div style="font-size:0.75em; margin-bottom:3px;"><strong>Ability:</strong> {char_class["special_ability"]["name"]}</div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Selection button that auto-starts
+                if st.button("Select & Start" if not is_selected else "Selected ✓", 
+                            key=f"select_{char_class['id']}",
+                            disabled=is_selected):
+                    st.session_state.selected_character_class = char_class["id"]
+                    # Auto-start instead of requiring a second button press
+                    self.start_new_run()
     
     def _render_character_selection_cards(self, classes):
         """Render the character selection cards in a grid."""
@@ -1881,7 +1838,7 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """Render the nodes for the current floor with separate card and button components."""
+        """Render the nodes for the current floor without 'Available' tags."""
         st.subheader(f"Floor {game_state.current_floor}")
         
         # Add instructions
@@ -1935,22 +1892,17 @@ class GameModule:
                 # Difficulty stars
                 difficulty_stars = "★" * node["difficulty"] if node["difficulty"] > 0 else "—"
                 
-                # Status text
-                if node_visited:
-                    status_text = "Completed"
-                elif not is_available or floor_completed:
-                    status_text = "Unavailable"
-                else:
-                    status_text = "Available"
+                # Status text - simplified to show only completed status
+                status_text = "Completed" if node_visited else ""
                 
-                # Display the node card
+                # Display the node card - removed availability indicators
                 st.markdown(f"""
                 <div class="{card_class}">
                     <div class="node-icon">{node['icon']}</div>
                     <div class="node-title">{node['name']}</div>
                     <div class="node-difficulty">{difficulty_stars}</div>
                     <div class="node-category">{node.get('category', '').capitalize()}</div>
-                    <div class="node-status">{status_text}</div>
+                    {f'<div class="node-status">{status_text}</div>' if node_visited else ''}
                 </div>
                 """, unsafe_allow_html=True)
                 
