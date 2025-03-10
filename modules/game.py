@@ -139,10 +139,10 @@ class GameModule:
     def _render_character_visualization(self):
         """Render a visual representation of the character."""
         character = st.session_state.current_character
+        game_state = st.session_state.game_state
         
-        # Create a simple character representation based on icon
-        character_icon = character.icon if hasattr(character, 'icon') else "(o o)"
-        character_name = character.name if hasattr(character, 'name') else "Character"
+        if not character or not game_state:
+            return
         
         # Character container
         st.sidebar.markdown("## Your Character")
@@ -151,101 +151,118 @@ class GameModule:
         st.sidebar.markdown(f"""
         <div class="character-visual">
             <div class="character-avatar">
-                <div class="character-icon">{character_icon}</div>
+                <div class="character-icon">{character.icon}</div>
                 <div class="character-pulse"></div>
             </div>
-            <div class="character-name">{character_name}</div>
+            <div class="character-name">{character.name}</div>
             <div class="character-stats">
                 <div>❤️ Lives: {character.lives}/{character.max_lives}</div>
                 <div>✨ Insight: {character.insight}</div>
                 <div>📊 Level: {character.level}</div>
+                <div>🏆 Score: {game_state.score}</div>
             </div>
         </div>
-        <style>
-            .character-visual {{
-                text-align: center;
-                padding: 10px;
-                background: #f8f9fa;
-                border-radius: 10px;
-                margin-bottom: 20px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }}
-            .character-avatar {{
-                position: relative;
-                display: inline-block;
-            }}
-            .character-icon {{
-                font-size: 28px;
-                font-family: monospace;
-                background: white;
-                width: 80px;
-                height: 80px;
-                line-height: 80px;
-                border-radius: 50%;
-                margin: 0 auto;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                position: relative;
-                z-index: 2;
-            }}
-            .character-pulse {{
-                position: absolute;
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                background: rgba(52, 152, 219, 0.3);
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 1;
-                animation: pulse 2s infinite;
-            }}
-            @keyframes pulse {{
-                0% {{ transform: translateX(-50%) scale(1); opacity: 1; }}
-                70% {{ transform: translateX(-50%) scale(1.1); opacity: 0.7; }}
-                100% {{ transform: translateX(-50%) scale(1.2); opacity: 0; }}
-            }}
-            .character-name {{
-                font-weight: bold;
-                margin: 10px 0 5px;
-            }}
-            .character-stats {{
-                font-size: 14px;
-                text-align: left;
-                padding: 5px 10px;
-            }}
-        </style>
         """, unsafe_allow_html=True)
         
-        # Character movement animation when floor changes
-        if hasattr(st.session_state, 'floor_changed') and st.session_state.floor_changed:
-            st.sidebar.markdown("""
-            <style>
-                .character-icon {
-                    animation: bounce 1s;
-                }
-                @keyframes bounce {
-                    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-                    40% {transform: translateY(-20px);}
-                    60% {transform: translateY(-10px);}
-                }
-            </style>
-            """, unsafe_allow_html=True)
-            # Reset the flag
-            st.session_state.floor_changed = False
-    
+        # Experience bar
+        exp_percentage = min(100, int(character.experience / character.experience_to_next_level * 100))
+        st.sidebar.markdown(f"""
+        <div class="progress-bar-container">
+            <div class="progress-bar-value" style="width: {exp_percentage}%;"></div>
+        </div>
+        <div style="text-align: center; font-size: 0.8em;">
+            Experience: {character.experience} / {character.experience_to_next_level}
+        </div>
+        """, unsafe_allow_html=True)
+    def _render_character_animation(self):
+        """Render a multi-frame ASCII character animation."""
+        character = st.session_state.current_character
+        
+        if not character:
+            return
+        
+        # Define different frames based on character type
+        frames = {
+            "therapy_newbie": [
+                "   o   \n  /|\\  \n  / \\  ",
+                "   o   \n  /|\\  \n  / >  ",
+                "   o   \n  /|\\  \n  < \\  ",
+                "   o   \n  /|\\  \n  > \\  "
+            ],
+            "qa_specialist": [
+                "   O   \n  /|\\  \n  / \\  ",
+                "   O   \n -/|\\  \n  / \\  ",
+                "   O   \n  /|\\ -\n  / \\  ",
+                "   O   \n -/|\\ -\n  / \\  "
+            ],
+            "dosimetry_wizard": [
+                "  <O>  \n  /|\\  \n  / \\  ",
+                "  <O>  \n -/|\\  \n  / \\  ",
+                "  <O>  \n  /|\\ -\n  / \\  ",
+                "  <O>~ \n  /|\\  \n  / \\  "
+            ],
+            "medical_physics_resident": [
+                "   ◊   \n  /|\\  \n  / \\  ",
+                "   ◊   \n  /|\\  \n  / >  ",
+                "   ◊   \n  /|\\  \n  < \\  ",
+                "   ◊~  \n  /|\\  \n  / \\  "
+            ]
+        }
+        
+        # Get frames for this character or use default
+        char_frames = frames.get(character.id, frames["therapy_newbie"])
+        char_frames_escaped = [frame.replace("\n", "\\A ") for frame in char_frames]
+        
+        # Frame CSS animation
+        frame_css = ""
+        for i, frame in enumerate(char_frames_escaped):
+            percentage = i * (100 / len(char_frames_escaped))
+            next_percentage = (i + 1) * (100 / len(char_frames_escaped))
+            if i < len(char_frames_escaped) - 1:
+                frame_css += f"{percentage}%, {next_percentage - 0.1}% {{ content: '{frame}'; }}\n"
+            else:
+                frame_css += f"{percentage}%, 100% {{ content: '{frame}'; }}\n"
+        
+        st.sidebar.markdown(f"""
+        <style>
+            @keyframes characterAnimation {{
+                {frame_css}
+            }}
+            
+            .ascii-character {{
+                font-family: monospace;
+                white-space: pre;
+                display: block;
+                margin: 15px auto;
+                font-size: 18px;
+                line-height: 1.2;
+                text-align: center;
+                color: var(--text-color);
+                position: relative;
+            }}
+            
+            .ascii-character::before {{
+                content: '{char_frames_escaped[0]}';
+                animation: characterAnimation 1.5s steps(1) infinite;
+            }}
+        </style>
+        
+        <div class="ascii-character"></div>
+        """, unsafe_allow_html=True)
     # ===== STYLE AND INITIALIZATION =====
     
     def _add_custom_css(self):
         """Add custom CSS for the game UI."""
         st.markdown("""
         <style>
-            /* Add this at the top to detect dark mode */
+            /* Dark mode variables */
             :root {
                 --text-color: #333333;
                 --bg-color: white;
                 --card-bg: white;
                 --card-border: rgba(0,0,0,0.1);
             }
+            
             /* Dark mode detection */
             @media (prefers-color-scheme: dark) {
                 :root {
@@ -254,6 +271,59 @@ class GameModule:
                     --card-bg: #1e1e1e;
                     --card-border: rgba(255,255,255,0.1);
                 }
+            }
+            
+            /* Apply text color to all text elements */
+            p, h1, h2, h3, h4, h5, h6, div, span {
+                color: var(--text-color);
+            }
+            
+            /* Character info styling */
+            .character-visual {
+                text-align: center;
+                padding: 10px;
+                background: var(--card-bg);
+                border-radius: 10px;
+                margin-bottom: 20px;
+                box-shadow: 0 2px 5px var(--card-border);
+                color: var(--text-color);
+            }
+            
+            .character-stats {
+                font-size: 14px;
+                text-align: left;
+                padding: 5px 10px;
+                color: var(--text-color);
+            }
+            
+            /* Item and relic cards */
+            .item-card, .relic-card {
+                border-radius: 8px;
+                padding: 12px;
+                margin: 8px 0;
+                background-color: var(--card-bg);
+                box-shadow: 0 1px 3px var(--card-border);
+                transition: transform 0.2s;
+                color: var(--text-color);
+            }
+            
+            .item-card p, .relic-card p, .item-card h4, .relic-card h4 {
+                color: var(--text-color);
+            }
+            
+            /* Progress bar */
+            .progress-bar-container {
+                margin-top: 5px;
+                height: 8px;
+                background-color: var(--card-border);
+                border-radius: 4px;
+                overflow: hidden;
+            }
+            
+            /* Other elements */
+            .stat-container, .achievement-card, .hub-card, .character-card {
+                color: var(--text-color);
+                background-color: var(--card-bg);
             }
             /* Node styling */
             .node-card {
@@ -1186,9 +1256,6 @@ class GameModule:
             self._render_error_state()
             return
         
-        # Player stats
-        self._render_player_stats(character, game_state)
-        
         # Visual path map - NEW!
         self._render_visual_path_map(game_state)
         
@@ -1203,37 +1270,6 @@ class GameModule:
         st.error("No active game found.")
         if st.button("Return to Department"):
             self.return_to_hub()
-    
-    def _render_player_stats(self, character, game_state):
-        """Render the player stats bar."""
-        # Stats container
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.markdown(f"**Character:** {character.name}")
-        
-        with col2:
-            st.markdown(f"**Lives:** ❤️ {character.lives}/{character.max_lives}")
-        
-        with col3:
-            st.markdown(f"**Insight:** ✨ {character.insight}")
-        
-        with col4:
-            st.markdown(f"**Level:** Lv. {character.level}")
-        
-        # Experience bar
-        exp_percentage = min(100, int(character.experience / character.experience_to_next_level * 100))
-        st.markdown(f"""
-        <div class="progress-bar-container">
-            <div class="progress-bar-value" style="width: {exp_percentage}%;"></div>
-        </div>
-        <div style="text-align: center; font-size: 0.8em; color: #7f8c8d;">
-            Experience: {character.experience} / {character.experience_to_next_level}
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Current score
-        st.markdown(f"**Score:** {game_state.score}")
 
     def _render_path_map(self, game_state):
         """Render a simple map of the path structure."""
@@ -1389,23 +1425,32 @@ class GameModule:
                     text_style = 'fill="white"'
                     opacity = '0.5'  # Partially transparent for future nodes
                 
-                # Get node icon based on type
-                node_icons = {
-                    "question": "📝",
-                    "reference": "📚",
-                    "rest": "☕",
-                    "treasure": "🎁",
-                    "elite": "⚠️",
-                    "boss": "⭐",
-                    "encounter": "🔍"
-                }
-                node_icon = node_icons.get(node.get("type", "unknown"), "❓")
-                
-                # Draw node circle with opacity
+                # Get node icon based on type - replace with SVG shapes
                 svg += f'<circle cx="{x}" cy="{y}" r="{node_radius}" {circle_style} opacity="{opacity}" />'
-                
-                # Draw node icon (emoji)
-                svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="12px" opacity="{opacity}">{node_icon}</text>'
+
+                # Instead of emoji text, add shape identifiers based on node type
+                node_type = node.get("type", "question")
+                if node_type == "question":
+                    # Question - add a "?" symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">?</text>'
+                elif node_type == "reference":
+                    # Reference - add a book symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">B</text>'
+                elif node_type == "rest":
+                    # Rest - add a cup symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">R</text>'
+                elif node_type == "treasure":
+                    # Treasure - add a gift symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">T</text>'
+                elif node_type == "elite":
+                    # Elite - add an exclamation mark
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">!</text>'
+                elif node_type == "boss":
+                    # Boss - add a star symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">★</text>'
+                elif node_type == "encounter":
+                    # Encounter - add a magnifying glass symbol
+                    svg += f'<text x="{x}" y="{y+5}" text-anchor="middle" style="{text_style}" font-size="14px" font-weight="bold" opacity="{opacity}">E</text>'
                 
                 # Add difficulty indicator for available nodes
                 if node.get("difficulty", 1) > 1:
@@ -1449,10 +1494,7 @@ class GameModule:
         """, unsafe_allow_html=True)
     
     def _render_current_floor_nodes(self, game_state):
-        """
-        Render the nodes for the current floor with separate card and button components.
-        This is the most reliable approach for Streamlit.
-        """
+        """Render the nodes for the current floor with separate card and button components."""
         st.subheader(f"Floor {game_state.current_floor}")
         
         # Add instructions
@@ -1476,47 +1518,12 @@ class GameModule:
         # Check if any node on this floor has been visited
         floor_completed = any(node["visited"] for node in current_floor_nodes)
         
-        # Create columns for nodes
-        cols = st.columns(len(current_floor_nodes))
+        # Filter to only show available or already visited nodes
+        nodes_to_display = [node for node in current_floor_nodes if node in available_nodes or node["visited"]]
         
-        # Add custom CSS
-        st.markdown("""
-        <style>
-            /* Node card styling */
-            .node-card {
-                padding: 15px;
-                border-radius: 10px;
-                text-align: center;
-                margin-bottom: 5px;
-            }
-            
-            /* Node type colors */
-            .question-card { background-color: #3498db; color: white; }
-            .reference-card { background-color: #2ecc71; color: white; }
-            .rest-card { background-color: #9b59b6; color: white; }
-            .treasure-card { background-color: #f1c40f; color: black; }
-            .elite-card { background-color: #e74c3c; color: white; }
-            .boss-card { background-color: #34495e; color: white; }
-            .encounter-card { background-color: #1abc9c; color: white; }
-            
-            /* Status styles */
-            .node-visited { background-color: #2ecc71 !important; }
-            .node-unavailable { opacity: 0.7; filter: grayscale(40%); }
-            
-            /* Content styling */
-            .node-icon { font-size: 24px; margin-bottom: 8px; }
-            .node-title { font-weight: bold; margin-bottom: 5px; }
-            .node-difficulty { color: #f1c40f; letter-spacing: 2px; margin-bottom: 5px; }
-            .node-category { font-size: 12px; margin-bottom: 8px; }
-            .node-status { 
-                display: inline-block;
-                padding: 3px 8px;
-                border-radius: 10px;
-                background-color: rgba(255,255,255,0.2);
-                font-size: 11px;
-            }
-        </style>
-        """, unsafe_allow_html=True)
+        # Create columns for nodes
+        if nodes_to_display:
+            cols = st.columns(len(nodes_to_display))
         
         for i, node in enumerate(current_floor_nodes):
             with cols[i]:
