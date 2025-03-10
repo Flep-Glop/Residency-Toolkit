@@ -2906,8 +2906,17 @@ class GameModule:
             st.error("No active encounter found.")
             return
         
-        st.subheader(encounter["name"])
-        st.markdown(encounter["description"])
+        # Use the title attribute instead of name (for compatibility)
+        encounter_title = encounter.get("title", "Special Encounter")
+        st.subheader(encounter_title)
+        
+        # Show encounter text
+        encounter_text = encounter.get("text", "You encounter a special situation.")
+        st.markdown(encounter_text)
+        
+        # Show flavor text if available
+        if "flavor_text" in encounter:
+            st.markdown(f"*{encounter['flavor_text']}*")
         
         # Handle different encounter types
         encounter_type = encounter.get("type", "unknown")
