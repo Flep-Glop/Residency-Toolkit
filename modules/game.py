@@ -97,26 +97,31 @@ class GameModule:
     
     def render_game_module(self):
         """Main entry point for rendering the game module."""
-        st.title("Medical Physics Residency: The Game")
-        
         # Add custom CSS for the game
         self._add_custom_css()
         
         # Initialize session state if not already done
         self._init_session_state()
         
+        # Add CSS for collections
+        self._add_collections_css()
+        
         # Always show character info if in a game
         if (st.session_state.game_view != "hub" and 
             st.session_state.game_view != "character_select" and 
-            st.session_state.game_view != "run_end" and
+            st.session_state.game_view != "run_end" and 
+            st.session_state.game_view != "collections" and
+            st.session_state.game_view != "achievements" and
             hasattr(st.session_state, 'current_character') and 
             st.session_state.current_character):
             
-            # Render character visualization and animation
+            # Render character visualization
             self._render_character_visualization()
+            
+            # Render character animation
             self._render_character_animation()
         
-        # IMPORTANT: Restore your original view renderers dictionary here!
+        # Define view renderers including the new collections view
         view_renderers = {
             "hub": self._render_hub_interface,
             "character_select": self._render_character_select,
@@ -131,7 +136,8 @@ class GameModule:
             "achievements": self._render_achievements_interface,
             "settings": self._render_settings_interface,
             "help": self._render_help_interface,
-            "instructions": self._render_instructions_interface
+            "instructions": self._render_instructions_interface,
+            "collections": self._render_collections_interface  # Add the new collections view
         }
         
         # Get the current view and render it
@@ -144,93 +150,262 @@ class GameModule:
     # ===== NEW CHARACTER VISUALIZATION =====
     
     def _render_character_visualization(self):
-        """Render a visual representation of the character."""
+        """Render a visual representation of the character (without the head)."""
         character = st.session_state.current_character
         game_state = st.session_state.game_state
         
         if not character or not game_state:
             return
         
+        # Get earned title
+        title = self._get_character_title(character)
+        
         # Character container
         st.sidebar.markdown("## Your Character")
         
-        # Character visualization with CSS animation
-        st.sidebar.markdown(f"""
-        <div class="character-visual">
-            <div class="character-avatar">
-                <div class="character-icon">{character.icon}</div>
-                <div class="character-pulse"></div>
-            </div>
-            <div class="character-name">{character.name}</div>
-            <div class="character-stats">
-                <div>❤️ Lives: {character.lives}/{character.max_lives}</div>
-                <div>✨ Insight: {character.insight}</div>
-                <div>📊 Level: {character.level}</div>
-                <div>🏆 Score: {game_state.score}</div>
-            </div>
-        </div>
+        # Add direct CSS for better control
+        st.sidebar.markdown("""
+        <style>
+        .char-visual-container {
+            text-align: center;
+            padding: 15px;
+            background-color: var(--card-bg, #f8f9fa);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .char-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-color, #333);
+        }
+        
+        .char-title {
+            font-size: 0.9em;
+            font-style: italic;
+            margin-bottom: 10px;
+            opacity: 0.8;
+            color: var(--text-color, #333);
+        }
+        
+        .char-stats {
+            font-size: 14px;
+            text-align: left;
+            padding: 5px 10px;
+            margin-top: 10px;
+            color: var(--text-color, #333);
+        }
+        
+        .char-stat-item {
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .exp-container {
+            margin-top: 10px;
+        }
+        
+        .exp-label {
+            text-align: center;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+            color: var(--text-color, #333);
+        }
+        
+        .exp-bar {
+            height: 10px;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .exp-value {
+            height: 100%;
+            background-color: #3498db;
+            transition: width 0.5s ease;
+        }
+        </style>
         """, unsafe_allow_html=True)
         
-        # Experience bar
+        # Character visualization with consistent styling
         exp_percentage = min(100, int(character.experience / character.experience_to_next_level * 100))
+        
         st.sidebar.markdown(f"""
-        <div class="progress-bar-container">
-            <div class="progress-bar-value" style="width: {exp_percentage}%;"></div>
-        </div>
-        <div style="text-align: center; font-size: 0.8em;">
-            Experience: {character.experience} / {character.experience_to_next_level}
+        <div class="char-visual-container">
+            <div class="char-name">{character.name}</div>
+            <div class="char-title">{title}</div>
+            <div class="char-stats">
+                <div class="char-stat-item">
+                    <span>❤️ Lives:</span>
+                    <span>{character.lives}/{character.max_lives}</span>
+                </div>
+                <div class="char-stat-item">
+                    <span>✨ Insight:</span>
+                    <span>{character.insight}</span>
+                </div>
+                <div class="char-stat-item">
+                    <span>📊 Level:</span>
+                    <span>{character.level}</span>
+                </div>
+                <div class="char-stat-item">
+                    <span>🏆 Score:</span>
+                    <span>{game_state.score}</span>
+                </div>
+            </div>
+            <div class="exp-container">
+                <div class="exp-label">Experience: {character.experience}/{character.experience_to_next_level}</div>
+                <div class="exp-bar">
+                    <div class="exp-value" style="width: {exp_percentage}%;"></div>
+                </div>
+            </div>
         </div>
         """, unsafe_allow_html=True)
 
     def _render_character_animation(self):
-        """Render a simpler ASCII character animation."""
+        """Render a higher fidelity ASCII character animation with class-specific head."""
         character = st.session_state.current_character
         
         if not character:
             return
         
-        # Simple frames that should work reliably
+        # Class-specific head representations
+        class_heads = {
+            "therapy_newbie": "/-\\",
+            "qa_specialist": "|QA|",
+            "dosimetry_wizard": "(o o)",
+            "regulatory_expert": "[TPS]",
+            "medical_physics_resident": "[ABR]"
+        }
+        
+        # Get the appropriate head or use a default
+        char_head = class_heads.get(character.id, "O")
+        
+        # Higher fidelity animation frames - with class-specific head
         frames = [
-            "  O  \n /|\\ \n / \\ ",
-            "  O  \n /|\\ \n / > ",
-            "  O  \n /|\\ \n < \\ ",
-            "  O  \n /|\\\\ \n / \\ "
+            f"   {char_head}    \n"
+            "   /|\\    \n"
+            "   / \\    \n"
+            "  _/ \\_   ",
+            
+            f"   {char_head}    \n"
+            "   /|\\    \n"
+            "   / \\    \n"
+            "  /   \\_  ",
+            
+            f"   {char_head}    \n"
+            "   /|\\    \n"
+            "   / \\    \n"
+            "  _/   \\  ",
+            
+            f"   {char_head}    \n"
+            "   /|\\\\   \n"
+            "   / \\    \n"
+            "  _/ \\_   "
         ]
         
-        # CSS for animation
+        # Add consistent CSS with better specificity
         st.sidebar.markdown("""
         <style>
-            @keyframes walk {
-                0% { content: "  O  \\A /|\\ \\A / \\ "; }
-                25% { content: "  O  \\A /|\\ \\A / > "; }
-                50% { content: "  O  \\A /|\\ \\A < \\ "; }
-                75% { content: "  O  \\A /|\\\\ \\A / \\ "; }
-            }
-            
-            .character-animation {
-                font-family: monospace;
-                white-space: pre;
-                display: block;
-                margin: 15px 0;
-                text-align: center;
-            }
-            
-            .character-animation::before {
-                content: "  O  \\A /|\\ \\A / \\ ";
-                animation: walk 1s infinite steps(1);
-                white-space: pre;
-            }
-        </style>
+        /* Character animation container */
+        .char-animation-container {
+            font-family: monospace;
+            text-align: center;
+            padding: 15px;
+            margin: 15px auto;
+            background-color: var(--card-bg, #f8f9fa);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: relative;
+            max-width: 200px;
+        }
         
-        <div class="character-animation"></div>
+        /* Animation keyframes */
+        @keyframes char-walking {
+            0% { content: "FRAME0"; transform: translateY(0px); }
+            25% { content: "FRAME1"; transform: translateY(-2px); }
+            50% { content: "FRAME2"; transform: translateY(0px); }
+            75% { content: "FRAME3"; transform: translateY(-1px); }
+            100% { content: "FRAME0"; transform: translateY(0px); }
+        }
+        
+        /* Animation element */
+        .char-animation {
+            display: block;
+            white-space: pre;
+            line-height: 1.2;
+            min-height: 80px;
+            font-size: 16px;
+            color: var(--text-color, #333);
+        }
+        
+        /* Animation before element */
+        .char-animation::before {
+            content: "FRAME0";
+            display: block;
+            animation: char-walking 1.2s infinite steps(1);
+            white-space: pre;
+        }
+        </style>
+        """.replace("FRAME0", frames[0].replace("\n", "\\A "))
+        .replace("FRAME1", frames[1].replace("\n", "\\A "))
+        .replace("FRAME2", frames[2].replace("\n", "\\A "))
+        .replace("FRAME3", frames[3].replace("\n", "\\A ")), 
+        unsafe_allow_html=True)
+        
+        # Get title for display
+        title = self._get_character_title(character)
+        
+        # Render animation container
+        st.sidebar.markdown(f"""
+        <div class="char-animation-container">
+            <div style="font-size: 0.9em; margin-bottom: 5px; color: var(--text-color, #333);">{title}</div>
+            <div class="char-animation"></div>
+        </div>
         """, unsafe_allow_html=True)
 
+    def _get_character_title(self, character):
+        """Get a title for the character based on achievements and level."""
+        # Base titles on level
+        level_titles = {
+            1: "Rookie",
+            3: "Junior Resident",
+            5: "Senior Resident",
+            7: "Fellow",
+            10: "Attending",
+            15: "Chief Physicist",
+            20: "Professor"
+        }
+        
+        # Get the highest level title the character qualifies for
+        title = "Rookie"  # Default
+        for level, level_title in sorted(level_titles.items()):
+            if character.level >= level:
+                title = level_title
+        
+        # Check for special achievements to add prefixes/suffixes
+        if hasattr(st.session_state, 'achievement_manager'):
+            achievements = st.session_state.achievement_manager.unlocked_achievements
+            
+            # Special titles based on achievements
+            if "master_physicist" in achievements:
+                title = "Master " + title
+            if "ironman" in achievements:
+                title += " the Resilient"
+            if "collection_complete" in achievements:
+                title = "Collector " + title
+            if "qa_master" in achievements:
+                title += " of Quality"
+                
+        return title
 
 
     # ===== STYLE AND INITIALIZATION =====
     
     def _add_custom_css(self):
-        """Add custom CSS for the game UI."""
+        """Add enhanced custom CSS for the game UI."""
         st.markdown("""
         <style>
             /* Dark mode variables */
@@ -239,6 +414,10 @@ class GameModule:
                 --bg-color: white;
                 --card-bg: white;
                 --card-border: rgba(0,0,0,0.1);
+                --primary-color: #3498db;
+                --secondary-color: #2ecc71;
+                --accent-color: #e74c3c;
+                --muted-color: #95a5a6;
             }
             
             /* Dark mode detection */
@@ -248,6 +427,10 @@ class GameModule:
                     --bg-color: #262730;
                     --card-bg: #1e1e1e;
                     --card-border: rgba(255,255,255,0.1);
+                    --primary-color: #3498db;
+                    --secondary-color: #2ecc71;
+                    --accent-color: #e74c3c;
+                    --muted-color: #95a5a6;
                 }
             }
             
@@ -259,19 +442,30 @@ class GameModule:
             /* Character info styling */
             .character-visual {
                 text-align: center;
-                padding: 10px;
+                padding: 15px;
                 background: var(--card-bg);
                 border-radius: 10px;
                 margin-bottom: 20px;
                 box-shadow: 0 2px 5px var(--card-border);
-                color: var(--text-color);
+            }
+            
+            .character-name {
+                font-size: 1.2em;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .character-title {
+                font-size: 0.9em;
+                font-style: italic;
+                margin-bottom: 10px;
+                opacity: 0.8;
             }
             
             .character-stats {
                 font-size: 14px;
                 text-align: left;
                 padding: 5px 10px;
-                color: var(--text-color);
             }
             
             /* Item and relic cards */
@@ -282,11 +476,11 @@ class GameModule:
                 background-color: var(--card-bg);
                 box-shadow: 0 1px 3px var(--card-border);
                 transition: transform 0.2s;
-                color: var(--text-color);
             }
             
-            .item-card p, .relic-card p, .item-card h4, .relic-card h4 {
-                color: var(--text-color);
+            .item-card:hover, .relic-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 3px 6px rgba(0,0,0,0.15);
             }
             
             /* Progress bar */
@@ -298,11 +492,18 @@ class GameModule:
                 overflow: hidden;
             }
             
+            .progress-bar-value {
+                height: 100%;
+                background-color: var(--primary-color);
+                transition: width 0.5s ease;
+            }
+            
             /* Other elements */
             .stat-container, .achievement-card, .hub-card, .character-card {
                 color: var(--text-color);
                 background-color: var(--card-bg);
             }
+            
             /* Node styling */
             .node-card {
                 border-radius: 10px;
@@ -316,44 +517,26 @@ class GameModule:
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
-                color: var(--text-color) !important; /* Important override */
+                color: var(--text-color) !important;
             }
+            
             .node-card:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             }
-            .question-card {
-                background-color: #3498db;
-                color: white;
-            }
-            .reference-card {
-                background-color: #2ecc71;
-                color: white;
-            }
-            .rest-card {
-                background-color: #9b59b6;
-                color: white;
-            }
-            .treasure-card {
-                background-color: #f1c40f;
-                color: black;
-            }
-            .elite-card {
-                background-color: #e74c3c;
-                color: white;
-            }
-            .boss-card {
-                background-color: #34495e;
-                color: white;
-            }
-            .encounter-card {
-                background-color: #1abc9c;
-                color: white;
-            }
+            
             /* Keep your existing color styles but add color overrides */
             .question-card, .reference-card, .rest-card, .treasure-card, .elite-card, .boss-card, .encounter-card {
-                color: white !important; /* Ensure text is white on colored backgrounds */
+                color: white !important;
             }
+            
+            .question-card { background-color: #3498db; }
+            .reference-card { background-color: #2ecc71; }
+            .rest-card { background-color: #9b59b6; }
+            .treasure-card { background-color: #f1c40f; color: black !important; }
+            .elite-card { background-color: #e74c3c; }
+            .boss-card { background-color: #34495e; }
+            .encounter-card { background-color: #1abc9c; }
             
             /* Other card styles - make sure they use variables */
             .character-card, .hub-card, .item-card, .relic-card, .achievement-card {
@@ -367,17 +550,18 @@ class GameModule:
                 border-radius: 10px;
                 padding: 20px;
                 margin: 10px 0;
-                background-color: white;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 10px var(--card-border);
                 transition: transform 0.2s;
                 border: 2px solid transparent;
             }
+            
             .character-card:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             }
+            
             .character-card.selected {
-                border-color: #3498db;
+                border-color: var(--primary-color);
                 background-color: #f0f8ff;
             }
             
@@ -386,14 +570,16 @@ class GameModule:
                 border-radius: 10px;
                 padding: 20px;
                 margin: 10px 0;
-                background-color: white;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 5px var(--card-border);
                 transition: transform 0.2s;
+                height: 100%;
             }
+            
             .hub-card:hover {
                 transform: translateY(-5px);
                 box-shadow: 0 5px 15px rgba(0,0,0,0.15);
             }
+            
             .locked {
                 opacity: 0.6;
                 filter: grayscale(70%);
@@ -404,75 +590,50 @@ class GameModule:
                 display: flex;
                 justify-content: space-around;
                 padding: 15px;
-                background-color: #2c3e50;
-                color: white;
+                background-color: var(--card-bg);
                 border-radius: 8px;
                 margin-bottom: 20px;
                 flex-wrap: wrap;
             }
-            .stat-container > div {
-                margin: 0 10px;
-            }
-            .progress-bar-container {
-                margin-top: 5px;
-                height: 8px;
-                background-color: #ecf0f1;
-                border-radius: 4px;
-                overflow: hidden;
-            }
-            .progress-bar-value {
-                height: 100%;
-                background-color: #3498db;
+            
+            /* Collections styling */
+            .undiscovered {
+                opacity: 0.6;
+                background-color: var(--card-bg);
+                border-left: 4px solid var(--muted-color);
+                filter: grayscale(100%);
             }
             
-            /* Items and relics */
-            .item-card {
-                border-radius: 8px;
-                padding: 12px;
-                margin: 8px 0;
-                background-color: #f8f9fa;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                transition: transform 0.2s;
-                border-left: 4px solid #3498db;
-            }
-            .item-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-            }
-            .relic-card {
-                border-radius: 8px;
-                padding: 12px;
-                margin: 8px 0;
-                background-color: #f8f9fa;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                transition: transform 0.2s;
-                border-left: 4px solid #e74c3c;
-            }
-            .relic-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 3px 6px rgba(0,0,0,0.15);
-            }
+            /* Rarity styling */
             .rarity-common {
-                border-color: #3498db;
+                border-left: 4px solid var(--primary-color);
             }
+            
             .rarity-uncommon {
-                border-color: #9b59b6;
+                border-left: 4px solid #9b59b6;
             }
+            
             .rarity-rare {
-                border-color: #f1c40f;
+                border-left: 4px solid #f1c40f;
             }
+            
             .rarity-legendary {
-                border-color: #e74c3c;
+                border-left: 4px solid var(--accent-color);
                 background-color: #fff9e6;
+            }
+            
+            .rarity-starter {
+                border-left: 4px solid #27ae60;
             }
             
             /* Result messages */
             .correct {
-                color: #2ecc71;
+                color: var(--secondary-color);
                 font-weight: bold;
             }
+            
             .incorrect {
-                color: #e74c3c;
+                color: var(--accent-color);
                 font-weight: bold;
             }
             
@@ -484,19 +645,22 @@ class GameModule:
                 line-height: 30px;
                 text-align: center;
                 border-radius: 50%;
-                background-color: #95a5a6;
+                background-color: var(--muted-color);
                 color: white;
                 margin: 0 2px;
             }
+            
             .floor-current {
-                background-color: #3498db;
+                background-color: var(--primary-color);
                 font-weight: bold;
             }
+            
             .floor-completed {
-                background-color: #2ecc71;
+                background-color: var(--secondary-color);
             }
+            
             .floor-boss {
-                background-color: #e74c3c;
+                background-color: var(--accent-color);
             }
             
             /* Achievements */
@@ -504,11 +668,12 @@ class GameModule:
                 border-radius: 8px;
                 padding: 15px;
                 margin: 10px 0;
-                background-color: #f8f9fa;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                background-color: var(--card-bg);
+                box-shadow: 0 1px 3px var(--card-border);
                 opacity: 0.7;
                 filter: grayscale(70%);
             }
+            
             .achievement-card.unlocked {
                 opacity: 1;
                 filter: none;
@@ -527,24 +692,28 @@ class GameModule:
                 padding: 10px 15px;
                 margin: 8px 0;
                 border-radius: 8px;
-                background-color: #f8f9fa;
+                background-color: var(--card-bg);
                 cursor: pointer;
                 transition: background-color 0.2s;
-                border: 1px solid #ddd;
+                border: 1px solid var(--card-border);
             }
+            
             .question-option:hover {
                 background-color: #e9ecef;
             }
+            
             .option-selected {
-                background-color: #3498db;
+                background-color: var(--primary-color);
                 color: white;
             }
+            
             .option-correct {
-                background-color: #2ecc71;
+                background-color: var(--secondary-color);
                 color: white;
             }
+            
             .option-incorrect {
-                background-color: #e74c3c;
+                background-color: var(--accent-color);
                 color: white;
             }
             
@@ -553,83 +722,22 @@ class GameModule:
                 border-radius: 8px;
                 padding: 15px;
                 margin: 15px 0;
-                background-color: #f8f9fa;
-                border-left: 4px solid #3498db;
+                background-color: var(--card-bg);
+                border-left: 4px solid var(--primary-color);
             }
+            
             .instruction-step {
                 margin: 10px 0;
                 padding-left: 20px;
                 position: relative;
             }
+            
             .instruction-step:before {
                 content: "•";
                 position: absolute;
                 left: 0;
-                color: #3498db;
+                color: var(--primary-color);
                 font-weight: bold;
-            }
-                    
-            /* Node status indicators */
-            .node-status {
-                padding: 3px 8px;
-                border-radius: 10px;
-                font-size: 0.7em;
-                font-weight: bold;
-            }
-            
-            .node-visited .node-status {
-                background-color: #2ecc71;
-                color: white;
-            }
-            
-            .node-unavailable {
-                opacity: 0.7;
-                filter: grayscale(50%);
-            }
-            
-            .node-unavailable .node-status {
-                background-color: #95a5a6;
-                color: white;
-            }
-            
-            /* Node hover effects */
-            .node-card {
-                position: relative;
-                overflow: hidden;
-            }
-            
-            .node-card::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: -100%;
-                width: 100%;
-                height: 100%;
-                background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-                transition: left 0.5s;
-            }
-            
-            .node-card:hover::before {
-                left: 100%;
-            }
-            
-            /* Path animations */
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            
-            .question-card:not(.node-unavailable):not(.node-visited) {
-                animation: pulse 2s infinite;
-            }
-            
-            .elite-card:not(.node-unavailable):not(.node-visited) {
-                animation: pulse 1.5s infinite;
-            }
-            
-            .boss-card:not(.node-unavailable):not(.node-visited) {
-                animation: pulse 1s infinite;
             }
         </style>
         """, unsafe_allow_html=True)
@@ -1024,8 +1132,41 @@ class GameModule:
     
     # ===== INTERFACE RENDERING METHODS =====
     
+    def _get_hub_areas(self):
+        """Get the hub areas configuration with implementation flag."""
+        return [
+            {"id": "resident_office", "name": "Resident Office", "description": "Your personal workspace where you can check stats and progress", "unlock_condition": "start", "icon": "🏠", "implemented": True},
+            {"id": "clinical_area", "name": "Clinical Area", "description": "Start a new rotation to test your knowledge", "unlock_condition": "start", "icon": "🏥", "implemented": True},
+            {"id": "collections", "name": "Collections Room", "description": "View all relics and items you've discovered", "unlock_condition": "completed_runs:1", "icon": "🧩", "implemented": True},
+            {"id": "achievements", "name": "Achievement Hall", "description": "View your achievements and trophies", "unlock_condition": "completed_runs:1", "icon": "🏆", "implemented": True},
+            
+            # These areas are not yet implemented, so we'll hide them for now
+            {"id": "planning_room", "name": "Planning Room", "description": "Improve treatment planning skills", "unlock_condition": "completed_runs:3", "icon": "📋", "implemented": False},
+            {"id": "machine_shop", "name": "Machine Shop", "description": "Learn about equipment", "unlock_condition": "completed_runs:5", "icon": "🔧", "implemented": False},
+            {"id": "research_lab", "name": "Research Lab", "description": "Conduct experiments", "unlock_condition": "max_floor:5", "icon": "🔬", "implemented": False},
+            {"id": "conference_room", "name": "Conference Room", "description": "Special challenges", "unlock_condition": "completed_runs:8", "icon": "🎓", "implemented": False}
+        ]
+
     def _render_hub_interface(self):
-        """Render the hub (department) interface."""
+        """Render the hub (department) interface with ASCII art title."""
+        # ASCII Art Title
+        st.markdown("""
+        <pre style="text-align: center; line-height: 1.2; font-family: monospace; margin-bottom: 20px; color: var(--text-color);">
+        ███╗   ███╗███████╗██████╗ ██╗ ██████╗ █████╗ ██╗         ██████╗ ██╗  ██╗██╗   ██╗███████╗██╗ ██████╗███████╗
+        ████╗ ████║██╔════╝██╔══██╗██║██╔════╝██╔══██╗██║         ██╔══██╗██║  ██║╚██╗ ██╔╝██╔════╝██║██╔════╝██╔════╝
+        ██╔████╔██║█████╗  ██║  ██║██║██║     ███████║██║         ██████╔╝███████║ ╚████╔╝ ███████╗██║██║     ███████╗
+        ██║╚██╔╝██║██╔══╝  ██║  ██║██║██║     ██╔══██║██║         ██╔═══╝ ██╔══██║  ╚██╔╝  ╚════██║██║██║     ╚════██║
+        ██║ ╚═╝ ██║███████╗██████╔╝██║╚██████╗██║  ██║███████╗    ██║     ██║  ██║   ██║   ███████║██║╚██████╗███████║
+        ╚═╝     ╚═╝╚══════╝╚═════╝ ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝    ╚═╝     ╚═╝  ╚═╝   ╚═╝   ╚══════╝╚═╝ ╚═════╝╚══════╝
+        ██████╗ ███████╗███████╗██╗██████╗ ███████╗███╗   ██╗ ██████╗██╗   ██╗     ██████╗  █████╗ ███╗   ███╗███████╗ 
+        ██╔══██╗██╔════╝██╔════╝██║██╔══██╗██╔════╝████╗  ██║██╔════╝╚██╗ ██╔╝    ██╔════╝ ██╔══██╗████╗ ████║██╔════╝ 
+        ██████╔╝█████╗  ███████╗██║██║  ██║█████╗  ██╔██╗ ██║██║      ╚████╔╝     ██║  ███╗███████║██╔████╔██║█████╗   
+        ██╔══██╗██╔══╝  ╚════██║██║██║  ██║██╔══╝  ██║╚██╗██║██║       ╚██╔╝      ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝   
+        ██║  ██║███████╗███████║██║██████╔╝███████╗██║ ╚████║╚██████╗   ██║       ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗ 
+        ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝   ╚═╝        ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝ 
+        </pre>
+        """, unsafe_allow_html=True)
+        
         st.subheader("Memorial Hospital Physics Department")
         
         # Add a prominent instructions button
@@ -1054,12 +1195,14 @@ class GameModule:
             # Clear the notification after showing
             delattr(st.session_state, 'new_area_unlocked')
         
+        # Get only implemented hub areas
+        hub_areas = [area for area in self._get_hub_areas() if area["implemented"]]
+        
         # Arrange hub areas in a grid
-        hub_areas = self._get_hub_areas()
-        cols = st.columns(3)  # 3 columns
+        cols = st.columns(len(hub_areas))  # One column per implemented area for better spacing
         
         for i, area in enumerate(hub_areas):
-            with cols[i % 3]:
+            with cols[i]:
                 # Check if area is unlocked
                 is_unlocked = area["id"] in st.session_state.hub_unlocked
                 
@@ -1081,22 +1224,288 @@ class GameModule:
                             elif area["id"] == "achievements":
                                 # View achievements
                                 st.session_state.game_view = "achievements"
+                            elif area["id"] == "collections":
+                                # View collections
+                                st.session_state.game_view = "collections"
                             else:
                                 # Other areas would have their own functions
                                 st.info(f"Entering {area['name']} - Feature coming soon!")
     
-    def _get_hub_areas(self):
-        """Get the hub areas configuration."""
-        return [
-            {"id": "resident_office", "name": "Resident Office", "description": "Your personal workspace", "unlock_condition": "start", "icon": "🏠"},
-            {"id": "clinical_area", "name": "Clinical Area", "description": "Start a new rotation", "unlock_condition": "start", "icon": "🏥"},
-            {"id": "planning_room", "name": "Planning Room", "description": "Improve treatment planning skills", "unlock_condition": "completed_runs:3", "icon": "📋"},
-            {"id": "machine_shop", "name": "Machine Shop", "description": "Learn about equipment", "unlock_condition": "completed_runs:5", "icon": "🔧"},
-            {"id": "research_lab", "name": "Research Lab", "description": "Conduct experiments", "unlock_condition": "max_floor:5", "icon": "🔬"},
-            {"id": "conference_room", "name": "Conference Room", "description": "Special challenges", "unlock_condition": "completed_runs:8", "icon": "🎓"},
-            {"id": "achievements", "name": "Achievement Hall", "description": "View your achievements", "unlock_condition": "completed_runs:1", "icon": "🏆"}
-        ]
-    
+    def _render_collections_interface(self):
+        """Render the collections interface for discovered items and relics."""
+        st.subheader("Collections Room")
+        
+        if st.button("← Back to Department", key="back_to_hub_from_collections"):
+            st.session_state.game_view = "hub"
+            return
+        
+        # Create tabs for different collection types
+        tabs = st.tabs(["Relics", "Items", "Perks", "Character Classes"])
+        
+        # In a real implementation, we would track which items the player has discovered
+        # For now, we'll simulate this with session state
+        if 'discovered_relics' not in st.session_state:
+            st.session_state.discovered_relics = set()
+            # Add some initial discoveries for demonstration
+            st.session_state.discovered_relics.add("dog_eared_tg51")
+            st.session_state.discovered_relics.add("lucky_phantom")
+            st.session_state.discovered_relics.add("farmer_chamber")
+        
+        if 'discovered_items' not in st.session_state:
+            st.session_state.discovered_items = set()
+            st.session_state.discovered_items.add("coffee")
+            st.session_state.discovered_items.add("cheat_sheet")
+        
+        if 'discovered_perks' not in st.session_state:
+            st.session_state.discovered_perks = set()
+            st.session_state.discovered_perks.add("efficiency_expert")
+            st.session_state.discovered_perks.add("radiation_safety_officer")
+        
+        # 1. Relics Tab
+        with tabs[0]:
+            self._render_relics_collection()
+        
+        # 2. Items Tab
+        with tabs[1]:
+            self._render_items_collection()
+        
+        # 3. Perks Tab
+        with tabs[2]:
+            self._render_perks_collection()
+        
+        # 4. Character Classes Tab
+        with tabs[3]:
+            self._render_classes_collection()
+
+    def _render_relics_collection(self):
+        """Render the collection of discovered relics."""
+        st.subheader("Discovered Relics")
+        
+        # Get all relics
+        all_relics = self.data_manager.get_data("relics").get("relics", [])
+        
+        # Organize by rarity
+        rarities = ["starter", "common", "uncommon", "rare", "legendary"]
+        relics_by_rarity = {rarity: [] for rarity in rarities}
+        
+        for relic in all_relics:
+            rarity = relic.get("rarity", "common")
+            if rarity in relics_by_rarity:
+                relics_by_rarity[rarity].append(relic)
+        
+        # Create a progress bar for collection completion
+        discovered_count = len(st.session_state.discovered_relics)
+        total_count = len(all_relics)
+        completion_percentage = int((discovered_count / total_count) * 100) if total_count > 0 else 0
+        
+        st.markdown(f"""
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Collection Progress</span>
+                <span>{discovered_count}/{total_count} ({completion_percentage}%)</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-value" style="width: {completion_percentage}%;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display relics by rarity
+        for rarity in rarities:
+            if relics_by_rarity[rarity]:
+                rarity_display = rarity.capitalize()
+                st.markdown(f"### {rarity_display} Relics")
+                
+                # Create columns for better display
+                cols = st.columns(3)
+                
+                for i, relic in enumerate(relics_by_rarity[rarity]):
+                    with cols[i % 3]:
+                        is_discovered = relic["id"] in st.session_state.discovered_relics
+                        
+                        # Apply styling based on discovery status
+                        if is_discovered:
+                            st.markdown(f"""
+                            <div class="relic-card rarity-{rarity}">
+                                <h4>{relic.get('icon', '🔮')} {relic['name']}</h4>
+                                <p>{relic['description']}</p>
+                                <p><em>{relic['effect']['description']}</em></p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                        else:
+                            # Show as undiscovered
+                            st.markdown(f"""
+                            <div class="relic-card undiscovered">
+                                <h4>❓ Unknown {rarity_display} Relic</h4>
+                                <p>You haven't discovered this relic yet.</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+
+    def _render_items_collection(self):
+        """Render the collection of discovered items."""
+        st.subheader("Discovered Items")
+        
+        # Get all items
+        all_items = self.data_manager.get_data("consumables").get("consumables", [])
+        
+        # Create a progress bar for collection completion
+        discovered_count = len(st.session_state.discovered_items)
+        total_count = len(all_items)
+        completion_percentage = int((discovered_count / total_count) * 100) if total_count > 0 else 0
+        
+        st.markdown(f"""
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Collection Progress</span>
+                <span>{discovered_count}/{total_count} ({completion_percentage}%)</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-value" style="width: {completion_percentage}%;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display items in a grid
+        cols = st.columns(2)
+        
+        for i, item in enumerate(all_items):
+            with cols[i % 2]:
+                is_discovered = item["id"] in st.session_state.discovered_items
+                rarity = item.get("rarity", "common")
+                
+                if is_discovered:
+                    st.markdown(f"""
+                    <div class="item-card rarity-{rarity}">
+                        <h4>{item.get('icon', '🔮')} {item['name']}</h4>
+                        <p>{item['description']}</p>
+                        <p><em>Uses: {item.get('uses', 1)}</em></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div class="item-card undiscovered">
+                        <h4>❓ Unknown Item</h4>
+                        <p>You haven't discovered this item yet.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    def _render_perks_collection(self):
+        """Render the collection of discovered perks."""
+        st.subheader("Discovered Perks")
+        
+        # Get all perks
+        all_perks = self.data_manager.get_data("perks").get("perks", [])
+        
+        # Create a progress bar for collection completion
+        discovered_count = len(st.session_state.discovered_perks)
+        total_count = len(all_perks)
+        completion_percentage = int((discovered_count / total_count) * 100) if total_count > 0 else 0
+        
+        st.markdown(f"""
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Collection Progress</span>
+                <span>{discovered_count}/{total_count} ({completion_percentage}%)</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-value" style="width: {completion_percentage}%;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display perks in a grid
+        cols = st.columns(2)
+        
+        for i, perk in enumerate(all_perks):
+            with cols[i % 2]:
+                is_discovered = perk["id"] in st.session_state.discovered_perks
+                rarity = perk.get("rarity", "common")
+                
+                if is_discovered:
+                    st.markdown(f"""
+                    <div class="item-card rarity-{rarity}">
+                        <h4>{perk['name']}</h4>
+                        <p>{perk['description']}</p>
+                        <p><em>{perk['effect']['description']}</em></p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown(f"""
+                    <div class="item-card undiscovered">
+                        <h4>❓ Unknown Perk</h4>
+                        <p>You haven't discovered this perk yet.</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+    def _render_classes_collection(self):
+        """Render the collection of character classes."""
+        st.subheader("Character Classes")
+        
+        # All character classes are visible from the start
+        all_classes = self.classes
+        
+        # Keep track of which classes the player has used
+        if 'played_classes' not in st.session_state:
+            st.session_state.played_classes = set()
+            # Add some initial classes for demonstration
+            st.session_state.played_classes.add("medical_physics_resident")
+        
+        # Progress tracking for playing all classes
+        played_count = len(st.session_state.played_classes)
+        total_count = len(all_classes)
+        completion_percentage = int((played_count / total_count) * 100) if total_count > 0 else 0
+        
+        st.markdown(f"""
+        <div style="margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>Classes Played</span>
+                <span>{played_count}/{total_count} ({completion_percentage}%)</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-value" style="width: {completion_percentage}%;"></div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Display all classes
+        for class_data in all_classes:
+            is_played = class_data["id"] in st.session_state.played_classes
+            
+            # Add a played indicator to classes that have been used
+            class_status = "✓ Played" if is_played else "◯ Not Yet Played"
+            
+            st.markdown(f"""
+            <div class="character-card" style="position: relative;">
+                <div style="position: absolute; top: 10px; right: 10px; background-color: {('#2ecc71' if is_played else '#95a5a6')}; color: white; padding: 3px 8px; border-radius: 10px; font-size: 0.7em;">
+                    {class_status}
+                </div>
+                <h3>{class_data["name"]}</h3>
+                <div style="font-family: monospace; font-size: 1.2em; text-align: center; margin: 10px 0;">
+                    {class_data["icon"]}
+                </div>
+                <p>{class_data["description"]}</p>
+                <div style="display: flex; justify-content: space-between; font-size: 0.9em;">
+                    <div><strong>Special Ability:</strong> {class_data["special_ability"]["name"]}</div>
+                    <div><strong>Starting Relic:</strong> {self._get_relic_name(class_data["starting_relic"])}</div>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # Add styling for undiscovered items
+    def _add_collections_css(self):
+        """Add custom CSS for collections interface."""
+        st.markdown("""
+        <style>
+        .undiscovered {
+            opacity: 0.6;
+            background-color: #f1f1f1;
+            border-left: 4px solid #95a5a6;
+            filter: grayscale(100%);
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+
     def _render_instructions_interface(self):
         """Render the game instructions interface."""
         st.subheader("How to Play")
