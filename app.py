@@ -3,7 +3,8 @@ from modules.quickwrite import QuickWriteModule
 from modules.qa_bank import QABankModule
 from modules.pnp import PnPModule
 from modules.inventory import InventoryModule
-from modules.game import GameModule  # Import the game module
+# Import the game module but don't show it in the interface
+from modules.game import GameModule
 
 # Page configuration
 st.set_page_config(
@@ -121,7 +122,7 @@ quick_write = QuickWriteModule()
 qa_bank = QABankModule()
 pnp_module = PnPModule()
 inventory_module = InventoryModule()
-game_module = GameModule()  # Initialize the Game module
+game_module = GameModule()  # Initialize but don't show in UI
 
 # Set up session state for navigation
 if 'show_landing_page' not in st.session_state:
@@ -138,6 +139,12 @@ def go_to_landing_page():
     st.session_state.show_landing_page = True
     st.session_state.active_module = None
 
+# Check if there's a direct request for the game module (hidden access)
+query_params = st.experimental_get_query_params()
+if 'module' in query_params and query_params['module'][0] == 'game':
+    st.session_state.show_landing_page = False
+    st.session_state.active_module = "Residency Game"
+
 # Sidebar for navigation when not on landing page
 if not st.session_state.show_landing_page:
     st.sidebar.title("Residency Toolkit")
@@ -146,10 +153,16 @@ if not st.session_state.show_landing_page:
     if st.sidebar.button("← Back to Home"):
         go_to_landing_page()
     
-    # Module selector
+    # Module selector - remove Residency Game from the visible options
+    visible_modules = ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Competency Tracker", "Part 3 Bank"]
+    
+    # Only show the game in the dropdown if it's currently active
+    if st.session_state.active_module == "Residency Game":
+        visible_modules.append("Residency Game")
+    
     selected_module = st.sidebar.selectbox(
         "Select Module",
-        ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Residency Game", "Competency Tracker", "Part 3 Bank"]
+        visible_modules
     )
     
     # Switch to the selected module if changed
@@ -167,7 +180,7 @@ if st.session_state.show_landing_page:
     </div>
     """, unsafe_allow_html=True)
     
-    # Define module data
+    # Define module data - EXCLUDE THE GAME MODULE
     modules = [
         {
             "id": "quick_write",
@@ -197,13 +210,7 @@ if st.session_state.show_landing_page:
             "icon": "🔍",
             "implemented": True
         },
-        {
-            "id": "game",
-            "name": "Residency Game",
-            "description": "Test your knowledge with an interactive learning game",
-            "icon": "🎮",
-            "implemented": True
-        },
+        # Game module removed from this list
         {
             "id": "competency",
             "name": "Competency Tracker",
