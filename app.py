@@ -34,81 +34,30 @@ st.markdown("""
         background-color: #2980b9;
     }
     
-    /* Landing page styles */
-    .landing-container {
-        text-align: center;
-        padding: 40px 20px;
-        max-width: 800px;
-        margin: 0 auto;
-    }
-    
-    .feature-card {
-        background-color: white;
-        border-radius: 10px;
-        padding: 20px;
-        margin: 15px 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        transition: transform 0.2s;
-    }
-    
-    .feature-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-    }
-    
-    .feature-card h3 {
-        margin-bottom: 10px;
-        color: #3498db;
-    }
-    
-    .feature-icon {
-        font-size: 2em;
-        margin-bottom: 10px;
-    }
-    
-    .welcome-header {
-        margin: 30px 0;
-    }
-
-    /* Module cards for landing page */
-    .module-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        margin: 30px 0;
-    }
-    
+    /* Module card styles */
     .module-card {
+        padding: 20px;
         background-color: white;
         border-radius: 10px;
-        padding: 20px;
-        text-align: center;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        text-align: center;
+        cursor: pointer;
         transition: transform 0.2s, box-shadow 0.2s;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
     }
-    
     .module-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.15);
     }
-    
     .module-icon {
-        font-size: 2.5em;
-        margin-bottom: 15px;
+        font-size: 3em;
+        margin-bottom: 10px;
     }
-    
     .module-title {
-        font-size: 1.2em;
         font-weight: bold;
         margin-bottom: 10px;
     }
-    
     .module-desc {
-        margin-bottom: 20px;
         font-size: 0.9em;
     }
     
@@ -210,168 +159,89 @@ if not st.session_state.show_landing_page:
 
 # Main content area
 if st.session_state.show_landing_page:
-    # Landing page content
+    # Simple title banner
     st.markdown("""
-    <div class="landing-container">
-        <h1 class="welcome-header">Welcome to the Medical Physics Residency Toolkit</h1>
-        <p>A comprehensive suite of tools designed to enhance your residency experience and learning.</p>
+    <div style="text-align:center; padding:20px; margin-bottom:30px;">
+        <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
+        <p>Tools and resources to enhance your training experience</p>
     </div>
     """, unsafe_allow_html=True)
     
-    # Feature highlights
-    st.markdown("## Toolkit Features")
+    # Define module data
+    modules = [
+        {
+            "id": "quick_write",
+            "name": "Quick Write",
+            "description": "Generate professional documentation for common clinical scenarios",
+            "icon": "📝",
+            "implemented": True
+        },
+        {
+            "id": "qa_bank",
+            "name": "QA Bank",
+            "description": "Access and organize quality assurance procedures",
+            "icon": "🧪",
+            "implemented": True
+        },
+        {
+            "id": "pnp",
+            "name": "Policies & Procedures",
+            "description": "Review department policies and standard procedures",
+            "icon": "📑",
+            "implemented": True
+        },
+        {
+            "id": "inventory",
+            "name": "Inventory",
+            "description": "Track equipment, usage, and training status",
+            "icon": "🔍",
+            "implemented": True
+        },
+        {
+            "id": "game",
+            "name": "Residency Game",
+            "description": "Test your knowledge with an interactive learning game",
+            "icon": "🎮",
+            "implemented": True
+        },
+        {
+            "id": "competency",
+            "name": "Competency Tracker",
+            "description": "Monitor your progress toward residency milestones",
+            "icon": "📊",
+            "implemented": False
+        },
+        {
+            "id": "part3",
+            "name": "Part 3 Bank",
+            "description": "Prepare for board examinations with practice questions",
+            "icon": "🎓",
+            "implemented": False
+        }
+    ]
     
-    col1, col2 = st.columns(2)
+    # Display only implemented modules
+    implemented_modules = [m for m in modules if m["implemented"]]
     
-    with col1:
-        st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">📝</div>
-            <h3>Documentation Tools</h3>
-            <p>Generate professional writeups for common clinical scenarios, QA procedures, and more.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">🎮</div>
-            <h3>Interactive Learning</h3>
-            <p>Test your knowledge with the Residency Game and track your progress.</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Create a grid layout with 3 columns
+    cols = st.columns(3)
     
-    with col2:
-        st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">📊</div>
-            <h3>Resource Management</h3>
-            <p>Track inventory, manage QA procedures, and organize your resources effectively.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        st.markdown("""
-        <div class="feature-card">
-            <div class="feature-icon">📚</div>
-            <h3>Knowledge Base</h3>
-            <p>Access a comprehensive library of policies, procedures, and reference materials.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Available modules
-    st.markdown("## Available Modules")
-    
-    st.markdown("""
-    <div class="module-grid">
-        <div class="module-card">
-            <div>
-                <div class="module-icon">📋</div>
-                <div class="module-title">Quick Write Generator</div>
-                <div class="module-desc">Create professional clinical documentation for common scenarios.</div>
+    # Display modules in columns
+    for i, module in enumerate(implemented_modules):
+        with cols[i % 3]:
+            # Module card with icon, title, and description
+            st.markdown(f"""
+            <div class="module-card" onclick="document.getElementById('btn_{module['id']}').click();">
+                <div class="module-icon">{module['icon']}</div>
+                <div class="module-title">{module['name']}</div>
+                <div class="module-desc">{module['description']}</div>
             </div>
-            <button onclick="document.dispatchEvent(new CustomEvent('quickwrite_click'))" class="st-emotion-cache-19rxjzo eczjsme11">Open Module</button>
-        </div>
-        
-        <div class="module-card">
-            <div>
-                <div class="module-icon">🧪</div>
-                <div class="module-title">QA Bank</div>
-                <div class="module-desc">Organize and access quality assurance procedures and templates.</div>
-            </div>
-            <button onclick="document.dispatchEvent(new CustomEvent('qabank_click'))" class="st-emotion-cache-19rxjzo eczjsme11">Open Module</button>
-        </div>
-        
-        <div class="module-card">
-            <div>
-                <div class="module-icon">📑</div>
-                <div class="module-title">Policies & Procedures</div>
-                <div class="module-desc">Review department policies and standard operating procedures.</div>
-            </div>
-            <button onclick="document.dispatchEvent(new CustomEvent('pnp_click'))" class="st-emotion-cache-19rxjzo eczjsme11">Open Module</button>
-        </div>
-        
-        <div class="module-card">
-            <div>
-                <div class="module-icon">🔍</div>
-                <div class="module-title">Inventory Tracker</div>
-                <div class="module-desc">Manage equipment, track usage history, and monitor training status.</div>
-            </div>
-            <button onclick="document.dispatchEvent(new CustomEvent('inventory_click'))" class="st-emotion-cache-19rxjzo eczjsme11">Open Module</button>
-        </div>
-        
-        <div class="module-card">
-            <div>
-                <div class="module-icon">🎮</div>
-                <div class="module-title">Residency Game</div>
-                <div class="module-desc">Test your knowledge with an interactive learning game.</div>
-            </div>
-            <button onclick="document.dispatchEvent(new CustomEvent('game_click'))" class="st-emotion-cache-19rxjzo eczjsme11">Open Module</button>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # JavaScript to handle button clicks
-    st.markdown("""
-    <script>
-    document.addEventListener('quickwrite_click', function() {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: 'Quick Write'
-        }, '*');
-    });
-    
-    document.addEventListener('qabank_click', function() {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: 'QA Bank'
-        }, '*');
-    });
-    
-    document.addEventListener('pnp_click', function() {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: 'P&Ps'
-        }, '*');
-    });
-    
-    document.addEventListener('inventory_click', function() {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: 'Inventory'
-        }, '*');
-    });
-    
-    document.addEventListener('game_click', function() {
-        window.parent.postMessage({
-            type: 'streamlit:setComponentValue',
-            value: 'Residency Game'
-        }, '*');
-    });
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # Real buttons that work with Streamlit
-    col1, col2, col3, col4, col5 = st.columns(5)
-    
-    with col1:
-        if st.button("Quick Write", key="qw_btn"):
-            go_to_module("Quick Write")
-    
-    with col2:
-        if st.button("QA Bank", key="qa_btn"):
-            go_to_module("QA Bank")
-    
-    with col3:
-        if st.button("P&Ps", key="pp_btn"):
-            go_to_module("P&Ps")
-    
-    with col4:
-        if st.button("Inventory", key="inv_btn"):
-            go_to_module("Inventory")
-    
-    with col5:
-        if st.button("Residency Game", key="game_btn"):
-            go_to_module("Residency Game")
-
+            """, unsafe_allow_html=True)
+            
+            # Hidden button
+            if st.button("Open", key=f"btn_{module['id']}", label_visibility="collapsed"):
+                go_to_module(module['name'])
+            
 else:
     # Display selected module content
     active_module = st.session_state.active_module

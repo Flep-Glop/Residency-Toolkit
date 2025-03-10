@@ -1633,7 +1633,7 @@ class GameModule:
         ]
 
     def _render_hub_interface(self):
-        """Render a condensed hub interface with quick navigation."""
+        """Render a condensed hub interface with quick navigation (fixed)."""
         # Simple Banner Title
         st.markdown("""
         <div style="text-align:center; font-family:monospace; padding:10px; background-color:var(--card-bg, #f8f9fa); border-radius:10px; margin-bottom:15px;">
@@ -1655,43 +1655,38 @@ class GameModule:
         # Get only implemented hub areas
         hub_areas = [area for area in self._get_hub_areas() if area["implemented"]]
         
-        # Use a grid layout for better space usage
-        st.markdown("""
-        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:15px; margin-top:20px;">
-        """, unsafe_allow_html=True)
+        # Regular columns instead of custom grid to avoid JavaScript issues
+        num_cols = min(len(hub_areas), 3)  # Maximum of 3 columns
+        cols = st.columns(num_cols)
         
-        # Use direct HTML for the cards to make them more compact
+        # Display hub areas in columns
         for i, area in enumerate(hub_areas):
-            # Check if area is unlocked
-            is_unlocked = area["id"] in st.session_state.hub_unlocked
-            
-            # Card HTML with on-click functionality
-            card_html = f"""
-            <div onclick="document.getElementById('btn_{area['id']}').click();" 
-                style="cursor:pointer; padding:15px; background-color:white; border-radius:10px; 
-                    box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:transform 0.2s, box-shadow 0.2s;
-                    {'opacity:0.6; filter:grayscale(70%);' if not is_unlocked else ''}">
-                <div style="font-size:2em; text-align:center; margin-bottom:10px;">{area["icon"]} {' 🔒' if not is_unlocked else ''}</div>
-                <h3 style="text-align:center; margin-bottom:5px;">{area["name"]}</h3>
-                <p style="font-size:0.9em; text-align:center;">{area["description"]}</p>
-            </div>
-            """
-            st.markdown(card_html, unsafe_allow_html=True)
-            
-            # Hidden button that gets triggered by clicking the card
-            if is_unlocked:
-                if st.button("Enter", key=f"btn_{area['id']}", label_visibility="collapsed"):
-                    if area["id"] == "clinical_area":
-                        st.session_state.game_view = "character_select"
-                    elif area["id"] == "achievements":
-                        st.session_state.game_view = "achievements"
-                    elif area["id"] == "collections":
-                        st.session_state.game_view = "collections"
-                    else:
-                        st.info(f"Entering {area['name']} - Feature coming soon!")
-        
-        # Close the grid div
-        st.markdown("</div>", unsafe_allow_html=True)
+            with cols[i % num_cols]:
+                # Check if area is unlocked
+                is_unlocked = area["id"] in st.session_state.hub_unlocked
+                
+                # Display card
+                st.markdown(f"""
+                <div style="padding:15px; background-color:white; border-radius:10px; 
+                        box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:transform 0.2s, box-shadow 0.2s;
+                        {"opacity:0.6; filter:grayscale(70%);" if not is_unlocked else ''}">
+                    <div style="font-size:2em; text-align:center; margin-bottom:10px;">{area["icon"]} {' 🔒' if not is_unlocked else ''}</div>
+                    <h3 style="text-align:center; margin-bottom:5px;">{area["name"]}</h3>
+                    <p style="font-size:0.9em; text-align:center;">{area["description"]}</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Simple button (no hidden labels)
+                if is_unlocked:
+                    if st.button(f"Enter {area['name']}", key=f"btn_{area['id']}"):
+                        if area["id"] == "clinical_area":
+                            st.session_state.game_view = "character_select"
+                        elif area["id"] == "achievements":
+                            st.session_state.game_view = "achievements"
+                        elif area["id"] == "collections":
+                            st.session_state.game_view = "collections"
+                        else:
+                            st.info(f"Entering {area['name']} - Feature coming soon!")
         
         # Quick access buttons for other functions
         st.markdown("<hr style='margin:20px 0;'>", unsafe_allow_html=True)
