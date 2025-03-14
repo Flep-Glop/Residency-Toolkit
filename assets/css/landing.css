@@ -116,13 +116,6 @@ button:hover {
     color: var(--primary-color-hover) !important;
 }
 
-/* Main launch button */
-#quickwrite_btn {
-    font-size: 1.1rem !important;
-    padding: 0.6rem 1rem !important;
-    margin-top: 10px !important;
-}
-
 /* Version badge */
 .version {
     display: inline-block;

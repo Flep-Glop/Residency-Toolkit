@@ -169,10 +169,6 @@ else:  # This is the landing page
             go_to_module("Quick Write")
             st.rerun()
         
-        # Main launch button
-        if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
-            go_to_module("Quick Write")
-    
     with about_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
