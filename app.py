@@ -16,35 +16,6 @@ inject_theme_responsive_css()
 
 # Load main CSS (it will now use the theme variables)
 load_theme_aware_css("assets/css/main.css")
-load_theme_aware_css("assets/css/quickwrite.css")
-
-# Apply our custom CSS fixes - Add this new line to load our custom CSS
-st.markdown("""
-<style>
-/* Center the subtitle on landing page */
-.subtitle {
-    color: var(--subtitle-color) !important;
-    font-size: 1.2rem;
-    margin-top: 0;
-    font-weight: 300;
-    text-align: center; /* Add this to center the subtitle */
-}
-
-/* Hide redundant subtitle in quickwrite modules */
-/* This targets the subheader that appears after our custom header */
-.stSubheader {
-    display: none !important;
-}
-
-/* Adjust the basic information tab layout */
-/* Make form elements use more horizontal space */
-.stTabs [data-baseweb="tab-panel"] .row-widget {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
 
 # Initialize session state variables
 if 'show_landing_page' not in st.session_state:
