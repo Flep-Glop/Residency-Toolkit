@@ -1,8 +1,5 @@
 import streamlit as st
 from modules.quickwrite import QuickWriteModule
-from modules.qa_bank import QABankModule
-from modules.pnp import PnPModule
-from modules.inventory import InventoryModule
 
 # Page configuration
 st.set_page_config(
@@ -155,42 +152,6 @@ if not st.session_state.show_landing_page:
         st.session_state.active_module = selected_module
         st.rerun()
 
-    if st.session_state.show_landing_page:
-        # Simple title banner
-        st.markdown("""
-        <div style="text-align:center; padding:20px; margin-bottom:20px;">
-            <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
-            <p>Tools to streamline documentation for clinical workflows</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Information and status section
-        st.markdown("## About This Tool")
-        st.markdown("""
-        The **QuickWrite** tool helps generate standardized, professional documentation for common clinical scenarios 
-        in radiation oncology. Currently available templates include DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.
-        
-        **Current Status**: Beta Release (v0.9). This tool is under active development and we welcome your feedback.
-        """)
-        
-        # Feedback form in an expander
-        with st.expander("📝 Provide Feedback", expanded=False):
-            feedback_type = st.selectbox("Feedback Type", ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"])
-            feedback_text = st.text_area("Your Feedback", height=100, 
-                                        placeholder="Please describe your experience, issues, or suggestions...")
-            st.markdown("**Note**: This feedback will be reviewed by the development team to improve future versions.")
-            if st.button("Submit Feedback"):
-                # In a full implementation, send this feedback to a database or email
-                st.success("Thank you for your feedback! We'll use it to improve the tool.")
-        
-        # Big prominent button to go to QuickWrite
-        st.markdown("<br>", unsafe_allow_html=True)  # Add some space
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            if st.button("Launch QuickWrite", key="launch_quickwrite", use_container_width=True):
-                go_to_module("Quick Write")
-            
-else:
     # Display selected module content
     active_module = st.session_state.active_module
     
@@ -225,11 +186,41 @@ else:
         else:
             st.info(f"The {write_up_type} write-up type is under development.")
 
-            
     elif active_module in ["Competency Tracker", "Part 3 Bank"]:
         st.title(f"{active_module}")
         st.info(f"The {active_module} module is under development.")
 
-# Footer
-st.sidebar.markdown("---")
-st.sidebar.markdown("Medical Physics Residency Toolkit  \nDeveloped with Streamlit")
+else:  # This is the landing page
+    # Simple title banner
+    st.markdown("""
+    <div style="text-align:center; padding:20px; margin-bottom:20px;">
+        <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
+        <p>Tools to streamline documentation for clinical workflows</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Information and status section
+    st.markdown("## About This Tool")
+    st.markdown("""
+    The **QuickWrite** tool helps generate standardized, professional documentation for common clinical scenarios 
+    in radiation oncology. Currently available templates include DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.
+    
+    **Current Status**: Beta Release (v0.9). This tool is under active development and we welcome your feedback.
+    """)
+    
+    # Feedback form in an expander
+    with st.expander("📝 Provide Feedback", expanded=False):
+        feedback_type = st.selectbox("Feedback Type", ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"])
+        feedback_text = st.text_area("Your Feedback", height=100, 
+                                    placeholder="Please describe your experience, issues, or suggestions...")
+        st.markdown("**Note**: This feedback will be reviewed by the development team to improve future versions.")
+        if st.button("Submit Feedback"):
+            # In a full implementation, send this feedback to a database or email
+            st.success("Thank you for your feedback! We'll use it to improve the tool.")
+    
+    # Big prominent button to go to QuickWrite
+    st.markdown("<br>", unsafe_allow_html=True)  # Add some space
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("Launch QuickWrite", key="launch_quickwrite", use_container_width=True):
+            go_to_module("Quick Write")
