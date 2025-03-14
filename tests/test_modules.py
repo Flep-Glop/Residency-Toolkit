@@ -74,7 +74,8 @@ class TestBaseModule(unittest.TestCase):
     def test_module_initialization(self):
         """Test that modules initialize correctly with config manager."""
         self.assertEqual(self.mock_module.get_module_name(), "Mock Module")
-        self.assertEqual(self.mock_module.get_description(), "A mock module for testing")
+        # Fix: Use get_module_description instead of get_description
+        self.assertEqual(self.mock_module.get_module_description(), "A mock module for testing")
         self.assertEqual(self.mock_module.get_required_fields(), ["field1", "field2"])
     
     def test_generate_write_up(self):
