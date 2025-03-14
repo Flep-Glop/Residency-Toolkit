@@ -22,15 +22,19 @@ if 'show_landing_page' not in st.session_state:
     st.session_state.show_landing_page = True
 if 'active_module' not in st.session_state:
     st.session_state.active_module = None
+if 'use_unified_workflow' not in st.session_state:
+    st.session_state.use_unified_workflow = False
 
 # Navigation functions
-def go_to_module(module_name):
+def go_to_module(module_name, use_unified=False):
     st.session_state.show_landing_page = False
     st.session_state.active_module = module_name
+    st.session_state.use_unified_workflow = use_unified
 
 def go_to_landing_page():
     st.session_state.show_landing_page = True
     st.session_state.active_module = None
+    st.session_state.use_unified_workflow = False
 
 # Initialize modules
 quick_write = QuickWriteModule()
@@ -41,64 +45,89 @@ if not st.session_state.show_landing_page:
     active_module = st.session_state.active_module
     
     if active_module == "Quick Write":
-        # Get the write-up type from session state or URL parameter, default to DIBH if not specified
-        write_up_type = st.session_state.get("active_write_up", "DIBH")
-        
-        # Create a modern header with left-aligned title and right-aligned navigation
-        st.markdown('<div class="header-container">', unsafe_allow_html=True)
-        
-        col1, col2 = st.columns([5, 2])
-        
-        with col1:
-            # Show which module we're in (left-aligned)
-            st.markdown(f"<h1 class='left-aligned-title'>{write_up_type} Write-Up Generator</h1>", unsafe_allow_html=True)
-        
-        with col2:
-            # Add a dropdown to allow changing the form type
-            new_write_up_type = st.selectbox(
-                "Change Write-Up Type",
-                ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
-                index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type),
-                key="write_up_type_selector",
-                label_visibility="collapsed"  # Hide the label to improve alignment
-            )
+        if st.session_state.use_unified_workflow:
+            # Unified workflow
+            st.markdown('<div class="header-container">', unsafe_allow_html=True)
             
-            # If the user changed the type using the dropdown, update and rerun
-            if new_write_up_type != write_up_type:
-                st.session_state.active_write_up = new_write_up_type
-                st.rerun()
-                
-            # Back to Home button below the dropdown
-            if st.button("← Home", key="home_btn", use_container_width=True):
-                go_to_landing_page()
-                st.rerun()
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Add a horizontal divider
-        st.markdown("<hr style='margin: 0.5rem 0 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
-        
-        # Display the appropriate form based on the write_up_type
-        if write_up_type == "DIBH":
-            write_up = quick_write.render_dibh_form()
-            quick_write.dibh_module.display_write_up(write_up)
-        elif write_up_type == "Fusion":
-            write_up = quick_write.render_fusion_form()
-            quick_write.fusion_module.display_write_up(write_up)
-        elif write_up_type == "Prior Dose":
-            write_up = quick_write.render_prior_dose_form()
-            quick_write.prior_dose_module.display_write_up(write_up)
-        elif write_up_type == "Pacemaker":
-            write_up = quick_write.render_pacemaker_form()
-            quick_write.pacemaker_module.display_write_up(write_up)
-        elif write_up_type == "SBRT":
-            write_up = quick_write.render_sbrt_form()
-            quick_write.sbrt_module.display_write_up(write_up)
-        elif write_up_type == "SRS":
-            write_up = quick_write.render_srs_form()
-            quick_write.srs_module.display_write_up(write_up)
+            col1, col2 = st.columns([5, 1])
+            
+            with col1:
+                # Show which module we're in (left-aligned)
+                st.markdown(f"<h1 class='left-aligned-title'>Unified Write-Up Generator</h1>", unsafe_allow_html=True)
+            
+            with col2:
+                # Back to Home button
+                if st.button("← Home", key="home_btn", use_container_width=True):
+                    go_to_landing_page()
+                    st.rerun()
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Add a horizontal divider
+            st.markdown("<hr style='margin: 0.5rem 0 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
+            
+            # Render the unified workflow
+            quick_write.render_unified_workflow()
         else:
-            st.info(f"The {write_up_type} write-up type is under development.")
+            # Legacy individual write-up workflow
+            # Get the write-up type from session state or URL parameter, default to DIBH if not specified
+            write_up_type = st.session_state.get("active_write_up", "DIBH")
+            
+            # Create a modern header with left-aligned title and right-aligned navigation
+            st.markdown('<div class="header-container">', unsafe_allow_html=True)
+            
+            col1, col2 = st.columns([5, 2])
+            
+            with col1:
+                # Show which module we're in (left-aligned)
+                st.markdown(f"<h1 class='left-aligned-title'>{write_up_type} Write-Up Generator</h1>", unsafe_allow_html=True)
+            
+            with col2:
+                # Add a dropdown to allow changing the form type
+                new_write_up_type = st.selectbox(
+                    "Change Write-Up Type",
+                    ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
+                    index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type),
+                    key="write_up_type_selector",
+                    label_visibility="collapsed"  # Hide the label to improve alignment
+                )
+                
+                # If the user changed the type using the dropdown, update and rerun
+                if new_write_up_type != write_up_type:
+                    st.session_state.active_write_up = new_write_up_type
+                    st.rerun()
+                    
+                # Back to Home button below the dropdown
+                if st.button("← Home", key="home_btn", use_container_width=True):
+                    go_to_landing_page()
+                    st.rerun()
+            
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Add a horizontal divider
+            st.markdown("<hr style='margin: 0.5rem 0 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
+            
+            # Display the appropriate form based on the write_up_type
+            if write_up_type == "DIBH":
+                write_up = quick_write.render_dibh_form()
+                quick_write.dibh_module.display_write_up(write_up)
+            elif write_up_type == "Fusion":
+                write_up = quick_write.render_fusion_form()
+                quick_write.fusion_module.display_write_up(write_up)
+            elif write_up_type == "Prior Dose":
+                write_up = quick_write.render_prior_dose_form()
+                quick_write.prior_dose_module.display_write_up(write_up)
+            elif write_up_type == "Pacemaker":
+                write_up = quick_write.render_pacemaker_form()
+                quick_write.pacemaker_module.display_write_up(write_up)
+            elif write_up_type == "SBRT":
+                write_up = quick_write.render_sbrt_form()
+                quick_write.sbrt_module.display_write_up(write_up)
+            elif write_up_type == "SRS":
+                write_up = quick_write.render_srs_form()
+                quick_write.srs_module.display_write_up(write_up)
+            else:
+                st.info(f"The {write_up_type} write-up type is under development.")
 
     elif active_module in ["Competency Tracker", "Part 3 Bank"]:
         # Add navigation header
@@ -132,7 +161,7 @@ else:  # This is the landing page
     with tools_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Main tools with clear descriptions - removed feature tags that looked clickable
+        # Main tools with clear descriptions
         st.markdown("""
         <div class='tool-card'>
             <h2>Quick Write Generator</h2>
@@ -140,8 +169,23 @@ else:  # This is the landing page
         </div>
         """, unsafe_allow_html=True)
         
-        # Direct navigation to specific write-up types - more condensed layout
-        st.markdown("<p><strong>Quick Access:</strong> Select a write-up type to begin</p>", unsafe_allow_html=True)
+        # NEW: Unified workflow option
+        st.markdown("""
+        <div class='tool-card' style='border-left: 4px solid var(--primary-color);'>
+            <h2>NEW! Unified Write-Up Workflow</h2>
+            <p>Try our new streamlined workflow to create multiple write-ups with shared patient information in a single session.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Button for unified workflow
+        if st.button("Launch Unified Workflow (Beta)", type="primary", key="unified_workflow_btn"):
+            go_to_module("Quick Write", use_unified=True)
+            st.rerun()
+
+        st.markdown("<hr style='margin: 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
+        
+        # Legacy individual tools section
+        st.markdown("<p><strong>Classic Write-up Tools:</strong> Select a write-up type to begin</p>", unsafe_allow_html=True)
         
         # Use columns for layout
         cols = st.columns(3)
@@ -199,6 +243,7 @@ else:  # This is the landing page
                 <h3>Current Version</h3>
                 <p><span class='version'>Beta v0.9</span></p>
                 <p>Last updated: March 2025</p>
+                <p>New! Unified workflow in beta testing.</p>
                 <p>For help or suggestions, use the feedback form below.</p>
             </div>
             """, unsafe_allow_html=True)

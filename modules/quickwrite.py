@@ -1,22 +1,40 @@
 import streamlit as st
 from .templates import ConfigManager
+from .dibh import DIBHModule
 from .fusion import FusionModule
 from .prior_dose import PriorDoseModule
 from .pacemaker import PacemakerModule
 from .sbrt import SBRTModule
 from .srs import SRSModule
-from .dibh import DIBHModule
+from .quickwrite_orchestrator import QuickWriteOrchestrator
 
 class QuickWriteModule:
     def __init__(self):
         """Initialize the Quick Write module."""
         self.config_manager = ConfigManager()
-        self.dibh_module = DIBHModule()
+        
+        # Initialize all modules - for now, only DIBH is refactored
+        self.dibh_module = DIBHModule(self.config_manager)
         self.fusion_module = FusionModule()
         self.prior_dose_module = PriorDoseModule()
         self.pacemaker_module = PacemakerModule()
         self.sbrt_module = SBRTModule()
         self.srs_module = SRSModule()
+        
+        # Create module dictionary for the orchestrator
+        self.modules = {
+            "dibh": self.dibh_module,
+            # Other modules will be added as they're refactored
+        }
+        
+        # Initialize the orchestrator
+        self.orchestrator = QuickWriteOrchestrator(self.modules)
+    
+    def render_unified_workflow(self):
+        """Render the unified workflow for multiple write-ups."""
+        return self.orchestrator.render_workflow()
+    
+    # Legacy methods for backward compatibility - these will be gradually removed
         
     def render_dibh_form(self):
         """Delegate to the DIBHModule for DIBH write-ups."""
@@ -41,24 +59,3 @@ class QuickWriteModule:
     def render_srs_form(self):
         """Delegate to the SRSModule for SRS write-ups."""
         return self.srs_module.render_srs_form()
-    
-    def display_write_up(self, write_up):
-        """Display the generated write-up with a copy button."""
-        if write_up:
-            st.markdown("### Generated Write-Up")
-            
-            # Create a container with custom styling for better visibility
-            with st.container():
-                # Display in text area for viewing/editing
-                st.text_area("", write_up, height=300, key="result", label_visibility="collapsed")
-                
-                # Add a tooltip with copy instructions
-                st.info("💡 To copy: Click inside the text box, use Ctrl+A (or Cmd+A on Mac) to select all, then Ctrl+C (or Cmd+C) to copy.")
-                
-                # Optional: Add download button
-                st.download_button(
-                    label="Download as Text File",
-                    data=write_up,
-                    file_name="write_up.txt",
-                    mime="text/plain"
-                )
