@@ -92,95 +92,42 @@ if not st.session_state.show_landing_page:
 
     # Update this section in app.py to replace the current landing page code
 
-    else:  # This is the landing page
-        # Load landing-specific CSS
+    # Replace the entire landing page section in app.py with this minimal version
+
+    else:  # Landing page
+        # Load CSS
         load_css("assets/css/landing.css")
         
-        # Clean, minimal header
-        st.markdown("""
-        <div class="landing-header">
-            <h1>Medical Physics Residency Toolkit</h1>
-            <p>Streamlining documentation for radiation oncology workflows</p>
-        </div>
-        """, unsafe_allow_html=True)
+        # Title and subtitle - pure Streamlit, no custom HTML
+        st.title("Medical Physics Residency Toolkit")
+        st.write("Streamlining documentation for radiation oncology workflows")
         
-        # Primary Card - Most important tool with integrated button
-        st.markdown("<div class='primary-card'>", unsafe_allow_html=True)
+        # Main card using pure Streamlit
+        st.markdown("---")
+        st.subheader("📝 QuickWrite")
+        st.write("Generate standardized documentation for clinical scenarios")
         
-        # Card header with icon and text
-        col1, col2 = st.columns([1, 5])
-        with col1:
-            st.markdown("<div class='card-icon'>📝</div>", unsafe_allow_html=True)
-        with col2:
-            st.markdown("<h2>QuickWrite</h2>", unsafe_allow_html=True)
-            st.markdown("<p>Generate standardized documentation for clinical scenarios</p>", unsafe_allow_html=True)
+        # Features as simple text
+        st.write("Features: DIBH Reports, Fusion Documentation, Prior Dose Analysis, Pacemaker & SBRT Reports")
         
-        # Feature list
-        st.markdown("""
-        <div class="feature-list">
-            <span class="feature-item">DIBH Reports</span>
-            <span class="feature-item">Fusion Documentation</span>
-            <span class="feature-item">Prior Dose Analysis</span>
-            <span class="feature-item">Pacemaker & SBRT Reports</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Action button in Streamlit-native way
-        if st.button("Launch QuickWrite", key="quickwrite_btn", type="primary", use_container_width=True):
+        # Launch button
+        if st.button("Launch QuickWrite", type="primary", use_container_width=True):
             go_to_module("Quick Write")
         
-        st.markdown("</div>", unsafe_allow_html=True)
+        # About this tool
+        st.markdown("---")
+        with st.expander("About This Tool"):
+            st.write("The Medical Physics Residency Toolkit helps radiation oncology residents and physicists create standardized documentation efficiently.")
+            st.write("Current version: Beta v0.9")
         
-        # About section in a cleaner expandable card
-        with st.expander("ℹ️ About This Tool", expanded=False):
-            st.markdown("""
-            <div class="info-content">
-                <p>The <strong>Medical Physics Residency Toolkit</strong> helps radiation oncology residents and physicists create standardized documentation efficiently.</p>
-                <p>Current version: <span class="version-badge">Beta v0.9</span></p>
-                <p>This toolkit streamlines workflows for common clinical scenarios, reducing documentation time and ensuring consistency.</p>
-            </div>
-            """, unsafe_allow_html=True)
+        # Coming soon
+        st.markdown("---")
+        st.subheader("Coming Soon")
         
-        # Coming soon section
-        st.markdown("<h3 class='section-title'>Coming Soon</h3>", unsafe_allow_html=True)
-        
-        # Coming soon items in Streamlit columns
         col1, col2, col3 = st.columns(3)
-        
         with col1:
-            st.markdown("""
-            <div class="coming-soon-item">
-                <div class="soon-icon">🧠</div>
-                <div>Competency Tracker</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
+            st.write("🧠 Competency Tracker")
         with col2:
-            st.markdown("""
-            <div class="coming-soon-item">
-                <div class="soon-icon">📊</div>
-                <div>QA Dashboard</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
+            st.write("📊 QA Dashboard")
         with col3:
-            st.markdown("""
-            <div class="coming-soon-item">
-                <div class="soon-icon">📚</div>
-                <div>Part 3 Bank</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        # Footer with feedback
-        st.markdown("<hr class='footer-divider'>", unsafe_allow_html=True)
-        
-        feedback_col1, feedback_col2 = st.columns([3, 1])
-        with feedback_col2:
-            with st.expander("Provide Feedback", expanded=False):
-                feedback_type = st.selectbox(
-                    "Type", 
-                    ["Bug Report", "Feature Request", "Usability", "General"]
-                )
-                feedback_text = st.text_area("Details", height=100)
-                if st.button("Submit", use_container_width=True):
-                    st.success("Thank you for your feedback!")
+            st.write("📚 Part 3 Bank")
