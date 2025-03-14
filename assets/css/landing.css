@@ -1,30 +1,105 @@
 /* Update landing.css with these improved styles */
 
+/* Dark mode compatibility */
+:root {
+    --background-color: #ffffff;
+    --text-color: #2c3e50;
+    --subtitle-color: #64748b;
+    --card-background: #ffffff;
+    --card-border: #e2e8f0;
+    --card-shadow: rgba(0, 0, 0, 0.08);
+    --primary-color: #3b82f6;
+    --primary-color-hover: #2563eb;
+    --secondary-background: #f1f5f9;
+    --secondary-background-hover: #e0f2fe;
+    --feature-background: #f1f5f9;
+    --feature-text: #3b82f6;
+    --feature-hover: #dbeafe;
+    --feature-shadow: rgba(59, 130, 246, 0.15);
+    --button-shadow: rgba(59, 130, 246, 0.3);
+    --timeline-background: #dbeafe;
+    --timeline-text: #3b82f6;
+}
+
+[data-theme="dark"] {
+    --background-color: #1e1e1e;
+    --text-color: #e2e8f0;
+    --subtitle-color: #a0aec0;
+    --card-background: #2d3748;
+    --card-border: #4a5568;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --primary-color: #4299e1;
+    --primary-color-hover: #3182ce;
+    --secondary-background: #2d3748;
+    --secondary-background-hover: #4a5568;
+    --feature-background: #2d3748;
+    --feature-text: #63b3ed;
+    --feature-hover: #4a5568;
+    --feature-shadow: rgba(99, 179, 237, 0.2);
+    --button-shadow: rgba(99, 179, 237, 0.4);
+    --timeline-background: #2a4365;
+    --timeline-text: #63b3ed;
+}
+
 /* Global typography */
 h1 {
-    color: #2c3e50;
+    color: var(--text-color);
     margin-bottom: 0.2rem;
     font-weight: 600;
 }
 
 .subtitle {
-    color: #64748b;
+    color: var(--subtitle-color);
     font-size: 1.2rem;
     margin-top: 0;
     font-weight: 300;
 }
 
 h2 {
-    color: #2c3e50;
+    color: var(--text-color);
     margin-top: 0;
     font-size: 1.8rem;
     font-weight: 500;
 }
 
 h3 {
-    color: #3b82f6;
+    color: var(--primary-color);
     margin-bottom: 1rem;
     font-weight: 500;
+}
+
+/* Features pills */
+.features {
+    margin-bottom: 1.2rem;
+}
+
+.features span {
+    display: inline-block;
+    background-color: var(--feature-background);
+    color: var(--feature-text);
+    padding: 0.4rem 0.9rem;
+    border-radius: 30px;
+    margin: 0 0.5rem 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Subtle hover effect on feature tags */
+.features span:hover {
+    background-color: var(--feature-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px var(--feature-shadow);
+}
+
+.timeline {
+    display: inline-block;
+    background-color: #dbeafe;
+    color: #3b82f6;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
 }
 
 /* Tab styling - matched to QuickWrite style */
@@ -40,82 +115,8 @@ h3 {
 
 .stTabs [aria-selected="true"] {
     background-color: rgba(59, 130, 246, 0.1) !important;
-    color: #3b82f6 !important;
-    border-bottom: 2px solid #3b82f6;
-}
-
-/* Card styling */
-.tool-card {
-    background-color: white;
-    border-radius: 12px;
-    padding: 1.8rem;
-    margin: 1rem 0;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.tool-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-}
-
-.tool-card p {
-    color: #64748b;
-    margin-bottom: 1.2rem;
-    font-size: 1.1rem;
-    line-height: 1.5;
-}
-
-.info-card, .coming-soon-card {
-    background-color: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    height: 100%;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.info-card h3, .coming-soon-card h3 {
-    margin-top: 0;
-}
-
-.coming-soon-card {
-    border-left: 4px solid #3b82f6;
-}
-
-.timeline {
-    display: inline-block;
-    background-color: #dbeafe;
-    color: #3b82f6;
-    padding: 0.3rem 0.8rem;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-}
-
-/* Features pills */
-.features {
-    margin-bottom: 1.2rem;
-}
-
-.features span {
-    display: inline-block;
-    background-color: #f1f5f9;
-    color: #3b82f6;
-    padding: 0.4rem 0.9rem;
-    border-radius: 30px;
-    margin: 0 0.5rem 0.5rem 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-/* Subtle hover effect on feature tags */
-.features span:hover {
-    background-color: #dbeafe;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
+    color: var(--primary-color) !important;
+    border-bottom: 2px solid var(--primary-color);
 }
 
 /* Version badge */
@@ -129,41 +130,44 @@ h3 {
     font-weight: 500;
 }
 
-/* Button styling to match QuickWrite */
-button {
-    background-color: #3b82f6 !important;
-    color: white !important;
-    border-radius: 4px !important;
-    font-weight: 500 !important;
-    padding: 0.4rem 0.8rem !important;
-    height: auto !important;
-    transition: all 0.2s ease !important;
+/* Card styling */
+.tool-card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 1.8rem;
+    margin: 1rem 0;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 16px var(--card-shadow);
+    transition: transform 0.2s, box-shadow 0.2s;
 }
 
-button:hover {
-    background-color: #2563eb !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+.tool-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px var(--card-shadow);
 }
 
-/* Smaller buttons for quick access */
-[data-testid="stButton"] > button[kind="secondary"] {
-    background-color: #f1f5f9 !important;
-    color: #3b82f6 !important;
-    border: 1px solid #e2e8f0 !important;
-    font-size: 0.9rem !important;
-    margin-bottom: 8px !important;
+.tool-card p {
+    color: var(--subtitle-color);
+    margin-bottom: 1.2rem;
+    font-size: 1.1rem;
+    line-height: 1.5;
 }
 
-[data-testid="stButton"] > button[kind="secondary"]:hover {
-    background-color: #e0f2fe !important; 
-    color: #2563eb !important;
+.info-card, .coming-soon-card {
+    background-color: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 100%;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 12px var(--card-shadow);
 }
 
-/* Main launch button */
-#quickwrite_btn {
-    font-size: 1.1rem !important;
-    padding: 0.6rem 1rem !important;
-    margin-top: 10px !important;
+.info-card h3, .coming-soon-card h3 {
+    margin-top: 0;
+}
+
+.coming-soon-card {
+    border-left: 4px solid var(--primary-color);
 }
 
 /* Responsive adjustments */

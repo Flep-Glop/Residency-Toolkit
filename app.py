@@ -101,6 +101,14 @@ else:  # This is the landing page
     # Load landing-specific CSS
     load_css("assets/css/landing.css")
     
+    # Add theme detection
+    theme = st.get_option("theme.base")
+    st.markdown(f"""
+    <script>
+        document.documentElement.setAttribute('data-theme', '{theme}');
+    </script>
+    """, unsafe_allow_html=True)
+    
     # Clean header with logo and title
     col1, col2 = st.columns([1, 5])
     with col1:
@@ -133,36 +141,54 @@ else:  # This is the landing page
         </div>
         """, unsafe_allow_html=True)
         
-        # Direct navigation to specific write-up types
+        # Direct navigation to specific write-up types - more condensed layout
         st.markdown("<p>Quick Access:</p>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            if st.button("DIBH Write-up", key="dibh_btn"):
+        
+        # Use a container with flex display for the buttons
+        st.markdown("""
+        <div class="quick-access-container">
+            <a href="#" class="quick-access-button" data-type="DIBH">DIBH</a>
+            <a href="#" class="quick-access-button" data-type="Fusion">Fusion</a>
+            <a href="#" class="quick-access-button" data-type="Prior Dose">Prior Dose</a>
+            <a href="#" class="quick-access-button" data-type="Pacemaker">Pacemaker</a>
+            <a href="#" class="quick-access-button" data-type="SBRT">SBRT</a>
+            <a href="#" class="quick-access-button" data-type="SRS">SRS</a>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Hidden buttons that will be triggered by JavaScript
+        for write_up_type in ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]:
+            if st.button(f"Go to {write_up_type}", key=f"{write_up_type.lower().replace(' ', '_')}_btn", visible=False):
                 go_to_module("Quick Write")
-                st.session_state.active_write_up = "DIBH"
-            if st.button("Prior Dose Write-up", key="prior_dose_btn"):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = "Prior Dose"
-        with col2:
-            if st.button("Fusion Write-up", key="fusion_btn"):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = "Fusion" 
-            if st.button("SBRT Write-up", key="sbrt_btn"):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = "SBRT"
-        with col3:
-            if st.button("Pacemaker Write-up", key="pacemaker_btn"):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = "Pacemaker"
-            if st.button("SRS Write-up", key="srs_btn"):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = "SRS"
+                st.session_state.active_write_up = write_up_type
+        
+        # JavaScript to connect the custom buttons to the hidden Streamlit buttons
+        st.markdown("""
+        <script>
+            // Function to click the corresponding hidden button
+            function clickHiddenButton(writeUpType) {
+                // Find the hidden button and click it
+                const buttonId = writeUpType.toLowerCase().replace(' ', '_') + '_btn';
+                const button = document.querySelector(`button[kind="secondary"][data-testid="baseButton-secondary"]:has(div:contains("Go to ${writeUpType}"))`);
+                if (button) button.click();
+            }
+            
+            // Add click listeners to all quick access buttons
+            document.querySelectorAll('.quick-access-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const writeUpType = this.getAttribute('data-type');
+                    clickHiddenButton(writeUpType);
+                });
+            });
+        </script>
+        """, unsafe_allow_html=True)
         
         # Main launch button
         if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
             go_to_module("Quick Write")
     
-    with tab2:
+    with about_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # About section with cards for better organization
@@ -195,7 +221,7 @@ else:  # This is the landing page
             if st.button("Submit Feedback"):
                 st.success("Thank you for your feedback!")
     
-    with tab3:
+    with coming_soon_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Coming soon features in a more visual format
