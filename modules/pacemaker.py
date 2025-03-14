@@ -1,10 +1,17 @@
 import streamlit as st
-from .templates import ConfigManager
+from .base_module import BaseWriteUpModule
 
-class PacemakerModule:
-    def __init__(self):
+class PacemakerModule(BaseWriteUpModule):
+    """Pacemaker module for clinical documentation generation.
+    
+    This module handles the creation of documentation for patients with cardiac implantable
+    electronic devices (CIEDs) such as pacemakers and defibrillators who are undergoing
+    radiation therapy, following AAPM TG-203 guidelines.
+    """
+    
+    def __init__(self, config_manager):
         """Initialize the Pacemaker module."""
-        self.config_manager = ConfigManager()
+        super().__init__(config_manager)
         
         # Common treatment sites
         self.treatment_sites = [
@@ -28,44 +35,52 @@ class PacemakerModule:
             "MicroPort": ["Eno", "Esprit", "Philos", "Phymos", "Placed", "Rapido"],
             "ZOLL": ["ZOLL LifeVest", "ZOLL CRM"]
         }
-        
-    def render_pacemaker_form(self):
-        """Render the form for pacemaker write-ups."""
+    
+    def get_module_name(self):
+        """Return the display name of this module."""
+        return "Pacemaker"
+    
+    def get_module_description(self):
+        """Return a brief description of this module."""
+        return "Cardiac implantable electronic device (CIED) management for radiation therapy"
+    
+    def get_required_fields(self):
+        """Return a list of required field names for this module."""
+        return ["treatment_site", "dose", "fractions", "device_vendor", "field_distance"]
+    
+    def render_specialized_fields(self, physician, physicist, patient_age, patient_sex, patient_details):
+        """Render Pacemaker-specific input fields and return the generated data."""
         
         # Create tabs for Basic Info and Treatment/Pacemaker Details
-        basic_tab, details_tab, risk_tab = st.tabs(["Basic Information", "Treatment & Pacemaker Details", "Risk Assessment"])
+        basic_tab, details_tab, risk_tab = st.tabs(["Treatment Information", "Device Details", "Risk Assessment"])
+        
+        # Initialize session state for risk level if it doesn't exist
+        if 'risk_level' not in st.session_state:
+            st.session_state.risk_level = ''
         
         with basic_tab:
-            # Staff information
-            st.markdown("#### Staff Information")
-            physician = st.selectbox("Physician Name", 
-                                    self.config_manager.get_physicians(), 
-                                    key="pacemaker_physician")
-            physicist = st.selectbox("Physicist Name", 
-                                    self.config_manager.get_physicists(), 
-                                    key="pacemaker_physicist")
-            
-            # Patient information
-            st.markdown("#### Patient Information")
-            patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="pacemaker_age")
-            patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="pacemaker_sex")
-            patient_details = f"a {patient_age}-year-old {patient_sex}"
-        
-        with details_tab:
+            # Treatment information
+            st.markdown("#### Treatment Information")
             col1, col2 = st.columns(2)
             
             with col1:
-                # Treatment information
-                st.markdown("#### Treatment Information")
                 treatment_site = st.selectbox("Treatment Site", 
-                                            self.treatment_sites, 
-                                            key="pacemaker_site")
+                                           sorted(self.treatment_sites), 
+                                           key="pacemaker_site")
                 
-                dose = st.number_input("Prescription Dose (Gy)", min_value=0.0, value=45.0, step=0.1, key="pacemaker_dose")
-                fractions = st.number_input("Number of Fractions", min_value=1, value=15, key="pacemaker_fractions")
+                dose = st.number_input("Prescription Dose (Gy)", 
+                                     min_value=0.0, 
+                                     value=45.0, 
+                                     step=0.1, 
+                                     key="pacemaker_dose")
+            
+            with col2:
+                fractions = st.number_input("Number of Fractions", 
+                                          min_value=1, 
+                                          value=15, 
+                                          key="pacemaker_fractions")
                 
                 # Field distance from CIED
-                st.markdown("#### Field Proximity to CIED")
                 distance_options = [
                     "More than 10 cm from treatment field edge",
                     "Less than 10 cm from field edge but not in direct field",
@@ -84,10 +99,13 @@ class PacemakerModule:
                     ["No", "Yes"],
                     key="neutron_producing"
                 )
+        
+        with details_tab:
+            # Pacemaker details
+            st.markdown("#### Device Information")
+            col1, col2 = st.columns(2)
             
-            with col2:
-                # Pacemaker details
-                st.markdown("#### Pacemaker Information")
+            with col1:
                 device_vendor = st.selectbox("Device Vendor", 
                                           self.device_vendors + ["Other"],
                                           key="device_vendor")
@@ -101,13 +119,16 @@ class PacemakerModule:
                     device_model_options = ["Select model..."] + self.device_models.get(device_vendor, []) + ["Other"]
                 
                 # Model selection based on vendor
-                device_model_selection = st.selectbox("Device Model", device_model_options, key="device_model_selection")
+                device_model_selection = st.selectbox("Device Model", 
+                                                   device_model_options, 
+                                                   key="device_model_selection")
                 
                 if device_model_selection == "Other" or device_model_selection == "Custom":
                     device_model = st.text_input("Custom Model", key="custom_model")
                 else:
                     device_model = device_model_selection if device_model_selection != "Select model..." else ""
-                
+            
+            with col2:
                 device_serial = st.text_input("Device Serial Number", key="device_serial")
                 
                 # Pacing dependent?
@@ -141,7 +162,7 @@ class PacemakerModule:
         
         with risk_tab:
             # Auto-calculate risk level based on inputs
-            if 'field_distance' in locals() and 'pacing_dependent' in locals() and 'tps_max_dose' in locals() and 'neutron_producing' in locals():
+            if 'field_distance' in st.session_state and 'pacing_dependent' in st.session_state and 'tps_max_dose' in st.session_state and 'neutron_producing' in st.session_state:
                 st.markdown("#### Risk Assessment Results")
                 
                 # Calculate max dose based on field distance if TPS dose not available
@@ -209,114 +230,67 @@ class PacemakerModule:
                         st.error("⚠️ HIGH RISK CASE: Please consult with cardiologist and radiation oncologist before proceeding!")
                 
                 # Store the calculated risk level
-                if 'risk_level' not in st.session_state:
-                    st.session_state.risk_level = risk_level
-                else:
-                    st.session_state.risk_level = risk_level
+                st.session_state.risk_level = risk_level
             else:
-                st.info("Please fill in the Treatment & Pacemaker Details tab first to see the risk assessment.")
+                st.info("Please fill in the Treatment & Device Details tabs first to see the risk assessment.")
         
-        # Generate button
-        generate_pressed = st.button("Generate Write-Up", type="primary", key="pacemaker_generate")
+        # Validation: Check if required fields are filled
+        required_fields = {
+            "treatment_site": treatment_site,
+            "dose": dose,
+            "fractions": fractions,
+            "device_vendor": device_vendor_name if device_vendor_name != "the vendor" else "",
+            "field_distance": field_distance
+        }
         
-        # Check if we have all required information and the button was pressed
-        required_fields = [
-            physician, physicist, patient_age, treatment_site, dose, fractions,
-            device_vendor_name
-        ]
-        all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields)
-        
-        # Show missing fields if any
-        if generate_pressed and not all_fields_filled:
-            st.error("Please fill in all required fields before generating the write-up.")
-            missing_fields = []
-            if not physician:
-                missing_fields.append("Physician Name")
-            if not physicist:
-                missing_fields.append("Physicist Name")
-            if patient_age == 0:
-                missing_fields.append("Patient Age")
-            if not treatment_site:
-                missing_fields.append("Treatment Site")
-            if dose == 0:
-                missing_fields.append("Prescription Dose")
-            if fractions == 0:
-                missing_fields.append("Number of Fractions")
-            if not device_vendor or (device_vendor == "Other" and not custom_vendor):
-                missing_fields.append("Device Vendor")
-                
-            for field in missing_fields:
-                st.warning(f"Missing required field: {field}")
-                
-            return None
+        all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields.values())
         
         # Check risk level - don't generate write-up for high risk cases
         risk_level = st.session_state.get('risk_level', '')
-        if generate_pressed and risk_level == "High":
+        if risk_level == "High":
             st.error("⚠️ This is a HIGH RISK case. Please consult with a cardiologist and radiation oncologist before proceeding.")
-            st.warning("A write-up is not generated for high-risk cases to ensure proper clinical review.")
             return None
         
-        # If all required fields are filled and button is pressed, generate the write-up
-        if generate_pressed and all_fields_filled and risk_level != "High":
-            # Generate write-up based on inputs
-            write_up = self._generate_pacemaker_write_up(
-                physician=physician,
-                physicist=physicist,
-                patient_details=patient_details,
-                treatment_site=treatment_site,
-                dose=dose,
-                fractions=fractions,
-                device_vendor=device_vendor_name,
-                device_model=device_model,
-                device_serial=device_serial,
-                pacing_dependent=pacing_dependent,
-                risk_level=risk_level,  # Use calculated risk level
-                tps_max_dose=tps_max_dose,
-                tps_mean_dose=tps_mean_dose,
-                osld_mean_dose=osld_mean_dose
-            )
+        # If all required fields are filled, return the module data
+        if all_fields_filled:
+            # Collect and return the module-specific data
+            module_data = {
+                "treatment_site": treatment_site,
+                "dose": dose,
+                "fractions": fractions,
+                "device_vendor": device_vendor_name,
+                "device_model": device_model,
+                "device_serial": device_serial,
+                "pacing_dependent": pacing_dependent,
+                "field_distance": field_distance,
+                "neutron_producing": neutron_producing,
+                "tps_max_dose": tps_max_dose,
+                "tps_mean_dose": tps_mean_dose,
+                "osld_mean_dose": osld_mean_dose,
+                "risk_level": risk_level
+            }
             
-            return write_up
+            return module_data
         
         return None
     
-    def _calculate_risk_level(self, is_pacing_dependent, dose_category, neutron_producing):
-        """Calculate the risk level based on the TG212 algorithm."""
-        # Start with default setting
-        risk_level = "Low"
+    def generate_write_up(self, common_info, module_data):
+        """Generate the Pacemaker write-up based on common and module-specific data."""
+        physician = common_info.get("physician", "")
+        physicist = common_info.get("physicist", "")
+        patient_details = common_info.get("patient_details", "")
         
-        # Step 1: If neutron producing and dose > 5 Gy, it's High risk
-        if neutron_producing and dose_category == "> 5 Gy":
-            return "High"
-        
-        # Step 2: If neutron producing OR dose > 5 Gy, check pacing dependency
-        if neutron_producing or dose_category == "> 5 Gy":
-            if is_pacing_dependent:
-                return "High"
-            else:
-                return "Medium"
-        
-        # Step 3: If dose is 2-5 Gy, check pacing dependency
-        if dose_category == "2-5 Gy":
-            if is_pacing_dependent:
-                return "Medium"
-            else:
-                return "Low"
-        
-        # Step 4: If dose < 2 Gy and not neutron producing, it's Low risk
-        if dose_category == "< 2 Gy" and not neutron_producing:
-            return "Low"
-        
-        # Default fallback
-        return risk_level
-    
-    def _generate_pacemaker_write_up(self, physician, physicist, patient_details, 
-                                   treatment_site, dose, fractions, device_vendor,
-                                   device_model, device_serial, pacing_dependent,
-                                   risk_level, tps_max_dose, tps_mean_dose, 
-                                   osld_mean_dose):
-        """Generate the pacemaker write-up based on the inputs."""
+        treatment_site = module_data.get("treatment_site", "")
+        dose = module_data.get("dose", 0)
+        fractions = module_data.get("fractions", 0)
+        device_vendor = module_data.get("device_vendor", "")
+        device_model = module_data.get("device_model", "")
+        device_serial = module_data.get("device_serial", "")
+        pacing_dependent = module_data.get("pacing_dependent", "")
+        risk_level = module_data.get("risk_level", "")
+        tps_max_dose = module_data.get("tps_max_dose", 0)
+        tps_mean_dose = module_data.get("tps_mean_dose", 0)
+        osld_mean_dose = module_data.get("osld_mean_dose", 0)
         
         # Format model and serial info
         model_text = f"model number {device_model}" if device_model else "implanted cardiac device"
@@ -339,8 +313,7 @@ class PacemakerModule:
             pacing_text = ""
         
         # Basic write-up structure
-        write_up = f"Dr. {physician} requested a medical physics consultation for --- for an implanted device. "
-        write_up += f"The patient is {patient_details}. "
+        write_up = f"Dr. {physician} requested a medical physics consultation for {patient_details} for an implanted device. "
         write_up += f"The patient has a {device_info} from {device_vendor}. {pacing_text}\n\n"
         
         write_up += "Our treatment plan follows the guidelines of the manufacturer for radiation therapy. "
@@ -375,23 +348,79 @@ class PacemakerModule:
         
         return write_up
     
-    def display_write_up(self, write_up):
-        """Display the generated write-up with a copy button."""
-        if write_up:
-            st.markdown("### Generated Write-Up")
+    def _calculate_risk_level(self, is_pacing_dependent, dose_category, neutron_producing):
+        """Calculate the risk level based on the TG-203 algorithm."""
+        # Start with default setting
+        risk_level = "Low"
+        
+        # Step 1: If neutron producing and dose > 5 Gy, it's High risk
+        if neutron_producing and dose_category == "> 5 Gy":
+            return "High"
+        
+        # Step 2: If neutron producing OR dose > 5 Gy, check pacing dependency
+        if neutron_producing or dose_category == "> 5 Gy":
+            if is_pacing_dependent:
+                return "High"
+            else:
+                return "Medium"
+        
+        # Step 3: If dose is 2-5 Gy, check pacing dependency
+        if dose_category == "2-5 Gy":
+            if is_pacing_dependent:
+                return "Medium"
+            else:
+                return "Low"
+        
+        # Step 4: If dose < 2 Gy and not neutron producing, it's Low risk
+        if dose_category == "< 2 Gy" and not neutron_producing:
+            return "Low"
+        
+        # Default fallback
+        return risk_level
+    
+    # Backward compatibility method
+    def render_pacemaker_form(self):
+        """Legacy method to maintain backward compatibility."""
+        # Staff information
+        st.markdown("#### Staff Information")
+        physician = st.selectbox("Physician Name", 
+                              self.config_manager.get_physicians(), 
+                              key="pacemaker_physician")
+        physicist = st.selectbox("Physicist Name", 
+                               self.config_manager.get_physicists(), 
+                               key="pacemaker_physicist")
+        
+        # Patient information
+        st.markdown("#### Patient Information")
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="pacemaker_age")
+        with col2:
+            patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="pacemaker_sex")
+        
+        patient_details = f"a {patient_age}-year-old {patient_sex}"
+        
+        # Get module-specific data
+        module_data = self.render_specialized_fields(
+            physician, physicist, patient_age, patient_sex, patient_details
+        )
+        
+        # Generate button
+        generate_pressed = st.button("Generate Write-Up", type="primary", key="pacemaker_generate")
+        
+        # Generate write-up if button is pressed and all data is provided
+        if generate_pressed and module_data:
+            common_info = {
+                "physician": physician,
+                "physicist": physicist,
+                "patient_age": patient_age,
+                "patient_sex": patient_sex,
+                "patient_details": patient_details
+            }
             
-            # Create a container with custom styling for better visibility
-            with st.container():
-                # Display in text area for viewing/editing
-                st.text_area("", write_up, height=300, key="pacemaker_result", label_visibility="collapsed")
-                
-                # Add a tooltip with copy instructions
-                st.info("💡 To copy: Click inside the text box, use Ctrl+A (or Cmd+A on Mac) to select all, then Ctrl+C (or Cmd+C) to copy.")
-                
-                # Optional: Add download button
-                st.download_button(
-                    label="Download as Text File",
-                    data=write_up,
-                    file_name="pacemaker_write_up.txt",
-                    mime="text/plain"
-                )
+            write_up = self.generate_write_up(common_info, module_data)
+            self.display_write_up(write_up)
+            return write_up
+        
+        return None
