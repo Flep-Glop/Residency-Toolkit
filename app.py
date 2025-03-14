@@ -96,58 +96,134 @@ if not st.session_state.show_landing_page:
 
     # Replace JUST the 'else' section in your original app.py with this:
 
+# Update the 'else' section in app.py (the landing page part)
 else:  # This is the landing page
-    # Load landing-specific CSS (keep this)
+    # Load landing-specific CSS
     load_css("assets/css/landing.css")
     
-    # Simple header
-    st.title("Medical Physics Residency Toolkit")
-    st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
-    
-    # Add some spacing
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Main tool card
-    st.markdown("""
-    <div class='tool-card'>
-        <h2>📝 QuickWrite</h2>
-        <p>Generate professional documentation for clinical scenarios</p>
-        <div class='features'>
-            <span>DIBH</span>
-            <span>Fusion</span>
-            <span>Prior Dose</span>
-            <span>Pacemaker</span>
-            <span>SBRT</span>
-            <span>SRS</span>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Placing the button outside of HTML for reliability
-    if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
-        go_to_module("Quick Write")
-    
-    # Add some spacing
-    st.markdown("<br>", unsafe_allow_html=True)
-    
-    # Info and coming soon sections using columns
-    col1, col2 = st.columns(2)
-    
+    # Clean header with logo and title
+    col1, col2 = st.columns([1, 5])
     with col1:
-        st.markdown("<h3>About This Tool</h3>", unsafe_allow_html=True)
-        st.markdown("<p>The <b>Medical Physics Residency Toolkit</b> is designed to help radiation oncology residents and physicists create standardized documentation quickly.</p>", unsafe_allow_html=True)
-        st.markdown("<p>Current version: <span class='version'>Beta v0.9</span></p>", unsafe_allow_html=True)
-    
+        st.markdown("# 📋")
     with col2:
-        st.markdown("<h3>Coming Soon</h3>", unsafe_allow_html=True)
-        st.markdown("<p>📊 QA Dashboard</p>", unsafe_allow_html=True)
-        st.markdown("<p>🧠 Competency Tracker</p>", unsafe_allow_html=True)
-        st.markdown("<p>📚 Part 3 Bank</p>", unsafe_allow_html=True)
+        st.title("Medical Physics Residency Toolkit")
+        st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
     
-    # Simple feedback section
-    st.markdown("<hr>", unsafe_allow_html=True)
-    with st.expander("Provide Feedback"):
-        feedback_type = st.selectbox("Type", ["Bug Report", "Feature Request", "General"])
-        feedback_text = st.text_area("Details")
-        if st.button("Submit Feedback"):
-            st.success("Thank you for your feedback!")
+    # Main content tabs
+    tab1, tab2, tab3 = st.tabs(["📝 Tools", "ℹ️ About", "🔮 Coming Soon"])
+    
+    with tab1:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Main tools with clear descriptions
+        st.markdown("""
+        <div class='tool-card'>
+            <h2>Quick Write Generator</h2>
+            <p>Generate standardized clinical documentation with guided forms</p>
+            <div class='features'>
+                <span>DIBH</span>
+                <span>Fusion</span>
+                <span>Prior Dose</span>
+                <span>Pacemaker</span>
+                <span>SBRT</span>
+                <span>SRS</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
+            go_to_module("Quick Write")
+        
+        # Policies & Procedures card
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class='tool-card'>
+            <h2>Policies & Procedures</h2>
+            <p>Access department protocols and interactive checklists</p>
+            <div class='features'>
+                <span>Protocols</span>
+                <span>Checklists</span>
+                <span>Search</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.button("Access P&P", key="pnp_btn", use_container_width=True):
+            go_to_module("P&P")
+    
+    with tab2:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # About section with cards for better organization
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            <div class='info-card'>
+                <h3>Purpose</h3>
+                <p>The <b>Medical Physics Residency Toolkit</b> is designed to help radiation oncology residents and physicists create standardized documentation quickly and accurately, improving clinical workflow efficiency.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class='info-card'>
+                <h3>Current Version</h3>
+                <p><span class='version'>Beta v0.9</span></p>
+                <p>Last updated: March 2025</p>
+                <p>For help or suggestions, use the feedback form below.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Simple feedback section
+        with st.expander("Provide Feedback", expanded=False):
+            feedback_type = st.selectbox("Type", ["Bug Report", "Feature Request", "General Feedback"])
+            feedback_text = st.text_area("Details")
+            if st.button("Submit Feedback"):
+                st.success("Thank you for your feedback!")
+    
+    with tab3:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Coming soon features in a more visual format
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            <div class='coming-soon-card'>
+                <h3>📊 QA Dashboard</h3>
+                <p>Interactive quality assurance tracking and visualization</p>
+                <div class='timeline'>Coming in Q2 2025</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class='coming-soon-card'>
+                <h3>📚 Part 3 Question Bank</h3>
+                <p>Practice questions for board certification preparation</p>
+                <div class='timeline'>Coming in Q3 2025</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class='coming-soon-card'>
+                <h3>🧠 Competency Tracker</h3>
+                <p>Track and document clinical competencies for residency programs</p>
+                <div class='timeline'>Coming in Q2 2025</div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            st.markdown("""
+            <div class='coming-soon-card'>
+                <h3>📱 Mobile Support</h3>
+                <p>Fully responsive design for on-the-go documentation</p>
+                <div class='timeline'>Coming in Q4 2025</div>
+            </div>
+            """, unsafe_allow_html=True)
