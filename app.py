@@ -1,6 +1,7 @@
 import streamlit as st
 from modules.quickwrite import QuickWriteModule
 from utils import load_css
+from theme_utils import inject_theme_responsive_css, load_theme_aware_css
 
 # Page configuration
 st.set_page_config(
@@ -10,8 +11,11 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load main CSS (always loaded)
-load_css("assets/css/main.css")
+# Inject theme-responsive CSS (this should be first before any UI is shown)
+inject_theme_responsive_css()
+
+# Load main CSS (it will now use the theme variables)
+load_theme_aware_css("assets/css/main.css")
 
 # Initialize session state variables
 if 'show_landing_page' not in st.session_state:
@@ -90,48 +94,9 @@ if not st.session_state.show_landing_page:
         st.title(f"{active_module}")
         st.info(f"The {active_module} module is under development.")
 
-    # Update this section in app.py to replace the current landing page code
-
-    # Replace the entire landing page section in app.py with this minimal version
-
-    # Replace JUST the 'else' section in your original app.py with this:
-
-# Update the 'else' section in app.py (the landing page part)
 else:  # This is the landing page
-    # Load landing-specific CSS
-    load_css("assets/css/landing.css")
-    
-    # Add theme detection and force CSS application for dark mode
-    theme = st.get_option("theme.base")
-    st.markdown(f"""
-    <style>
-        /* Force dark mode colors */
-        body[data-theme="dark"] {{
-            color: #f8fafc !important;
-        }}
-        body[data-theme="dark"] p, 
-        body[data-theme="dark"] span, 
-        body[data-theme="dark"] h1, 
-        body[data-theme="dark"] h2,
-        body[data-theme="dark"] h3 {{
-            color: #f8fafc !important;
-        }}
-        body[data-theme="dark"] .tool-card {{
-            background-color: #2d3748 !important;
-            border: 1px solid #4a5568 !important;
-        }}
-        body[data-theme="dark"] .tool-card p {{
-            color: #cbd5e1 !important;
-        }}
-        body[data-theme="dark"] .features span {{
-            background-color: #374151 !important;
-            color: #93c5fd !important;
-        }}
-    </style>
-    <script>
-        document.body.setAttribute('data-theme', '{theme}');
-    </script>
-    """, unsafe_allow_html=True)
+    # Load landing-specific CSS with theme awareness
+    load_theme_aware_css("assets/css/landing.css")
     
     # Clean header with logo and title
     col1, col2 = st.columns([1, 5])

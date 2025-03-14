@@ -1,27 +1,27 @@
 .main {
-    background-color: #f8f9fa;
+    background-color: var(--background-color);
 }
 .stApp {
     max-width: 1200px;
     margin: 0 auto;
 }
 h1, h2, h3 {
-    color: #2c3e50;
+    color: var(--text-color);
 }
 .stButton button {
-    background-color: #3498db;
+    background-color: var(--primary-color);
     color: white;
 }
 .stButton button:hover {
-    background-color: #2980b9;
+    background-color: var(--primary-color-hover);
 }
 
 /* Module card styles */
 .module-card {
     padding: 20px;
-    background-color: white;
+    background-color: var(--card-background);
     border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px var(--card-shadow);
     margin-bottom: 20px;
     text-align: center;
     cursor: pointer;
@@ -29,7 +29,7 @@ h1, h2, h3 {
 }
 .module-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 5px 15px var(--card-shadow);
 }
 .module-icon {
     font-size: 3em;
@@ -41,31 +41,32 @@ h1, h2, h3 {
 }
 .module-desc {
     font-size: 0.9em;
+    color: var(--subtitle-color);
 }
 
 /* Additional styling for P&P and other modules */
 .checklist-item {
     padding: 8px 15px;
     margin: 5px 0;
-    border-left: 3px solid #3498db;
-    background-color: #eaf2f8;
+    border-left: 3px solid var(--primary-color);
+    background-color: var(--feature-background);
 }
 .objective-box {
-    background-color: #f9f9f9;
+    background-color: var(--feature-background);
     border-left: 3px solid #27ae60;
     padding: 10px;
     margin-bottom: 15px;
 }
 .frequency-box {
-    background-color: #f9f9f9;
+    background-color: var(--feature-background);
     border-left: 3px solid #e74c3c;
     padding: 10px;
     margin-bottom: 15px;
 }
 /* Inventory-specific styling */
 .equipment-card {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: var(--feature-background);
+    border: 1px solid var(--card-border);
     border-radius: 5px;
     padding: 15px;
     margin-bottom: 15px;
@@ -81,8 +82,8 @@ h1, h2, h3 {
     padding: 5px 10px;
 }
 .training-status {
-    background-color: #e2f0fb;
-    border-left: 3px solid #3498db;
+    background-color: var(--feature-background);
+    border-left: 3px solid var(--primary-color);
     padding: 5px 10px;
 }
 /* Print-specific styling */
@@ -94,155 +95,4 @@ h1, h2, h3 {
         max-width: 100% !important;
         padding-top: 0px !important;
     }
-}
-
-/* Enhanced dark mode styles - add to assets/css/main.css */
-
-/* Base colors for dark mode */
-:root {
-    --dark-bg: #121418;
-    --dark-card-bg: #1e2028;
-    --dark-border: #2d3348;
-    --dark-text: #e2e8f0;
-    --dark-text-muted: #94a3b8;
-    --dark-primary: #60a5fa;
-    --dark-primary-hover: #3b82f6;
-    --dark-accent: rgba(59, 130, 246, 0.2);
-    --dark-shadow: rgba(0, 0, 0, 0.25);
-}
-
-/* Force dark mode on specific elements */
-.main .block-container {
-    background-color: var(--dark-bg);
-    color: var(--dark-text);
-}
-
-/* Card styling enhancement */
-.stApp [data-testid="stExpander"] {
-    background-color: var(--dark-card-bg);
-    border: 1px solid var(--dark-border);
-    border-radius: 8px;
-    box-shadow: 0 4px 12px var(--dark-shadow);
-    transition: all 0.2s ease;
-}
-
-.stApp [data-testid="stExpander"]:hover {
-    box-shadow: 0 6px 16px var(--dark-shadow);
-    transform: translateY(-2px);
-}
-
-/* Better buttons */
-.stButton > button {
-    background-color: var(--dark-primary) !important;
-    color: white !important;
-    border-radius: 6px !important;
-    font-weight: 500 !important;
-    border: none !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3) !important;
-}
-
-.stButton > button:hover {
-    background-color: var(--dark-primary-hover) !important;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
-    transform: translateY(-1px);
-}
-
-/* Secondary buttons */
-[data-testid="stButton"] > button[kind="secondary"] {
-    background-color: transparent !important;
-    color: var(--dark-primary) !important;
-    border: 1px solid var(--dark-border) !important;
-}
-
-[data-testid="stButton"] > button[kind="secondary"]:hover {
-    background-color: rgba(59, 130, 246, 0.1) !important;
-    color: var(--dark-primary-hover) !important;
-}
-
-/* Streamlit widgets in dark mode */
-.stTextInput > div > div, 
-.stSelectbox > div > div,
-.stTextArea > div > div {
-    background-color: var(--dark-card-bg);
-    border-color: var(--dark-border);
-    color: var(--dark-text);
-}
-
-/* Tabs styling */
-.stTabs [data-baseweb="tab-list"] {
-    gap: 2px;
-    border-bottom-color: var(--dark-border);
-}
-
-.stTabs [data-baseweb="tab"] {
-    border-radius: 6px 6px 0 0;
-    padding: 8px 16px;
-    font-weight: 500;
-}
-
-.stTabs [aria-selected="true"] {
-    background-color: var(--dark-accent) !important;
-    color: var(--dark-primary) !important;
-    border-bottom: 2px solid var(--dark-primary);
-}
-
-/* Enhance text readability */
-p, span, h1, h2, h3, h4, h5, h6, .streamlit-expanderHeader {
-    color: var(--dark-text) !important;
-}
-
-/* Better feature pills/tags */
-.features span {
-    background-color: rgba(59, 130, 246, 0.15) !important;
-    color: var(--dark-primary) !important;
-    border-radius: 16px !important;
-    transition: all 0.2s ease;
-}
-
-.features span:hover {
-    background-color: rgba(59, 130, 246, 0.25) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
-}
-
-/* Module card styling */
-.module-card, .tool-card, .info-card, .coming-soon-card {
-    background-color: var(--dark-card-bg) !important;
-    border: 1px solid var(--dark-border) !important;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px var(--dark-shadow);
-    transition: all 0.2s ease;
-}
-
-.module-card:hover, .tool-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px var(--dark-shadow);
-    border-color: rgba(59, 130, 246, 0.4) !important;
-}
-
-/* Better treatment buttons */
-.quick-access-button {
-    background-color: rgba(59, 130, 246, 0.1) !important;
-    color: var(--dark-primary) !important;
-    border: 1px solid var(--dark-border);
-    transition: all 0.2s ease;
-}
-
-.quick-access-button:hover {
-    background-color: rgba(59, 130, 246, 0.2) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-    border-color: rgba(59, 130, 246, 0.5);
-}
-
-/* Coming soon cards */
-.coming-soon-card {
-    border-left: 4px solid var(--dark-primary) !important;
-}
-
-/* Timeline badges */
-.timeline {
-    background-color: rgba(59, 130, 246, 0.2) !important;
-    color: var(--dark-primary) !important;
 }

@@ -1,59 +1,5 @@
-/* Dark mode colors with better contrast */
-:root {
-    --background-color: #ffffff;
-    --text-color: #2c3e50;
-    --subtitle-color: #64748b;
-    --card-background: #ffffff;
-    --card-border: #e2e8f0;
-    --card-shadow: rgba(0, 0, 0, 0.08);
-    --primary-color: #3b82f6;
-    --primary-color-hover: #2563eb;
-    --secondary-background: #f1f5f9;
-    --secondary-background-hover: #e0f2fe;
-    --feature-background: #f1f5f9;
-    --feature-text: #3b82f6;
-    --feature-hover: #dbeafe;
-    --feature-shadow: rgba(59, 130, 246, 0.15);
-    --button-shadow: rgba(59, 130, 246, 0.3);
-    --timeline-background: #dbeafe;
-    --timeline-text: #3b82f6;
-}
-
-[data-theme="dark"] {
-    --background-color: #1a1a1a;
-    --text-color: #f8fafc;
-    --subtitle-color: #cbd5e1;
-    --card-background: #2d3748;
-    --card-border: #4a5568;
-    --card-shadow: rgba(0, 0, 0, 0.3);
-    --primary-color: #60a5fa;
-    --primary-color-hover: #93c5fd;
-    --secondary-background: #374151;
-    --secondary-background-hover: #4b5563;
-    --feature-background: #374151;
-    --feature-text: #93c5fd;
-    --feature-hover: #4b5563;
-    --feature-shadow: rgba(147, 197, 253, 0.3);
-    --button-shadow: rgba(147, 197, 253, 0.4);
-    --timeline-background: #2a4365;
-    --timeline-text: #93c5fd;
-}
-
-/* Force text colors for dark mode */
-[data-theme="dark"] .stApp {
-    color: var(--text-color) !important;
-    background-color: var(--background-color) !important;
-}
-
-[data-theme="dark"] .stMarkdown p {
-    color: var(--text-color) !important;
-}
-
-[data-theme="dark"] .tool-card p,
-[data-theme="dark"] .info-card p,
-[data-theme="dark"] .coming-soon-card p {
-    color: var(--subtitle-color) !important;
-}
+/* We can remove duplicate variable definitions since they're now in theme_utils.py */
+/* Just keep the styling that's specific to the landing page */
 
 /* Global typography */
 h1 {
@@ -94,7 +40,7 @@ h3 {
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: rgba(59, 130, 246, 0.1) !important;
+    background-color: rgba(var(--primary-color-rgb), 0.1) !important;
     color: var(--primary-color) !important;
     border-bottom: 2px solid var(--primary-color);
 }
