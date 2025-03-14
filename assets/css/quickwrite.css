@@ -161,3 +161,58 @@
     background-color: rgba(var(--primary-color-rgb), 0.1);
     color: var(--primary-color);
 }
+/* Enhanced layout for QuickWrite modules */
+/* Update assets/css/quickwrite.css with these additions */
+
+/* Improve horizontal layout of Basic Information tabs */
+.stTabs .stMarkdown h4 {
+    margin-bottom: 0.5rem;
+}
+
+/* Better layout for Patient Information and Staff Information sections */
+.stTabs [data-baseweb="tab-panel"] {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Make basic tab sections use horizontal layout */
+.stTabs [data-baseweb="tab-panel"] .element-container {
+    margin-bottom: 0.5rem !important;
+}
+
+/* Arrange rows of form elements to be more horizontal */
+.stTabs [data-baseweb="tab-panel"] .row-widget.stHorizontal {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Improve spacing of form elements */
+.stTabs [data-baseweb="tab-panel"] [data-testid="column"] {
+    padding-left: 0 !important;
+    padding-right: 10px !important;
+}
+
+/* Less vertical space between tabs */
+.stTabs [data-baseweb="tab-list"] {
+    margin-bottom: 0.5rem !important;
+}
+
+.stTabs [data-baseweb="tab-panel"] {
+    padding-top: 0.5rem !important;
+}
+
+/* Remove extra space between form sections */
+.stTabs [data-baseweb="tab-panel"] .element-container {
+    margin-bottom: 0.3rem !important;
+}
+
+/* Remove redundant subtitles in all modules */
+.stSubheader {
+    display: none !important;
+}
+
+/* Ensure landing page subtitle is centered */
+.landing-page-title + .subtitle {
+    text-align: center !important;
+    display: block !important;
+}

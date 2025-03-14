@@ -180,3 +180,55 @@ button:hover {
         flex: 1 1 calc(50% - 10px);
     }
 }
+/* Center the subtitle on landing page */
+.subtitle {
+    color: var(--subtitle-color) !important;
+    font-size: 1.2rem;
+    margin-top: 0;
+    font-weight: 300;
+    text-align: center; /* Add this to center the subtitle */
+}
+
+/* Hide redundant subtitle in quickwrite modules */
+/* This targets the subheader that appears after our custom header */
+.stSubheader {
+    display: none !important;
+}
+
+/* Adjust the basic information tab layout */
+/* Make form elements use more horizontal space */
+.stTabs [data-baseweb="tab-panel"] .stForm > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Make form section containers use more horizontal space */
+.stTabs [data-baseweb="tab-panel"] .stForm .stVerticalBlock {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Specifically for the staff info and patient info sections */
+.stTabs [data-baseweb="tab-panel"] [data-testid="stVerticalBlock"] > div > div > [data-testid="stVerticalBlock"] {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Make markdown headers display inline with form elements */
+.stTabs [data-baseweb="tab-panel"] .stMarkdown {
+    flex: 0 0 100%;
+    margin-bottom: 5px;
+}
+
+/* Improve tabs to take less vertical space */
+.stTabs [data-baseweb="tab-list"] {
+    margin-bottom: 0.5rem;
+}
+
+.stTabs [data-baseweb="tab-panel"] {
+    padding-top: 0.5rem;
+}
