@@ -145,7 +145,7 @@ if not st.session_state.show_landing_page:
         go_to_landing_page()
     
     # Module selector
-    visible_modules = ["Quick Write", "QA Bank", "P&Ps", "Inventory", "Competency Tracker", "Part 3 Bank"]
+    visible_modules = ["Quick Write"]
     
     selected_module = st.sidebar.selectbox(
         "Select Module",
@@ -175,26 +175,27 @@ if st.session_state.show_landing_page:
             "icon": "📝",
             "implemented": True
         },
+        
         {
             "id": "qa_bank",
             "name": "QA Bank",
             "description": "Access and organize quality assurance procedures",
             "icon": "🧪",
-            "implemented": True
+            "implemented": False
         },
         {
             "id": "pnp",
             "name": "Policies & Procedures",
             "description": "Review department policies and standard procedures",
             "icon": "📑",
-            "implemented": True
+            "implemented": False
         },
         {
             "id": "inventory",
             "name": "Inventory",
             "description": "Track equipment, usage, and training status",
             "icon": "🔍",
-            "implemented": True
+            "implemented": False
         },
         {
             "id": "competency",
