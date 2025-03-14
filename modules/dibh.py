@@ -58,29 +58,38 @@ class DIBHModule:
         ])
         if 'dibh_last_values' not in st.session_state:
             st.session_state.dibh_last_values = {}
-        # Use tabs to organize the form
-        basic_tab, treatment_tab, preview_tab = st.tabs([
-            "Basic Information", "Treatment Details", "Preview"
-        ])
         
         with basic_tab:
-            # Staff information
-            st.markdown("#### Staff Information")
-            physician = st.selectbox("Physician Name", 
-                                    self.config_manager.get_physicians(), 
-                                    key="dibh_physician")
-            physicist = st.selectbox("Physicist Name", 
-                                    self.config_manager.get_physicists(), 
-                                    key="dibh_physicist")
+            # Create two columns for headers
+            header_col1, header_col2 = st.columns(2)
             
-            # Patient information
-            st.markdown("#### Patient Information")
+            with header_col1:
+                st.markdown("#### Staff Information")
+            
+            with header_col2:
+                st.markdown("#### Patient Information")
+            
+            # Create two columns for the form fields
             col1, col2 = st.columns(2)
             
             with col1:
-                patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="dibh_age")
+                physician = st.selectbox("Physician Name", 
+                                    self.config_manager.get_physicians(), 
+                                    key="dibh_physician")
+                
+                physicist = st.selectbox("Physicist Name", 
+                                    self.config_manager.get_physicists(), 
+                                    key="dibh_physicist")
+            
             with col2:
-                patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="dibh_sex")
+                patient_age = st.number_input("Patient Age", 
+                                        min_value=0, 
+                                        max_value=120, 
+                                        key="dibh_age")
+                
+                patient_sex = st.selectbox("Patient Sex", 
+                                        ["male", "female", "other"], 
+                                        key="dibh_sex")
             
             patient_details = f"a {patient_age}-year-old {patient_sex}"
         
@@ -194,7 +203,7 @@ class DIBHModule:
                 # Log this successful generation (you could expand this for analytics)
                 if not override:
                     st.session_state.setdefault('generation_log', []).append({
-                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'timestamp': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'module': 'DIBH',
                         'physician': physician,
                         'treatment_site': treatment_site
