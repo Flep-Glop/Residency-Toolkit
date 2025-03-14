@@ -109,10 +109,12 @@ else:  # This is the landing page
         st.title("Medical Physics Residency Toolkit")
         st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
     
-    # Main content tabs
-    tab1, tab2, tab3 = st.tabs(["📝 Tools", "ℹ️ About", "🔮 Coming Soon"])
+    # Main content tabs - matching QuickWrite styling
+    tools_tab, about_tab, coming_soon_tab = st.tabs([
+        "Available Tools", "About", "Coming Soon"
+    ])
     
-    with tab1:
+    with tools_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Main tools with clear descriptions
@@ -120,7 +122,7 @@ else:  # This is the landing page
         <div class='tool-card'>
             <h2>Quick Write Generator</h2>
             <p>Generate standardized clinical documentation with guided forms</p>
-            <div class='features'>
+            <div class='features' id='quickwrite-features'>
                 <span>DIBH</span>
                 <span>Fusion</span>
                 <span>Prior Dose</span>
@@ -131,25 +133,34 @@ else:  # This is the landing page
         </div>
         """, unsafe_allow_html=True)
         
+        # Direct navigation to specific write-up types
+        st.markdown("<p>Quick Access:</p>", unsafe_allow_html=True)
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("DIBH Write-up", key="dibh_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "DIBH"
+            if st.button("Prior Dose Write-up", key="prior_dose_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "Prior Dose"
+        with col2:
+            if st.button("Fusion Write-up", key="fusion_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "Fusion" 
+            if st.button("SBRT Write-up", key="sbrt_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "SBRT"
+        with col3:
+            if st.button("Pacemaker Write-up", key="pacemaker_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "Pacemaker"
+            if st.button("SRS Write-up", key="srs_btn"):
+                go_to_module("Quick Write")
+                st.session_state.active_write_up = "SRS"
+        
+        # Main launch button
         if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
             go_to_module("Quick Write")
-        
-        # Policies & Procedures card
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("""
-        <div class='tool-card'>
-            <h2>Policies & Procedures</h2>
-            <p>Access department protocols and interactive checklists</p>
-            <div class='features'>
-                <span>Protocols</span>
-                <span>Checklists</span>
-                <span>Search</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        if st.button("Access P&P", key="pnp_btn", use_container_width=True):
-            go_to_module("P&P")
     
     with tab2:
         st.markdown("<br>", unsafe_allow_html=True)

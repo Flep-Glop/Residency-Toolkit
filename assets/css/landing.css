@@ -27,20 +27,21 @@ h3 {
     font-weight: 500;
 }
 
-/* Tab styling */
+/* Tab styling - matched to QuickWrite style */
 .stTabs [data-baseweb="tab-list"] {
-    gap: 8px;
+    gap: 2px;
 }
 
 .stTabs [data-baseweb="tab"] {
-    padding: 10px 16px;
-    border-radius: 8px 8px 0 0;
+    padding: 8px 16px;
     font-weight: 500;
+    border-radius: 4px 4px 0 0;
 }
 
 .stTabs [aria-selected="true"] {
-    background-color: #3b82f6 !important;
-    color: white !important;
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+    border-bottom: 2px solid #3b82f6;
 }
 
 /* Card styling */
@@ -107,6 +108,14 @@ h3 {
     margin: 0 0.5rem 0.5rem 0;
     font-size: 0.9rem;
     font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Subtle hover effect on feature tags */
+.features span:hover {
+    background-color: #dbeafe;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.15);
 }
 
 /* Version badge */
@@ -120,13 +129,13 @@ h3 {
     font-weight: 500;
 }
 
-/* Button styling override */
+/* Button styling to match QuickWrite */
 button {
     background-color: #3b82f6 !important;
     color: white !important;
-    border-radius: 8px !important;
+    border-radius: 4px !important;
     font-weight: 500 !important;
-    padding: 0.5rem 1rem !important;
+    padding: 0.4rem 0.8rem !important;
     height: auto !important;
     transition: all 0.2s ease !important;
 }
@@ -134,6 +143,27 @@ button {
 button:hover {
     background-color: #2563eb !important;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3) !important;
+}
+
+/* Smaller buttons for quick access */
+[data-testid="stButton"] > button[kind="secondary"] {
+    background-color: #f1f5f9 !important;
+    color: #3b82f6 !important;
+    border: 1px solid #e2e8f0 !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 8px !important;
+}
+
+[data-testid="stButton"] > button[kind="secondary"]:hover {
+    background-color: #e0f2fe !important; 
+    color: #2563eb !important;
+}
+
+/* Main launch button */
+#quickwrite_btn {
+    font-size: 1.1rem !important;
+    padding: 0.6rem 1rem !important;
+    margin-top: 10px !important;
 }
 
 /* Responsive adjustments */
