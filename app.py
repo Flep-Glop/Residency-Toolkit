@@ -60,7 +60,7 @@ if not st.session_state.show_landing_page:
     active_module = st.session_state.active_module
     
     if active_module == "Quick Write":
-        # Get the write-up type from session state, default to DIBH if not specified
+        # Get the write-up type from session state or URL parameter, default to DIBH if not specified
         write_up_type = st.session_state.get("active_write_up", "DIBH")
         
         # Show which module we're in
@@ -85,7 +85,6 @@ if not st.session_state.show_landing_page:
         elif write_up_type == "Fusion":
             write_up = quick_write.render_fusion_form()
             quick_write.fusion_module.display_write_up(write_up)
-        # ...continue with the other elif conditions
         elif write_up_type == "Prior Dose":
             write_up = quick_write.render_prior_dose_form()
             quick_write.prior_dose_module.display_write_up(write_up)
@@ -134,48 +133,41 @@ else:  # This is the landing page
         # Direct navigation to specific write-up types - more condensed layout
         st.markdown("<p><strong>Quick Access:</strong> Select a write-up type to begin</p>", unsafe_allow_html=True)
         
-        # Use a container with flex display for the buttons
-        st.markdown("""
-        <div class="quick-access-container">
-            <button class="quick-access-button" data-type="DIBH">DIBH</button>
-            <button class="quick-access-button" data-type="Fusion">Fusion</button>
-            <button class="quick-access-button" data-type="Prior Dose">Prior Dose</button>
-            <button class="quick-access-button" data-type="Pacemaker">Pacemaker</button>
-            <button class="quick-access-button" data-type="SBRT">SBRT</button>
-            <button class="quick-access-button" data-type="SRS">SRS</button>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Initialize write-up selection from query params
-        if "write_up_type" in st.query_params:
-            write_up_type = st.query_params["write_up_type"]
-            # Clear the parameter after reading it
-            st.query_params.clear()
-            # Navigate to QuickWrite with the selected write-up type
+        # Use columns for layout
+        cols = st.columns(3)
+        # DIBH button
+        if cols[0].button("DIBH", key="dibh_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "DIBH"
             go_to_module("Quick Write")
-            st.session_state.active_write_up = write_up_type
             st.rerun()
-        
-        # JavaScript to handle the custom buttons
-        st.markdown("""
-        <script>
-            // Function to set query param and reload
-            function navigateToWriteUp(writeUpType) {
-                const url = new URL(window.location.href);
-                url.searchParams.set('write_up_type', writeUpType);
-                window.location.href = url.toString();
-            }
-            
-            // Add click listeners to all quick access buttons
-            document.querySelectorAll('.quick-access-button').forEach(button => {
-                button.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const writeUpType = this.getAttribute('data-type');
-                    navigateToWriteUp(writeUpType);
-                });
-            });
-        </script>
-        """, unsafe_allow_html=True)
+        # Fusion button
+        if cols[1].button("Fusion", key="fusion_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "Fusion"
+            go_to_module("Quick Write")
+            st.rerun()
+        # Prior Dose button
+        if cols[2].button("Prior Dose", key="prior_dose_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "Prior Dose"
+            go_to_module("Quick Write")
+            st.rerun()
+
+        # Another row for the remaining buttons
+        cols = st.columns(3)
+        # Pacemaker button
+        if cols[0].button("Pacemaker", key="pacemaker_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "Pacemaker"
+            go_to_module("Quick Write")
+            st.rerun()
+        # SBRT button
+        if cols[1].button("SBRT", key="sbrt_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "SBRT"
+            go_to_module("Quick Write")
+            st.rerun()
+        # SRS button
+        if cols[2].button("SRS", key="srs_direct_btn", use_container_width=True):
+            st.session_state.active_write_up = "SRS"
+            go_to_module("Quick Write")
+            st.rerun()
         
         # Main launch button
         if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
