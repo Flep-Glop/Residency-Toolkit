@@ -37,7 +37,6 @@ class SRSModule:
         
     def render_srs_form(self):
         """Render the form for SRS write-ups with multiple lesion support."""
-        st.subheader("SRS Write-Up Generator")
         
         # Use tabs to organize the form
         basic_tab, lesions_tab = st.tabs([

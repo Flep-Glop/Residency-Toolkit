@@ -14,7 +14,6 @@ class SBRTModule:
         
     def render_sbrt_form(self):
         """Render the form for SBRT write-ups."""
-        st.subheader("SBRT Write-Up Generator")
         
         # Use condensed tabs to organize the form
         basic_tab, treatment_tab = st.tabs([

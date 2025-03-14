@@ -25,7 +25,6 @@ class DIBHModule:
     
     def render_dibh_form(self):
         """Render the form for DIBH write-ups with enhanced validation."""
-        st.subheader("DIBH Write-Up Generator")
         
         # Add an information expander that users can click to learn more
         with st.expander("ℹ️ About DIBH Technique", expanded=False):

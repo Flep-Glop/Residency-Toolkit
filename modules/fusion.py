@@ -47,8 +47,7 @@ class FusionModule:
     
     def render_fusion_form(self):
         """Render the enhanced form for fusion write-ups with modular registration configuration."""
-        st.subheader("Enhanced Fusion Write-Up Generator")
-        
+                
         # Create tabs for Basic Info and Registration Details
         basic_tab, registration_tab = st.tabs(["Basic Information", "Registration Details"])
         

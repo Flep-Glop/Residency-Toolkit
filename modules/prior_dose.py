@@ -19,7 +19,6 @@ class PriorDoseModule:
         
     def render_prior_dose_form(self):
         """Render the form for prior dose write-ups."""
-        st.subheader("Prior Dose Write-Up Generator")
         
         # Create tabs for Basic Info, Treatment Details, and Dose Constraints
         basic_tab, treatment_tab, constraints_tab = st.tabs(["Basic Information", "Treatment Details", "Dose Constraints"])

@@ -31,7 +31,6 @@ class PacemakerModule:
         
     def render_pacemaker_form(self):
         """Render the form for pacemaker write-ups."""
-        st.subheader("Pacemaker Write-Up Generator")
         
         # Create tabs for Basic Info and Treatment/Pacemaker Details
         basic_tab, details_tab, risk_tab = st.tabs(["Basic Information", "Treatment & Pacemaker Details", "Risk Assessment"])
