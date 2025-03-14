@@ -1,44 +1,49 @@
 /* QuickWrite header and navigation styling */
-.quickwrite-header {
+.header-container {
     display: flex;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
 }
 
-/* Tab navigation styling */
-.write-up-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 20px;
-    background-color: var(--secondary-background);
-    border-radius: 6px;
-    padding: 4px;
-}
-
-.write-up-tab {
-    flex: 1;
+/* Center the title */
+.centered-title {
     text-align: center;
-    padding: 8px 0;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    font-weight: 600;
+}
+
+/* Improve home button styling */
+[data-testid="stButton"] button {
+    padding: 0.5rem 1rem !important;
     border-radius: 4px;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+    height: 2.5rem !important;
+    box-shadow: none !important;
+    margin-top: 0.5rem;
 }
 
-.write-up-tab.active {
-    background-color: var(--primary-color);
-    color: white;
+/* Improve select box alignment and styling */
+[data-testid="stSelectbox"] {
+    margin-top: 0.5rem;
 }
 
-.write-up-tab:not(.active) {
-    background-color: transparent;
-    color: var(--text-color);
+[data-testid="stSelectbox"] > div {
+    background-color: var(--secondary-background);
+    border-radius: 4px;
 }
 
-.write-up-tab:not(.active):hover {
-    background-color: rgba(var(--primary-color-rgb), 0.1);
+[data-testid="stSelectbox"] > div > div {
+    border-color: var(--card-border);
+    border-radius: 4px;
+    min-height: 2.5rem;
+}
+
+/* Make the selectbox stand out a bit */
+[data-testid="stSelectbox"]:focus-within > div > div {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 1px var(--primary-color);
 }
 
 /* Home button styling */
