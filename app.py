@@ -3,6 +3,9 @@ from modules.quickwrite import QuickWriteModule
 from utils import load_css
 from theme_utils import inject_theme_responsive_css, load_theme_aware_css
 
+# Import the reset button utility
+from reset_state_utility import add_reset_button
+
 # Page configuration
 st.set_page_config(
     page_title="Medical Physics Residency Toolkit",
@@ -16,6 +19,9 @@ inject_theme_responsive_css()
 
 # Load main CSS (it will now use the theme variables)
 load_theme_aware_css("assets/css/main.css")
+
+# Add reset button in sidebar for debugging
+add_reset_button(location="sidebar")
 
 # Initialize session state variables
 if 'show_landing_page' not in st.session_state:

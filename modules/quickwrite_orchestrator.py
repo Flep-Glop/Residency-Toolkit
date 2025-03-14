@@ -111,13 +111,17 @@ class QuickWriteOrchestrator:
             st.warning("Please select at least one write-up type to continue.")
     
     def _render_module_details_step(self):
-        """Render the module-specific details collection step."""
+        """Render the module-specific details collection step with improved stability."""
         st.markdown("## Module Details")
         
         # Get needed data from session state
         common_info = st.session_state.get("common_info", {})
         selected_modules = st.session_state.get("selected_modules", {})
         module_data = st.session_state.get("module_data", {})
+        
+        # Track which module is currently being edited
+        if "current_editing_module" not in st.session_state:
+            st.session_state.current_editing_module = None
         
         # Show progress indicators
         total_modules = len(selected_modules)
@@ -127,59 +131,75 @@ class QuickWriteOrchestrator:
         st.progress(progress_percentage)
         st.markdown(f"**Progress:** {completed_modules}/{total_modules} modules completed")
         
-        # Collect data for any uncompleted modules
+        # Collect data for modules
         uncompleted_modules = []
         completed_modules_list = []
         
-        for module_id, selected in selected_modules.items():
-            if selected:
-                # Get the module instance
-                module = self.modules.get(module_id)
-                if not module:
-                    continue
+        # Create a single container for module selection instead of multiple expanders
+        module_tabs = st.tabs([
+            modules[module_id].get_module_name() + (" ✅" if module_id in module_data else "")
+            for module_id in selected_modules if selected_modules[module_id]
+        ])
+        
+        # Process each module in its own tab
+        for i, (module_id, selected) in enumerate([
+            (mid, sel) for mid, sel in selected_modules.items() if sel
+        ]):
+            # Skip unselected modules
+            if not selected:
+                continue
                 
-                # Determine if this module is completed
-                is_completed = module_id in module_data
-                
-                # Create expander with appropriate styling
-                expander_label = f"{module.get_module_name()} Details"
-                if is_completed:
-                    expander_label += " ✅"
-                
-                with st.expander(expander_label, expanded=not is_completed):
-                    # Render the module-specific fields
-                    if not is_completed:
-                        # Pass common information to the module
-                        result = module.render_specialized_fields(
-                            common_info.get("physician", ""),
-                            common_info.get("physicist", ""),
-                            common_info.get("patient_age", 0),
-                            common_info.get("patient_sex", ""),
-                            common_info.get("patient_details", "")
-                        )
-                        
-                        if result is not None:
-                            # Save the module data
-                            module_data[module_id] = result
-                            # Force rerun to update UI
-                            st.rerun()
-                        else:
-                            # Module is not complete
-                            uncompleted_modules.append(module.get_module_name())
+            # Get the module instance
+            module = self.modules.get(module_id)
+            if not module:
+                continue
+            
+            # Determine if this module is completed
+            is_completed = module_id in module_data
+            
+            # Process module in its tab
+            with module_tabs[i]:
+                # Handle edit mode or completed view
+                if st.session_state.current_editing_module == module_id or not is_completed:
+                    # We're editing this module or it's not completed yet
+                    st.markdown(f"### {module.get_module_name()} Details")
+                    
+                    # Pass common information to the module
+                    result = module.render_specialized_fields(
+                        common_info.get("physician", ""),
+                        common_info.get("physicist", ""),
+                        common_info.get("patient_age", 0),
+                        common_info.get("patient_sex", ""),
+                        common_info.get("patient_details", "")
+                    )
+                    
+                    if result is not None:
+                        # Save the module data
+                        module_data[module_id] = result
+                        # Exit edit mode
+                        st.session_state.current_editing_module = None
+                        # Success message
+                        st.success(f"{module.get_module_name()} details saved successfully.")
                     else:
-                        # Show summary of completed module
-                        st.success(f"{module.get_module_name()} details completed")
-                        
-                        # Show summary of entered data
-                        self._display_module_data_summary(module_id, module_data[module_id])
-                        
-                        # Add option to edit
-                        if st.button(f"Edit {module.get_module_name()} Details", key=f"edit_{module_id}"):
-                            # Remove this module's data to force re-rendering
-                            del module_data[module_id]
-                            st.rerun()
-                        
-                        completed_modules_list.append(module.get_module_name())
+                        # Module is not complete
+                        uncompleted_modules.append(module.get_module_name())
+                else:
+                    # Show summary of completed module
+                    st.success(f"{module.get_module_name()} details completed")
+                    
+                    # Show summary of entered data
+                    self._display_module_data_summary(module_id, module_data[module_id])
+                    
+                    # Add option to edit (using a checkbox instead of button)
+                    if st.checkbox(f"Edit {module.get_module_name()} Details", 
+                                key=f"edit_checkbox_{module_id}",
+                                value=False):
+                        # Set this module for editing in the next rerun
+                        st.session_state.current_editing_module = module_id
+                        # Force rerun to show edit view
+                        st.rerun()
+                    
+                    completed_modules_list.append(module.get_module_name())
         
         # Update session state with any new module data
         st.session_state.module_data = module_data
@@ -190,6 +210,9 @@ class QuickWriteOrchestrator:
         with col1:
             if st.button("← Back", key="module_details_back"):
                 st.session_state.workflow_step = "module_selection"
+                # Clear editing state when navigating back
+                if "current_editing_module" in st.session_state:
+                    del st.session_state.current_editing_module
                 st.rerun()
         
         with col3:
@@ -214,6 +237,11 @@ class QuickWriteOrchestrator:
                 
                 # Advance to results step
                 st.session_state.workflow_step = "results"
+                
+                # Clear editing state when proceeding to results
+                if "current_editing_module" in st.session_state:
+                    del st.session_state.current_editing_module
+                    
                 st.rerun()
         
         if not can_proceed:
