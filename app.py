@@ -190,37 +190,216 @@ if not st.session_state.show_landing_page:
         st.title(f"{active_module}")
         st.info(f"The {active_module} module is under development.")
 
-else:  # This is the landing page
-    # Simple title banner
-    st.markdown("""
-    <div style="text-align:center; padding:20px; margin-bottom:20px;">
-        <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
-        <p>Tools to streamline documentation for clinical workflows</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Information and status section
-    st.markdown("## About This Tool")
-    st.markdown("""
-    The **QuickWrite** tool helps generate standardized, professional documentation for common clinical scenarios 
-    in radiation oncology. Currently available templates include DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.
-    
-    **Current Status**: Beta Release (v0.9). This tool is under active development and we welcome your feedback.
-    """)
-    
-    # Feedback form in an expander
-    with st.expander("📝 Provide Feedback", expanded=False):
-        feedback_type = st.selectbox("Feedback Type", ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"])
-        feedback_text = st.text_area("Your Feedback", height=100, 
-                                    placeholder="Please describe your experience, issues, or suggestions...")
-        st.markdown("**Note**: This feedback will be reviewed by the development team to improve future versions.")
-        if st.button("Submit Feedback"):
-            # In a full implementation, send this feedback to a database or email
-            st.success("Thank you for your feedback! We'll use it to improve the tool.")
-    
-    # Big prominent button to go to QuickWrite
-    st.markdown("<br>", unsafe_allow_html=True)  # Add some space
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("Launch QuickWrite", key="launch_quickwrite", use_container_width=True):
+    else:  # This is the landing page
+        # Add a more sophisticated CSS for the landing page
+        st.markdown("""
+        <style>
+            /* Landing page specific styling */
+            .landing-container {
+                padding: 20px;
+                max-width: 1200px;
+                margin: 0 auto;
+            }
+            .landing-header {
+                text-align: center;
+                background: linear-gradient(to right, #2c3e50, #3498db, #2c3e50);
+                color: white;
+                padding: 2rem;
+                border-radius: 15px;
+                margin-bottom: 2rem;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+            .landing-header h1 {
+                color: white;
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+            .landing-header p {
+                font-size: 1.2rem;
+                opacity: 0.9;
+            }
+            .landing-card {
+                background-color: white;
+                border-radius: 12px;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+                padding: 25px;
+                margin-bottom: 25px;
+                transition: transform 0.2s, box-shadow 0.2s;
+            }
+            .landing-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            }
+            .landing-card h3 {
+                color: #2c3e50;
+                margin-top: 0;
+                border-bottom: 2px solid #f0f0f0;
+                padding-bottom: 10px;
+            }
+            .module-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 20px;
+                margin-top: 30px;
+            }
+            .module-tile {
+                background: white;
+                border-radius: 12px;
+                padding: 25px;
+                text-align: center;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+                transition: all 0.3s ease;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+            .module-tile:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+                border-bottom: 3px solid #3498db;
+            }
+            .module-icon {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+                color: #3498db;
+            }
+            .module-title {
+                color: #2c3e50;
+                font-weight: bold;
+                margin-bottom: 10px;
+                font-size: 1.2rem;
+            }
+            .module-description {
+                color: #7f8c8d;
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+                flex-grow: 1;
+            }
+            .module-button {
+                margin-top: 10px;
+            }
+            .version-badge {
+                display: inline-block;
+                background-color: #3498db;
+                color: white;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-size: 0.8rem;
+                margin-left: 10px;
+            }
+            .cta-button {
+                background-color: #3498db;
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 50px;
+                font-size: 1.1rem;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: block;
+                width: 100%;
+                text-align: center;
+                text-decoration: none;
+            }
+            .cta-button:hover {
+                background-color: #2980b9;
+                transform: scale(1.03);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+            .feedback-card {
+                border-left: 4px solid #3498db;
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 0 8px 8px 0;
+            }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Header section with gradient background
+        st.markdown("""
+        <div class="landing-header">
+            <h1>Medical Physics Residency Toolkit</h1>
+            <p>Streamlining documentation for clinical workflows in radiation oncology</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Top modules grid
+        st.markdown("## Available Tools")
+        
+        # Use columns to create a responsive grid for modules
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("""
+            <div class="module-tile">
+                <div class="module-icon">📝</div>
+                <div class="module-title">QuickWrite</div>
+                <div class="module-description">
+                    Generate professional documentation for DIBH, Fusion, Prior Dose, 
+                    Pacemaker, SBRT, and SRS clinical scenarios.
+                </div>
+                <button class="cta-button" onclick="document.querySelector('[key=launch_quickwrite]').click()">
+                    Launch QuickWrite
+                </button>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="module-tile">
+                <div class="module-icon">🔍</div>
+                <div class="module-title">Coming Soon</div>
+                <div class="module-description">
+                    More tools are under development! We're working on additional features 
+                    to help streamline your clinical workflows.
+                </div>
+                <div class="module-button">
+                    <span style="color: #7f8c8d; font-style: italic;">In Development</span>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # About section in a card
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("""
+        <div class="landing-card">
+            <h3>About This Tool <span class="version-badge">Beta v0.9</span></h3>
+            <p>The <strong>Medical Physics Residency Toolkit</strong> is designed to help radiation oncology 
+            residents and physicists create standardized, professional documentation quickly and efficiently.</p>
+            
+            <p>This toolkit streamlines workflows for common clinical scenarios, reducing documentation time and 
+            ensuring consistency. Current functionality focuses on template-based report generation.</p>
+            
+            <p>This tool is under active development, and we welcome your feedback to improve future versions.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Feedback section
+        with st.expander("📝 Provide Feedback", expanded=False):
+            st.markdown("""
+            <div class="feedback-card">
+                Help us improve the toolkit by sharing your experience and suggestions!
+            </div>
+            """, unsafe_allow_html=True)
+            
+            feedback_type = st.selectbox(
+                "Feedback Type", 
+                ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"]
+            )
+            
+            feedback_text = st.text_area(
+                "Your Feedback", 
+                height=100, 
+                placeholder="Please describe your experience, issues, or suggestions..."
+            )
+            
+            col1, col2, col3 = st.columns([2,1,2])
+            with col2:
+                if st.button("Submit Feedback", use_container_width=True):
+                    # In a full implementation, send this feedback to a database or email
+                    st.success("Thank you for your feedback! We'll use it to improve the tool.")
+        
+        # Hidden button for JavaScript to click
+        if st.button("Launch QuickWrite", key="launch_quickwrite", visible=False):
             go_to_module("Quick Write")
