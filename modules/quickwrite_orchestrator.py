@@ -168,10 +168,11 @@ class QuickWriteOrchestrator:
             
             # Process module in its tab
             with module_tabs[i]:
-                # Create a two-column layout - main form on left, info on right
-                form_col, info_col = st.columns([3, 1])
+                # Create inner tabs for form and information
+                inner_tabs = st.tabs(["Form", "Preview", "Information"])
                 
-                with form_col:
+                # Form tab
+                with inner_tabs[0]:
                     # Add a reset button for this specific module
                     if is_completed:
                         if st.button(f"Reset {module.get_module_name()} Data", key=f"reset_{module_id}"):
@@ -200,7 +201,7 @@ class QuickWriteOrchestrator:
                             common_info.get("patient_details", "")
                         )
                         
-                        # Add an explicit save button - THIS IS THE KEY CHANGE
+                        # Add an explicit save button
                         save_btn = st.button(f"Save {module.get_module_name()} Details", key=f"save_{module_id}")
                         
                         # Only save when the button is clicked AND we have valid data
@@ -217,7 +218,8 @@ class QuickWriteOrchestrator:
                                 # Force rerun to update UI
                                 st.rerun()
                             else:
-                                # Module is not complete - don't show error message
+                                # Module is not complete
+                                st.error(f"Please complete all required fields for {module.get_module_name()}.")
                                 uncompleted_modules.append(module.get_module_name())
                         else:
                             # When button isn't clicked but validation fails
@@ -239,27 +241,126 @@ class QuickWriteOrchestrator:
                         
                         completed_modules_list.append(module.get_module_name())
                 
-                # Display module information in the right column
-                with info_col:
-                    # Only show info in the right column, not when viewing completed data
-                    if st.session_state.current_editing_module == module_id or not is_completed:
-                        with st.container():
-                            st.markdown("#### About This Module")
-                            st.info(f"**{module.get_module_name()}:** {module.get_module_description()}")
+                # Preview tab for saved data
+                with inner_tabs[1]:
+                    if is_completed:
+                        st.markdown(f"### {module.get_module_name()} Preview")
+                        # Generate a preview of the write-up
+                        try:
+                            write_up_preview = module.generate_write_up(common_info, module_data[module_id])
+                            if write_up_preview:
+                                # Show a preview of the first 500 characters
+                                st.markdown("**First 500 characters of generated write-up:**")
+                                st.text_area("", write_up_preview[:500] + "...", height=200, disabled=True)
+                                st.info("This is just a preview. The full write-up will be generated when you click 'Generate Write-Ups'.")
+                        except Exception as e:
+                            st.error(f"Error generating preview: {str(e)}")
+                    else:
+                        st.info(f"Save the {module.get_module_name()} details first to see a preview.")
                             
-                            # Add module-specific informational text
-                            if module.get_module_name() == "DIBH":
-                                st.info("DIBH is typically used for left breast to reduce cardiac dose, but can be used for other thoracic sites.")
-                            elif module.get_module_name() == "Fusion":
-                                st.info("Multimodality image fusion helps improve target delineation accuracy by combining different imaging modalities.")
-                            elif module.get_module_name() == "Prior Dose":
-                                st.info("Prior dose evaluation is critical for retreatment cases to avoid excessive cumulative dose to normal tissues.")
-                            elif module.get_module_name() == "Pacemaker":
-                                st.info("Pacemaker/ICD management is essential to minimize risks of device malfunction during radiation therapy.")
-                            elif module.get_module_name() == "SBRT":
-                                st.info("SBRT delivers precisely-targeted radiation in fewer, higher-dose treatments than traditional therapy.")
-                            elif module.get_module_name() == "SRS":
-                                st.info("SRS delivers highly focused radiation to small intracranial targets with millimeter precision.")
+                # Information tab
+                with inner_tabs[2]:
+                    st.markdown(f"### About {module.get_module_name()}")
+                    st.info(f"**{module.get_module_name()}:** {module.get_module_description()}")
+                    
+                    # Add module-specific informational text
+                    if module.get_module_name() == "DIBH":
+                        st.markdown("""
+                        **Deep Inspiration Breath Hold (DIBH)** is a technique used primarily in radiation therapy for breast cancer, especially left-sided breast cancer. During treatment, the patient takes a deep breath and holds it, which creates space between the heart and the chest wall. This reduces the radiation dose to the heart and other critical structures.
+                        
+                        **Key benefits:**
+                        - Significantly reduces mean heart dose (typically by 50% or more)
+                        - Decreases radiation to the lung volume
+                        - Reduces risk of long-term cardiac complications
+                        
+                        **Best practices:**
+                        - Use for left-sided breast treatments or where cardiac sparing is needed
+                        - Ensure patient can comfortably hold breath for 15-25 seconds
+                        - Verify consistent positioning between planning and treatment
+                        """)
+                    elif module.get_module_name() == "Fusion":
+                        st.markdown("""
+                        **Image Fusion** combines multiple imaging modalities to improve target delineation and critical structure identification. Common fusion combinations include CT-MRI, CT-PET, and CT-CBCT.
+                        
+                        **Key benefits:**
+                        - Improves target visualization by combining modalities with different strengths
+                        - Enhances soft tissue contrast when using MRI
+                        - Provides functional information when using PET
+                        - Can be used for adaptive planning when using CBCT
+                        
+                        **Common registration methods:**
+                        - **Rigid registration**: Preserves distances between all points (translation and rotation only)
+                        - **Deformable registration**: Allows for non-uniform spatial transformations 
+                        """)
+                    elif module.get_module_name() == "Prior Dose":
+                        st.markdown("""
+                        **Prior Dose Evaluation** assesses the cumulative radiation dose when patients require additional radiation treatments to previously irradiated areas.
+                        
+                        **Key considerations:**
+                        - Time interval between treatments (tissue recovery)
+                        - Overlapping volumes and critical structure constraints
+                        - Biological equivalent dose calculations (EQD2)
+                        - Risk of radiation-induced complications
+                        
+                        **Common scenarios:**
+                        - Recurrent disease requiring retreatment
+                        - New primary tumors in previously irradiated regions
+                        - Palliation in areas of prior radiation
+                        """)
+                    elif module.get_module_name() == "Pacemaker":
+                        st.markdown("""
+                        **Cardiac Implantable Electronic Device (CIED) Management** during radiation therapy follows AAPM TG-203 guidelines to minimize risks to pacemakers and implantable cardioverter-defibrillators (ICDs).
+                        
+                        **Risk factors:**
+                        - Distance from treatment field to device
+                        - Cumulative radiation dose to the device
+                        - Whether the patient is pacemaker-dependent
+                        - Use of high-energy photons (>10 MV) that produce neutrons
+                        
+                        **Risk categories:**
+                        - **Low risk**: <2 Gy to device, non-dependent patient
+                        - **Medium risk**: 2-5 Gy to device or neutron-producing therapy
+                        - **High risk**: >5 Gy to device, dependent patient, or combination of risk factors
+                        """)
+                    elif module.get_module_name() == "SBRT":
+                        st.markdown("""
+                        **Stereotactic Body Radiation Therapy (SBRT)** delivers precisely-targeted radiation in fewer fractions with higher doses per fraction than conventional radiotherapy.
+                        
+                        **Key characteristics:**
+                        - Hypofractionated treatment (typically 1-5 fractions)
+                        - High dose per fraction (typically 7-20 Gy per fraction)
+                        - Steep dose gradients around the target
+                        - Highly conformal dose distributions
+                        - Precise image guidance for each fraction
+                        
+                        **Common applications:**
+                        - Early-stage non-small cell lung cancer
+                        - Liver tumors
+                        - Spine metastases
+                        - Pancreatic cancer
+                        - Prostate cancer
+                        - Oligometastatic disease
+                        """)
+                    elif module.get_module_name() == "SRS":
+                        st.markdown("""
+                        **Stereotactic Radiosurgery (SRS)** delivers highly focused radiation to small intracranial targets with millimeter precision, typically in a single fraction.
+                        
+                        **SRS vs. SRT:**
+                        - **SRS**: Single fraction, typically for smaller lesions (<3cm)
+                        - **SRT**: Multiple fractions (typically 2-5), used for larger lesions or those near critical structures
+                        
+                        **Common applications:**
+                        - Brain metastases
+                        - Acoustic neuromas
+                        - Meningiomas
+                        - Arteriovenous malformations (AVMs)
+                        - Trigeminal neuralgia
+                        - Pituitary adenomas
+                        
+                        **Dose considerations:**
+                        - Single fraction: typically 15-24 Gy
+                        - Multiple fractions: typically 25-30 Gy in 5 fractions
+                        """)
         
         # Navigation buttons
         col1, col2, col3 = st.columns([1, 3, 1])
@@ -273,7 +374,21 @@ class QuickWriteOrchestrator:
                 st.rerun()
         
         with col3:
-            can_proceed = len(uncompleted_modules) == 0 and len(completed_modules_list) > 0
+            # Ensure all selected modules have been saved
+            all_modules_saved = all(module_id in module_data for module_id in selected_modules if selected_modules[module_id])
+            
+            # Can only proceed if all selected modules have been saved
+            can_proceed = all_modules_saved and len(completed_modules_list) > 0
+            
+            # Display clear message if some modules aren't saved yet
+            if not all_modules_saved and len(selected_modules) > 0:
+                unsaved_modules = [self.modules[module_id].get_module_name() 
+                                for module_id in selected_modules 
+                                if selected_modules[module_id] and module_id not in module_data]
+                
+                if unsaved_modules:
+                    st.warning(f"Please save details for: {', '.join(unsaved_modules)}")
+            
             if st.button("Generate Write-Ups", key="generate_write_ups", disabled=not can_proceed, type="primary"):
                 # Generate all write-ups
                 results = {}
