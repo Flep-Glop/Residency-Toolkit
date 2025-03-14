@@ -104,57 +104,13 @@ if not st.session_state.show_landing_page:
     # Replace JUST the 'else' section in your original app.py with this:
 
     else:  # This is the landing page
-        # Load landing-specific CSS (keep this)
-        load_css("assets/css/landing.css")
+        # Debug CSS loading
+        debug_css_loading("assets/css/landing.css")
         
-        # Simple header
-        st.title("Medical Physics Residency Toolkit")
-        st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
+        # Test landing page
+        st.title("TEST - Landing Page")
+        st.write("If you can see this text, the landing page is working!")
         
-        # Add some spacing
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Main tool card
-        st.markdown("""
-        <div class='tool-card'>
-            <h2>📝 QuickWrite</h2>
-            <p>Generate professional documentation for clinical scenarios</p>
-            <div class='features'>
-                <span>DIBH</span>
-                <span>Fusion</span>
-                <span>Prior Dose</span>
-                <span>Pacemaker</span>
-                <span>SBRT</span>
-                <span>SRS</span>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Placing the button outside of HTML for reliability
-        if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
-            go_to_module("Quick Write")
-        
-        # Add some spacing
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # Info and coming soon sections using columns
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("<h3>About This Tool</h3>", unsafe_allow_html=True)
-            st.markdown("<p>The <b>Medical Physics Residency Toolkit</b> is designed to help radiation oncology residents and physicists create standardized documentation quickly.</p>", unsafe_allow_html=True)
-            st.markdown("<p>Current version: <span class='version'>Beta v0.9</span></p>", unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("<h3>Coming Soon</h3>", unsafe_allow_html=True)
-            st.markdown("<p>📊 QA Dashboard</p>", unsafe_allow_html=True)
-            st.markdown("<p>🧠 Competency Tracker</p>", unsafe_allow_html=True)
-            st.markdown("<p>📚 Part 3 Bank</p>", unsafe_allow_html=True)
-        
-        # Simple feedback section
-        st.markdown("<hr>", unsafe_allow_html=True)
-        with st.expander("Provide Feedback"):
-            feedback_type = st.selectbox("Type", ["Bug Report", "Feature Request", "General"])
-            feedback_text = st.text_area("Details")
-            if st.button("Submit Feedback"):
-                st.success("Thank you for your feedback!")
+        # Simple button test
+        if st.button("Test Button"):
+            st.write("Button works!")
