@@ -45,6 +45,15 @@ def go_to_landing_page():
 # Initialize modules
 quick_write = QuickWriteModule()
 
+# Function to add a persistent "New Form" button
+def add_new_form_button():
+    if st.button("🔄 New Form", key="new_form_button"):
+        # Reset the workflow state
+        if hasattr(quick_write, 'orchestrator'):
+            quick_write.orchestrator.reset_workflow()
+        go_to_landing_page()
+        st.rerun()
+
 # Main content area
 if not st.session_state.show_landing_page:
     # Display selected module content
@@ -52,16 +61,20 @@ if not st.session_state.show_landing_page:
     
     if active_module == "Quick Write":
         if st.session_state.use_unified_workflow:
-            # Unified workflow
+            # QuickWrite workflow
             st.markdown('<div class="header-container">', unsafe_allow_html=True)
             
-            col1, col2 = st.columns([5, 1])
+            col1, col2, col3 = st.columns([4, 1, 1])
             
             with col1:
                 # Show which module we're in (left-aligned)
-                st.markdown(f"<h1 class='left-aligned-title'>Unified Write-Up Generator</h1>", unsafe_allow_html=True)
+                st.markdown(f"<h1 class='left-aligned-title'>QuickWrite</h1>", unsafe_allow_html=True)
             
             with col2:
+                # Add persistent New Form button
+                add_new_form_button()
+                
+            with col3:
                 # Back to Home button
                 if st.button("← Home", key="home_btn", use_container_width=True):
                     go_to_landing_page()
@@ -82,28 +95,18 @@ if not st.session_state.show_landing_page:
             # Create a modern header with left-aligned title and right-aligned navigation
             st.markdown('<div class="header-container">', unsafe_allow_html=True)
             
-            col1, col2 = st.columns([5, 2])
+            col1, col2, col3 = st.columns([4, 1, 1])
             
             with col1:
                 # Show which module we're in (left-aligned)
                 st.markdown(f"<h1 class='left-aligned-title'>{write_up_type} Write-Up Generator</h1>", unsafe_allow_html=True)
             
             with col2:
-                # Add a dropdown to allow changing the form type
-                new_write_up_type = st.selectbox(
-                    "Change Write-Up Type",
-                    ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
-                    index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type),
-                    key="write_up_type_selector",
-                    label_visibility="collapsed"  # Hide the label to improve alignment
-                )
+                # Add persistent New Form button
+                add_new_form_button()
                 
-                # If the user changed the type using the dropdown, update and rerun
-                if new_write_up_type != write_up_type:
-                    st.session_state.active_write_up = new_write_up_type
-                    st.rerun()
-                    
-                # Back to Home button below the dropdown
+            with col3:
+                # Back to Home button
                 if st.button("← Home", key="home_btn", use_container_width=True):
                     go_to_landing_page()
                     st.rerun()
@@ -113,6 +116,19 @@ if not st.session_state.show_landing_page:
             # Add a horizontal divider
             st.markdown("<hr style='margin: 0.5rem 0 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
             
+            # Add a dropdown to allow changing the form type
+            new_write_up_type = st.selectbox(
+                "Change Write-Up Type",
+                ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
+                index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type),
+                key="write_up_type_selector"
+            )
+            
+            # If the user changed the type using the dropdown, update and rerun
+            if new_write_up_type != write_up_type:
+                st.session_state.active_write_up = new_write_up_type
+                st.rerun()
+                
             # Display the appropriate form based on the write_up_type
             if write_up_type == "DIBH":
                 write_up = quick_write.render_dibh_form()
@@ -167,67 +183,28 @@ else:  # This is the landing page
     with tools_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Main tools with clear descriptions
-        st.markdown("""
-        <div class='tool-card'>
-            <h2>Quick Write Generator</h2>
-            <p>Generate standardized clinical documentation with guided forms for DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.</p>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # NEW: Unified workflow option
+        # Main QuickWrite tool card
         st.markdown("""
         <div class='tool-card' style='border-left: 4px solid var(--primary-color);'>
-            <h2>NEW! Unified Write-Up Workflow</h2>
-            <p>Try our new streamlined workflow to create multiple write-ups with shared patient information in a single session.</p>
+            <h2>QuickWrite</h2>
+            <p>Generate standardized clinical documentation with guided forms for DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports - all with shared patient information in a single workflow.</p>
         </div>
         """, unsafe_allow_html=True)
         
-        # Button for unified workflow
-        if st.button("Launch Unified Workflow (Beta)", type="primary", key="unified_workflow_btn"):
+        # Button for QuickWrite workflow
+        if st.button("Launch QuickWrite", type="primary", key="quickwrite_btn"):
             go_to_module("Quick Write", use_unified=True)
             st.rerun()
 
         st.markdown("<hr style='margin: 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
         
-        # Legacy individual tools section
-        st.markdown("<p><strong>Classic Write-up Tools:</strong> Select a write-up type to begin</p>", unsafe_allow_html=True)
-        
-        # Use columns for layout
-        cols = st.columns(3)
-        # DIBH button
-        if cols[0].button("DIBH", key="dibh_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "DIBH"
-            go_to_module("Quick Write")
-            st.rerun()
-        # Fusion button
-        if cols[1].button("Fusion", key="fusion_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "Fusion"
-            go_to_module("Quick Write")
-            st.rerun()
-        # Prior Dose button
-        if cols[2].button("Prior Dose", key="prior_dose_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "Prior Dose"
-            go_to_module("Quick Write")
-            st.rerun()
-
-        # Another row for the remaining buttons
-        cols = st.columns(3)
-        # Pacemaker button
-        if cols[0].button("Pacemaker", key="pacemaker_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "Pacemaker"
-            go_to_module("Quick Write")
-            st.rerun()
-        # SBRT button
-        if cols[1].button("SBRT", key="sbrt_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "SBRT"
-            go_to_module("Quick Write")
-            st.rerun()
-        # SRS button
-        if cols[2].button("SRS", key="srs_direct_btn", use_container_width=True):
-            st.session_state.active_write_up = "SRS"
-            go_to_module("Quick Write")
-            st.rerun()
+        # Future tools section
+        st.markdown("""
+        <div class='tool-card'>
+            <h2>Legacy Tools</h2>
+            <p>Access the previous individual module tools by selecting a specific write-up type after launching QuickWrite.</p>
+        </div>
+        """, unsafe_allow_html=True)
         
     with about_tab:
         st.markdown("<br>", unsafe_allow_html=True)
@@ -249,7 +226,7 @@ else:  # This is the landing page
                 <h3>Current Version</h3>
                 <p><span class='version'>Beta v0.9</span></p>
                 <p>Last updated: March 2025</p>
-                <p>New! Unified workflow in beta testing.</p>
+                <p>New! QuickWrite workflow provides a streamlined all-in-one experience.</p>
                 <p>For help or suggestions, use the feedback form below.</p>
             </div>
             """, unsafe_allow_html=True)

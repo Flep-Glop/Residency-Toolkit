@@ -26,92 +26,41 @@ class DIBHModule(BaseWriteUpModule):
     def render_specialized_fields(self, physician, physicist, patient_age, patient_sex, patient_details):
         """Render DIBH-specific input fields and return the generated data."""
         
-        # Add an information box instead of an expander to avoid nesting issues
-        st.info("""
-        ### Deep Inspiration Breath Hold (DIBH)
+        # Treatment information
+        st.markdown("#### Treatment Information")
+        col1, col2 = st.columns(2)
         
-        **Clinical Purpose:**  
-        DIBH is a technique used primarily in breast cancer radiation therapy to reduce radiation 
-        dose to the heart. By having the patient hold their breath, the heart moves away from the 
-        chest wall, creating distance from the treatment area and reducing cardiac exposure.
-        
-        **Key Benefits:**
-        - Reduces mean heart dose by 25-67% in left breast treatments
-        - Minimizes respiratory motion during treatment delivery
-        - Can improve dose homogeneity across the target volume
-        
-        **Patient Selection:**
-        - Most commonly used for left-sided breast cancer patients
-        - Requires patient ability to hold breath for ~20 seconds
-        - May also benefit patients with other thoracic treatments
-        
-        **Equipment Requirements:**
-        - Surface monitoring system (C-RAD or similar)
-        - Visual feedback system for patient breath-hold guidance
-        - Image guidance for verification
-        """)
-        
-        # Use tabs to organize the form
-        treatment_tab, preview_tab = st.tabs([
-            "Treatment Details", "Preview"
-        ])
-        
-        with treatment_tab:
-            # Treatment information
-            st.markdown("#### Treatment Information")
-            col1, col2 = st.columns(2)
+        with col1:
+            treatment_site = st.selectbox("Treatment Site", 
+                                        ["left breast", "right breast", "diaphragm", "chest wall"], 
+                                        key="dibh_site")
             
-            with col1:
-                treatment_site = st.selectbox("Treatment Site", 
-                                            ["left breast", "right breast", "diaphragm", "chest wall"], 
-                                            key="dibh_site")
-                
-                # Add tooltip with info about DIBH
-                st.info("💡 DIBH is typically used for left breast to reduce cardiac dose, but can be used for other thoracic sites.")
-                
-                immobilization_device = st.selectbox("Immobilization Device", 
-                                                ["breast board", "wing board"], 
-                                                key="dibh_immobilization")
-            
-            with col2:
-                dose = st.number_input("Prescription Dose (Gy)", 
-                                    min_value=0.0, 
-                                    value=40.0, 
-                                    step=0.1, 
-                                    key="dibh_dose")
-                
-                fractions = st.number_input("Number of Fractions", 
-                                        min_value=1, 
-                                        value=15, 
-                                        key="dibh_fractions")
-                
-                # Show dose per fraction calculation
-                if fractions > 0:
-                    dose_per_fraction = dose / fractions
-                    st.text(f"Dose per fraction: {dose_per_fraction:.2f} Gy")
-                    
-                    # Provide guidance based on dose per fraction
-                    if dose_per_fraction > 3:
-                        st.warning(f"Dose per fraction ({dose_per_fraction:.2f} Gy) is higher than conventional fractionation")
-                    elif dose_per_fraction < 1.5:
-                        st.info(f"Dose per fraction ({dose_per_fraction:.2f} Gy) indicates hypofractionation")
+            immobilization_device = st.selectbox("Immobilization Device", 
+                                            ["breast board", "wing board"], 
+                                            key="dibh_immobilization")
         
-        with preview_tab:
-            # Show a preview of what the write-up will contain
-            st.markdown("#### Write-Up Preview")
-            st.info("This tab shows a preview of the information that will be included in your write-up.")
+        with col2:
+            dose = st.number_input("Prescription Dose (Gy)", 
+                                min_value=0.0, 
+                                value=40.0, 
+                                step=0.1, 
+                                key="dibh_dose")
             
-            if patient_age > 0 and treatment_site and dose > 0 and fractions > 0:
-                st.markdown(f"**Patient:** {patient_age}-year-old {patient_sex}")
-                st.markdown(f"**Treatment:** {treatment_site} using DIBH technique")
-                st.markdown(f"**Prescription:** {dose} Gy in {fractions} fractions")
-                st.markdown(f"**Staff:** Dr. {physician} (Radiation Oncologist), Dr. {physicist} (Medical Physicist)")
-                st.markdown("**Procedure:** DIBH CT simulation with C-RAD positioning and gating system")
-            else:
-                st.warning("Complete the form fields to see a preview")
-        
-        # Generate button for standalone use
-        generate_pressed = st.button("Generate Write-Up", type="primary", key="dibh_generate")
+            fractions = st.number_input("Number of Fractions", 
+                                    min_value=1, 
+                                    value=15, 
+                                    key="dibh_fractions")
+            
+            # Show dose per fraction calculation
+            if fractions > 0:
+                dose_per_fraction = dose / fractions
+                st.text(f"Dose per fraction: {dose_per_fraction:.2f} Gy")
+                
+                # Provide guidance based on dose per fraction
+                if dose_per_fraction > 3:
+                    st.warning(f"Dose per fraction ({dose_per_fraction:.2f} Gy) is higher than conventional fractionation")
+                elif dose_per_fraction < 1.5:
+                    st.info(f"Dose per fraction ({dose_per_fraction:.2f} Gy) indicates hypofractionation")
         
         # Check if we have all required information
         all_fields_filled = all([
@@ -121,35 +70,21 @@ class DIBHModule(BaseWriteUpModule):
             immobilization_device != ""
         ])
         
-        # Show missing fields if any
-        if generate_pressed and not all_fields_filled:
-            st.error("Please fill in all required fields before generating the write-up.")
-            for field, value in [
-                ("Treatment Site", treatment_site),
-                ("Prescription Dose", dose),
-                ("Number of Fractions", fractions),
-                ("Immobilization Device", immobilization_device)
-            ]:
-                if not value or value == 0:
-                    st.warning(f"Missing required field: {field}")
-            return None
-        
         # If all required fields are filled, return the module data
         if all_fields_filled:
             # Enhanced validation when generate button is pressed
-            if generate_pressed:
-                validation_errors = self._validate_inputs(patient_age, treatment_site, dose, fractions)
+            validation_errors = self._validate_inputs(patient_age, treatment_site, dose, fractions)
+            
+            if validation_errors:
+                st.error("Please address the following issues:")
+                for error in validation_errors:
+                    st.warning(error)
                 
-                if validation_errors:
-                    st.error("Please address the following issues:")
-                    for error in validation_errors:
-                        st.warning(error)
-                    
-                    # Add override option for edge cases
-                    if st.checkbox("Override validation (use with caution)"):
-                        st.warning("You're overriding validation checks. Ensure all information is clinically appropriate.")
-                    else:
-                        return None
+                # Add override option for edge cases
+                if st.checkbox("Override validation (use with caution)"):
+                    st.warning("You're overriding validation checks. Ensure all information is clinically appropriate.")
+                else:
+                    return None
             
             # Return the collected module-specific data
             return {
@@ -251,8 +186,11 @@ class DIBHModule(BaseWriteUpModule):
             physician, physicist, patient_age, patient_sex, patient_details
         )
         
+        # Generate button
+        generate_pressed = st.button("Generate Write-Up", type="primary", key="dibh_generate")
+        
         # Generate write-up if all data is provided
-        if module_data:
+        if generate_pressed and module_data:
             common_info = {
                 "physician": physician,
                 "physicist": physicist,

@@ -62,9 +62,6 @@ class QuickWriteOrchestrator:
                 st.session_state.workflow_step = "module_selection"
                 # Force rerun to update the UI
                 st.rerun()
-        
-        if not can_proceed:
-            st.warning("Please fill in all required fields to continue.")
     
     def _render_module_selection_step(self):
         """Render the module selection step without saving previous selections."""
@@ -102,9 +99,6 @@ class QuickWriteOrchestrator:
                 # Advance to next step
                 st.session_state.workflow_step = "module_details"
                 st.rerun()
-        
-        if not can_proceed:
-            st.warning("Please select at least one write-up type to continue.")
     
     def _render_module_details_step(self):
         """Render the module-specific details collection step with improved stability."""
@@ -174,73 +168,98 @@ class QuickWriteOrchestrator:
             
             # Process module in its tab
             with module_tabs[i]:
-                # Add a reset button for this specific module
-                if is_completed:
-                    if st.button(f"Reset {module.get_module_name()} Data", key=f"reset_{module_id}"):
-                        # Remove this module's data
-                        if module_id in module_data:
-                            del module_data[module_id]
-                        # Clear module-specific state
-                        if module_id == "fusion" and 'registrations' in st.session_state:
-                            del st.session_state.registrations
-                        # Update session state
-                        st.session_state.module_data = module_data
-                        # Rerun to update UI
-                        st.rerun()
+                # Create a two-column layout - main form on left, info on right
+                form_col, info_col = st.columns([3, 1])
                 
-                # Handle edit mode or completed view
-                if st.session_state.current_editing_module == module_id or not is_completed:
-                    # We're editing this module or it's not completed yet
-                    st.markdown(f"### {module.get_module_name()} Details")
-                    
-                    # Pass common information to the module
-                    result = module.render_specialized_fields(
-                        common_info.get("physician", ""),
-                        common_info.get("physicist", ""),
-                        common_info.get("patient_age", 0),
-                        common_info.get("patient_sex", ""),
-                        common_info.get("patient_details", "")
-                    )
-                    
-                    # Add an explicit save button - THIS IS THE KEY CHANGE
-                    save_btn = st.button(f"Save {module.get_module_name()} Details", key=f"save_{module_id}")
-                    
-                    # Only save when the button is clicked AND we have valid data
-                    if save_btn:
-                        if result is not None:
-                            # Save the module data
-                            module_data[module_id] = result
-                            # Exit edit mode
-                            st.session_state.current_editing_module = None
-                            # Success message
-                            st.success(f"{module.get_module_name()} details saved successfully.")
+                with form_col:
+                    # Add a reset button for this specific module
+                    if is_completed:
+                        if st.button(f"Reset {module.get_module_name()} Data", key=f"reset_{module_id}"):
+                            # Remove this module's data
+                            if module_id in module_data:
+                                del module_data[module_id]
+                            # Clear module-specific state
+                            if module_id == "fusion" and 'registrations' in st.session_state:
+                                del st.session_state.registrations
                             # Update session state
                             st.session_state.module_data = module_data
-                            # Force rerun to update UI
+                            # Rerun to update UI
                             st.rerun()
+                    
+                    # Handle edit mode or completed view
+                    if st.session_state.current_editing_module == module_id or not is_completed:
+                        # We're editing this module or it's not completed yet
+                        st.markdown(f"### {module.get_module_name()} Details")
+                        
+                        # Pass common information to the module
+                        result = module.render_specialized_fields(
+                            common_info.get("physician", ""),
+                            common_info.get("physicist", ""),
+                            common_info.get("patient_age", 0),
+                            common_info.get("patient_sex", ""),
+                            common_info.get("patient_details", "")
+                        )
+                        
+                        # Add an explicit save button - THIS IS THE KEY CHANGE
+                        save_btn = st.button(f"Save {module.get_module_name()} Details", key=f"save_{module_id}")
+                        
+                        # Only save when the button is clicked AND we have valid data
+                        if save_btn:
+                            if result is not None:
+                                # Save the module data
+                                module_data[module_id] = result
+                                # Exit edit mode
+                                st.session_state.current_editing_module = None
+                                # Success message
+                                st.success(f"{module.get_module_name()} details saved successfully.")
+                                # Update session state
+                                st.session_state.module_data = module_data
+                                # Force rerun to update UI
+                                st.rerun()
+                            else:
+                                # Module is not complete - don't show error message
+                                uncompleted_modules.append(module.get_module_name())
                         else:
-                            # Module is not complete
-                            st.error("Please complete all required fields before saving.")
-                            uncompleted_modules.append(module.get_module_name())
+                            # When button isn't clicked but validation fails
+                            if result is None:
+                                uncompleted_modules.append(module.get_module_name())
                     else:
-                        # When button isn't clicked but validation fails
-                        if result is None:
-                            uncompleted_modules.append(module.get_module_name())
-                else:
-                    # Show summary of completed module
-                    st.success(f"{module.get_module_name()} details completed")
-                    
-                    # Show summary of entered data
-                    self._display_module_data_summary(module_id, module_data[module_id])
-                    
-                    # Add option to edit (using a button to avoid checkboxes that can cause weird behavior)
-                    if st.button(f"Edit {module.get_module_name()} Details", key=f"edit_{module_id}"):
-                        # Set this module for editing in the next rerun
-                        st.session_state.current_editing_module = module_id
-                        # Force rerun to show edit view
-                        st.rerun()
-                    
-                    completed_modules_list.append(module.get_module_name())
+                        # Show summary of completed module
+                        st.success(f"{module.get_module_name()} details completed")
+                        
+                        # Show summary of entered data
+                        self._display_module_data_summary(module_id, module_data[module_id])
+                        
+                        # Add option to edit (using a button to avoid checkboxes that can cause weird behavior)
+                        if st.button(f"Edit {module.get_module_name()} Details", key=f"edit_{module_id}"):
+                            # Set this module for editing in the next rerun
+                            st.session_state.current_editing_module = module_id
+                            # Force rerun to show edit view
+                            st.rerun()
+                        
+                        completed_modules_list.append(module.get_module_name())
+                
+                # Display module information in the right column
+                with info_col:
+                    # Only show info in the right column, not when viewing completed data
+                    if st.session_state.current_editing_module == module_id or not is_completed:
+                        with st.container():
+                            st.markdown("#### About This Module")
+                            st.info(f"**{module.get_module_name()}:** {module.get_module_description()}")
+                            
+                            # Add module-specific informational text
+                            if module.get_module_name() == "DIBH":
+                                st.info("DIBH is typically used for left breast to reduce cardiac dose, but can be used for other thoracic sites.")
+                            elif module.get_module_name() == "Fusion":
+                                st.info("Multimodality image fusion helps improve target delineation accuracy by combining different imaging modalities.")
+                            elif module.get_module_name() == "Prior Dose":
+                                st.info("Prior dose evaluation is critical for retreatment cases to avoid excessive cumulative dose to normal tissues.")
+                            elif module.get_module_name() == "Pacemaker":
+                                st.info("Pacemaker/ICD management is essential to minimize risks of device malfunction during radiation therapy.")
+                            elif module.get_module_name() == "SBRT":
+                                st.info("SBRT delivers precisely-targeted radiation in fewer, higher-dose treatments than traditional therapy.")
+                            elif module.get_module_name() == "SRS":
+                                st.info("SRS delivers highly focused radiation to small intracranial targets with millimeter precision.")
         
         # Navigation buttons
         col1, col2, col3 = st.columns([1, 3, 1])
@@ -281,11 +300,6 @@ class QuickWriteOrchestrator:
                     del st.session_state.current_editing_module
                     
                 st.rerun()
-        
-        if not can_proceed:
-            st.warning(f"Please complete details for all selected modules to continue.")
-            if uncompleted_modules:
-                st.info(f"Modules needing completion: {', '.join(uncompleted_modules)}")
     
     def _render_results_step(self):
         """Render the results display step."""
@@ -375,6 +389,27 @@ class QuickWriteOrchestrator:
             
             st.write(f"**Overlap:** {module_data.get('has_overlap', 'No')}")
             
+        elif module_id == "pacemaker":
+            st.write(f"**Treatment Site:** {module_data.get('treatment_site', '')}")
+            st.write(f"**Dose:** {module_data.get('dose', 0)} Gy in {module_data.get('fractions', 0)} fractions")
+            st.write(f"**Device Vendor:** {module_data.get('device_vendor', '')}")
+            st.write(f"**Field Distance:** {module_data.get('field_distance', '').split(' ')[0]}")
+            st.write(f"**Risk Level:** {module_data.get('risk_level', '')}")
+            
+        elif module_id == "sbrt":
+            st.write(f"**Treatment Site:** {module_data.get('treatment_site', '')}")
+            st.write(f"**Dose:** {module_data.get('dose', 0)} Gy in {module_data.get('fractions', 0)} fractions")
+            st.write(f"**Target Volume:** {module_data.get('target_volume', 0)} cc")
+            st.write(f"**4DCT Used:** {module_data.get('is_4dct', '')}")
+            
+        elif module_id == "srs":
+            lesions = module_data.get('lesions', [])
+            st.write(f"**Number of Lesions:** {len(lesions)}")
+            for i, lesion in enumerate(lesions[:2]):  # Show first two lesions
+                st.write(f"- Lesion {i+1}: {lesion.get('site', '')}, {lesion.get('dose', 0)} Gy in {lesion.get('fractions', 0)} fraction(s)")
+            if len(lesions) > 2:
+                st.write(f"- Plus {len(lesions) - 2} more lesions...")
+                
         else:
             # Generic summary for other module types
             st.write("Module data entered successfully.")

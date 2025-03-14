@@ -10,7 +10,7 @@ def select_modules(modules, existing_selections=None):
     Returns:
         dict: The selected module IDs mapped to True
     """
-    st.write("Check all write-up types you need to generate:")
+    st.write("Check all write-up types you want to generate:")
     
     # Initialize selections with existing data or empty dict
     selections = {}
@@ -52,12 +52,11 @@ def select_modules(modules, existing_selections=None):
                 # Add description
                 st.write(module.get_module_description())
                 
-                # Simple checkbox with proper spacing
+                # Simple checkbox without help icon
                 selected = st.checkbox(
                     f"Include this write-up",
                     value=default,
-                    key=f"select_{module_id}",
-                    help="Check to include this write-up type"
+                    key=f"select_{module_id}"
                 )
                 
                 # Store selection
@@ -65,31 +64,11 @@ def select_modules(modules, existing_selections=None):
                 
                 # Add separator for clarity
                 st.markdown("---")
-                
-                # Add more information in an expander
-                with st.expander("More details", expanded=False):
-                    st.write(f"**Required Fields:** {len(module.get_required_fields())} fields")
-                    
-                    # Example cases for each module type
-                    if module.get_module_name() == "DIBH":
-                        st.info("Typically used for left breast radiation therapy to reduce cardiac dose.")
-                    elif module.get_module_name() == "Fusion":
-                        st.info("Used when multiple imaging modalities need to be combined for target delineation.")
-                    elif module.get_module_name() == "Prior Dose":
-                        st.info("Important for retreatment cases to evaluate cumulative dose to critical structures.")
-                    elif module.get_module_name() == "Pacemaker":
-                        st.info("Critical for patients with cardiac implantable electronic devices receiving radiation therapy.")
-                    elif module.get_module_name() == "SBRT":
-                        st.info("Used for precise high-dose radiation to extracranial targets in fewer fractions.")
-                    elif module.get_module_name() == "SRS":
-                        st.info("Specialized for precise single or few-fraction radiation to intracranial targets.")
     
     # Provide visual feedback based on selections
     selected_count = sum(1 for v in selections.values() if v)
     
-    if selected_count == 0:
-        st.warning("Please select at least one write-up type to continue.")
-    else:
+    if selected_count > 0:
         st.success(f"You've selected {selected_count} write-up type{'s' if selected_count > 1 else ''}.")
     
     # Show a summary of selected modules
