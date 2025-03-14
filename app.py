@@ -157,82 +157,40 @@ if not st.session_state.show_landing_page:
         st.session_state.active_module = selected_module
         st.rerun()
 
-# Main content area
-if st.session_state.show_landing_page:
-    # Simple title banner
-    st.markdown("""
-    <div style="text-align:center; padding:20px; margin-bottom:30px;">
-        <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
-        <p>Tools and resources to enhance your training experience</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    modules = [
-        {
-            "id": "quick_write",
-            "name": "Quick Write",
-            "description": "Generate professional documentation for common clinical scenarios",
-            "icon": "📝",
-            "implemented": True
-        },
+    if st.session_state.show_landing_page:
+        # Simple title banner
+        st.markdown("""
+        <div style="text-align:center; padding:20px; margin-bottom:20px;">
+            <h1 style="margin-bottom:10px;">Medical Physics Residency Toolkit</h1>
+            <p>Tools to streamline documentation for clinical workflows</p>
+        </div>
+        """, unsafe_allow_html=True)
         
-        {
-            "id": "qa_bank",
-            "name": "QA Bank",
-            "description": "Access and organize quality assurance procedures",
-            "icon": "🧪",
-            "implemented": False
-        },
-        {
-            "id": "pnp",
-            "name": "Policies & Procedures",
-            "description": "Review department policies and standard procedures",
-            "icon": "📑",
-            "implemented": False
-        },
-        {
-            "id": "inventory",
-            "name": "Inventory",
-            "description": "Track equipment, usage, and training status",
-            "icon": "🔍",
-            "implemented": False
-        },
-        {
-            "id": "competency",
-            "name": "Competency Tracker",
-            "description": "Monitor your progress toward residency milestones",
-            "icon": "📊",
-            "implemented": False
-        },
-        {
-            "id": "part3",
-            "name": "Part 3 Bank",
-            "description": "Prepare for board examinations with practice questions",
-            "icon": "🎓",
-            "implemented": False
-        }
-    ]
-    
-    # Display only implemented modules
-    implemented_modules = [m for m in modules if m["implemented"]]
-    
-    # Create a grid layout with 3 columns
-    cols = st.columns(3)
-    
-    # Display modules in columns with explicit buttons
-    for i, module in enumerate(implemented_modules):
-        with cols[i % 3]:
-            st.markdown(f"""
-            <div class="module-card">
-                <div class="module-icon">{module['icon']}</div>
-                <div class="module-title">{module['name']}</div>
-                <div class="module-desc">{module['description']}</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Regular button with clear text
-            if st.button(f"Open {module['name']}", key=f"btn_{module['id']}"):
-                go_to_module(module['name'])
+        # Information and status section
+        st.markdown("## About This Tool")
+        st.markdown("""
+        The **QuickWrite** tool helps generate standardized, professional documentation for common clinical scenarios 
+        in radiation oncology. Currently available templates include DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.
+        
+        **Current Status**: Beta Release (v0.9). This tool is under active development and we welcome your feedback.
+        """)
+        
+        # Feedback form in an expander
+        with st.expander("📝 Provide Feedback", expanded=False):
+            feedback_type = st.selectbox("Feedback Type", ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"])
+            feedback_text = st.text_area("Your Feedback", height=100, 
+                                        placeholder="Please describe your experience, issues, or suggestions...")
+            st.markdown("**Note**: This feedback will be reviewed by the development team to improve future versions.")
+            if st.button("Submit Feedback"):
+                # In a full implementation, send this feedback to a database or email
+                st.success("Thank you for your feedback! We'll use it to improve the tool.")
+        
+        # Big prominent button to go to QuickWrite
+        st.markdown("<br>", unsafe_allow_html=True)  # Add some space
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button("Launch QuickWrite", key="launch_quickwrite", use_container_width=True):
+                go_to_module("Quick Write")
             
 else:
     # Display selected module content
