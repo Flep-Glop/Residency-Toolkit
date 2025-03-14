@@ -44,22 +44,16 @@ if not st.session_state.show_landing_page:
         # Get the write-up type from session state or URL parameter, default to DIBH if not specified
         write_up_type = st.session_state.get("active_write_up", "DIBH")
         
-        # Create a modern header with better-aligned navigation
+        # Create a modern header with left-aligned title and right-aligned navigation
         st.markdown('<div class="header-container">', unsafe_allow_html=True)
         
-        col1, col2, col3 = st.columns([1, 4, 2])
+        col1, col2 = st.columns([5, 2])
         
         with col1:
-            # Back to Home button styled as a modern button
-            if st.button("← Home", key="home_btn", use_container_width=True):
-                go_to_landing_page()
-                st.rerun()
+            # Show which module we're in (left-aligned)
+            st.markdown(f"<h1 class='left-aligned-title'>{write_up_type} Write-Up Generator</h1>", unsafe_allow_html=True)
         
         with col2:
-            # Show which module we're in (centered)
-            st.markdown(f"<h1 class='centered-title'>{write_up_type} Write-Up Generator</h1>", unsafe_allow_html=True)
-        
-        with col3:
             # Add a dropdown to allow changing the form type
             new_write_up_type = st.selectbox(
                 "Change Write-Up Type",
@@ -72,6 +66,11 @@ if not st.session_state.show_landing_page:
             # If the user changed the type using the dropdown, update and rerun
             if new_write_up_type != write_up_type:
                 st.session_state.active_write_up = new_write_up_type
+                st.rerun()
+                
+            # Back to Home button below the dropdown
+            if st.button("← Home", key="home_btn", use_container_width=True):
+                go_to_landing_page()
                 st.rerun()
         
         st.markdown('</div>', unsafe_allow_html=True)

@@ -6,9 +6,9 @@
     padding-bottom: 0.5rem;
 }
 
-/* Center the title */
-.centered-title {
-    text-align: center;
+/* Left-align the title */
+.left-aligned-title {
+    text-align: left;
     margin-bottom: 0 !important;
     padding-top: 0 !important;
     font-weight: 600;
@@ -24,9 +24,22 @@
     margin-top: 0.5rem;
 }
 
+/* Make home button distinct from other buttons */
+[data-testid="stButton"] button:has(.home-icon),
+[data-testid="stButton"] button:contains("← Home") {
+    background-color: var(--secondary-background) !important;
+    color: var(--primary-color) !important;
+    border: 1px solid var(--card-border) !important;
+}
+
+[data-testid="stButton"] button:has(.home-icon):hover,
+[data-testid="stButton"] button:contains("← Home"):hover {
+    background-color: var(--secondary-background-hover) !important;
+}
+
 /* Improve select box alignment and styling */
 [data-testid="stSelectbox"] {
-    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
 }
 
 [data-testid="stSelectbox"] > div {
