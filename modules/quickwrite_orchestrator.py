@@ -202,18 +202,30 @@ class QuickWriteOrchestrator:
                         common_info.get("patient_details", "")
                     )
                     
-                    if result is not None:
-                        # Save the module data
-                        module_data[module_id] = result
-                        # Exit edit mode
-                        st.session_state.current_editing_module = None
-                        # Success message
-                        st.success(f"{module.get_module_name()} details saved successfully.")
-                        # Update session state
-                        st.session_state.module_data = module_data
+                    # Add an explicit save button - THIS IS THE KEY CHANGE
+                    save_btn = st.button(f"Save {module.get_module_name()} Details", key=f"save_{module_id}")
+                    
+                    # Only save when the button is clicked AND we have valid data
+                    if save_btn:
+                        if result is not None:
+                            # Save the module data
+                            module_data[module_id] = result
+                            # Exit edit mode
+                            st.session_state.current_editing_module = None
+                            # Success message
+                            st.success(f"{module.get_module_name()} details saved successfully.")
+                            # Update session state
+                            st.session_state.module_data = module_data
+                            # Force rerun to update UI
+                            st.rerun()
+                        else:
+                            # Module is not complete
+                            st.error("Please complete all required fields before saving.")
+                            uncompleted_modules.append(module.get_module_name())
                     else:
-                        # Module is not complete
-                        uncompleted_modules.append(module.get_module_name())
+                        # When button isn't clicked but validation fails
+                        if result is None:
+                            uncompleted_modules.append(module.get_module_name())
                 else:
                     # Show summary of completed module
                     st.success(f"{module.get_module_name()} details completed")
