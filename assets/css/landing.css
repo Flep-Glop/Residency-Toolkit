@@ -1,8 +1,8 @@
-/* Update assets/css/landing.css with this code */
+/* Update assets/css/landing.css */
 
 /* Base styles and typography */
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
     color: #333;
     line-height: 1.5;
 }
@@ -12,7 +12,7 @@ body {
     text-align: center;
     background: #f8fafc;
     border-bottom: 1px solid #edf2f7;
-    padding: 2.5rem 0 2rem;
+    padding: 2rem 0 1.5rem;
     margin-bottom: 2rem;
 }
 
@@ -31,54 +31,44 @@ body {
     margin: 0 auto;
 }
 
-/* Primary card - focal point */
+/* Primary card */
 .primary-card {
     background-color: white;
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.06);
     margin-bottom: 2rem;
-    padding: 2rem;
+    padding: 1.5rem;
     border: 1px solid #edf2f7;
     transition: all 0.2s ease;
 }
 
-.primary-card:hover {
-    box-shadow: 0 6px 25px rgba(0,0,0,0.08);
-}
-
-.card-content {
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 1.5rem;
-}
-
-.card-icon {
-    font-size: 2.5rem;
-    margin-right: 1.5rem;
-    color: #3b82f6;
-}
-
-.card-text h2 {
+.primary-card h2 {
     color: #1e293b;
-    margin: 0 0 0.7rem 0;
+    margin: 0 0 0.3rem 0;
     font-weight: 600;
     font-size: 1.6rem;
 }
 
-.card-text p {
+.primary-card p {
     color: #64748b;
     margin-bottom: 1rem;
 }
 
+.card-icon {
+    font-size: 2.5rem;
+    color: #3b82f6;
+    text-align: center;
+    padding-top: 0.5rem;
+}
+
+/* Feature list */
 .feature-list {
     display: flex;
     flex-wrap: wrap;
-    list-style: none;
-    padding: 0;
-    margin: 0;
+    margin: 0.5rem 0 1.2rem 0;
 }
 
-.feature-list li {
+.feature-item {
     background: #f1f5f9;
     color: #334155;
     padding: 0.3rem 0.8rem;
@@ -86,9 +76,36 @@ body {
     margin: 0 0.5rem 0.5rem 0;
     font-size: 0.9rem;
     font-weight: 500;
+    display: inline-block;
 }
 
-/* Info section */
+/* Section headers */
+.section-title {
+    color: #64748b;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 2rem 0 1rem 0;
+}
+
+/* Coming soon items */
+.coming-soon-item {
+    display: flex;
+    align-items: center;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    height: 100%;
+}
+
+.soon-icon {
+    margin-right: 0.7rem;
+    opacity: 0.7;
+    font-size: 1.5rem;
+}
+
+/* Info content */
 .info-content {
     padding: 0.5rem 0;
     color: #475569;
@@ -104,41 +121,7 @@ body {
     font-weight: 500;
 }
 
-/* Coming soon section */
-.footer-section {
-    margin-top: 2rem;
-}
-
-.footer-section h3 {
-    color: #64748b;
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-.coming-soon-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.coming-soon-item {
-    display: flex;
-    align-items: center;
-    background: #f8fafc;
-    padding: 1rem;
-    border-radius: 8px;
-    flex: 1;
-    min-width: 150px;
-    color: #94a3b8;
-    font-size: 0.95rem;
-}
-
-.soon-icon {
-    margin-right: 0.7rem;
-    opacity: 0.7;
-}
-
+/* Footer */
 .footer-divider {
     margin: 2rem 0 1rem;
     border: none;
@@ -146,20 +129,17 @@ body {
     background-color: #edf2f7;
 }
 
-/* Button styling */
-button {
+/* Fix for Streamlit components */
+.stButton>button {
     background-color: #3b82f6 !important;
     color: white !important;
     font-weight: 500 !important;
-    padding: 0.6rem 1.2rem !important;
     border-radius: 8px !important;
-    border: none !important;
     box-shadow: 0 2px 5px rgba(59, 130, 246, 0.3) !important;
     transition: all 0.2s ease !important;
 }
 
-button:hover {
+.stButton>button:hover {
     background-color: #2563eb !important;
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
-    transform: translateY(-1px) !important;
 }

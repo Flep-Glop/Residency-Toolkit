@@ -104,33 +104,34 @@ if not st.session_state.show_landing_page:
         </div>
         """, unsafe_allow_html=True)
         
-        # Primary Card - Most important tool front and center
+        # Primary Card - Most important tool with integrated button
+        st.markdown("<div class='primary-card'>", unsafe_allow_html=True)
+        
+        # Card header with icon and text
+        col1, col2 = st.columns([1, 5])
+        with col1:
+            st.markdown("<div class='card-icon'>📝</div>", unsafe_allow_html=True)
+        with col2:
+            st.markdown("<h2>QuickWrite</h2>", unsafe_allow_html=True)
+            st.markdown("<p>Generate standardized documentation for clinical scenarios</p>", unsafe_allow_html=True)
+        
+        # Feature list
         st.markdown("""
-        <div class="primary-card">
-            <div class="card-content">
-                <div class="card-icon">📝</div>
-                <div class="card-text">
-                    <h2>QuickWrite</h2>
-                    <p>Generate standardized documentation for clinical scenarios</p>
-                    <ul class="feature-list">
-                        <li>DIBH Reports</li>
-                        <li>Fusion Documentation</li>
-                        <li>Prior Dose Analysis</li>
-                        <li>Pacemaker, SBRT & SRS Documentation</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="card-action" id="quickwrite-btn-container"></div>
+        <div class="feature-list">
+            <span class="feature-item">DIBH Reports</span>
+            <span class="feature-item">Fusion Documentation</span>
+            <span class="feature-item">Prior Dose Analysis</span>
+            <span class="feature-item">Pacemaker & SBRT Reports</span>
         </div>
         """, unsafe_allow_html=True)
         
-        # Place the button in the container
-        button_col = st.container()
-        with button_col:
-            if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
-                go_to_module("Quick Write")
+        # Action button in Streamlit-native way
+        if st.button("Launch QuickWrite", key="quickwrite_btn", type="primary", use_container_width=True):
+            go_to_module("Quick Write")
         
-        # Secondary information in collapsible sections
+        st.markdown("</div>", unsafe_allow_html=True)
+        
+        # About section in a cleaner expandable card
         with st.expander("ℹ️ About This Tool", expanded=False):
             st.markdown("""
             <div class="info-content">
@@ -140,28 +141,37 @@ if not st.session_state.show_landing_page:
             </div>
             """, unsafe_allow_html=True)
         
-        # Bottom section with minimal visual weight
-        st.markdown("""
-        <div class="footer-section">
-            <h3>Coming Soon</h3>
-            <div class="coming-soon-grid">
-                <div class="coming-soon-item">
-                    <div class="soon-icon">🧠</div>
-                    <div>Competency Tracker</div>
-                </div>
-                <div class="coming-soon-item">
-                    <div class="soon-icon">📊</div>
-                    <div>QA Dashboard</div>
-                </div>
-                <div class="coming-soon-item">
-                    <div class="soon-icon">📚</div>
-                    <div>Part 3 Bank</div>
-                </div>
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        # Coming soon section
+        st.markdown("<h3 class='section-title'>Coming Soon</h3>", unsafe_allow_html=True)
         
-        # Minimal footer with feedback option
+        # Coming soon items in Streamlit columns
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("""
+            <div class="coming-soon-item">
+                <div class="soon-icon">🧠</div>
+                <div>Competency Tracker</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("""
+            <div class="coming-soon-item">
+                <div class="soon-icon">📊</div>
+                <div>QA Dashboard</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("""
+            <div class="coming-soon-item">
+                <div class="soon-icon">📚</div>
+                <div>Part 3 Bank</div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Footer with feedback
         st.markdown("<hr class='footer-divider'>", unsafe_allow_html=True)
         
         feedback_col1, feedback_col2 = st.columns([3, 1])
