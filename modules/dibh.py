@@ -26,31 +26,30 @@ class DIBHModule(BaseWriteUpModule):
     def render_specialized_fields(self, physician, physicist, patient_age, patient_sex, patient_details):
         """Render DIBH-specific input fields and return the generated data."""
         
-        # Add an information expander that users can click to learn more
-        with st.expander("ℹ️ About DIBH Technique", expanded=False):
-            st.markdown("""
-            ### Deep Inspiration Breath Hold (DIBH)
-            
-            **Clinical Purpose:**  
-            DIBH is a technique used primarily in breast cancer radiation therapy to reduce radiation 
-            dose to the heart. By having the patient hold their breath, the heart moves away from the 
-            chest wall, creating distance from the treatment area and reducing cardiac exposure.
-            
-            **Key Benefits:**
-            - Reduces mean heart dose by 25-67% in left breast treatments
-            - Minimizes respiratory motion during treatment delivery
-            - Can improve dose homogeneity across the target volume
-            
-            **Patient Selection:**
-            - Most commonly used for left-sided breast cancer patients
-            - Requires patient ability to hold breath for ~20 seconds
-            - May also benefit patients with other thoracic treatments
-            
-            **Equipment Requirements:**
-            - Surface monitoring system (C-RAD or similar)
-            - Visual feedback system for patient breath-hold guidance
-            - Image guidance for verification
-            """)
+        # Add an information box instead of an expander to avoid nesting issues
+        st.info("""
+        ### Deep Inspiration Breath Hold (DIBH)
+        
+        **Clinical Purpose:**  
+        DIBH is a technique used primarily in breast cancer radiation therapy to reduce radiation 
+        dose to the heart. By having the patient hold their breath, the heart moves away from the 
+        chest wall, creating distance from the treatment area and reducing cardiac exposure.
+        
+        **Key Benefits:**
+        - Reduces mean heart dose by 25-67% in left breast treatments
+        - Minimizes respiratory motion during treatment delivery
+        - Can improve dose homogeneity across the target volume
+        
+        **Patient Selection:**
+        - Most commonly used for left-sided breast cancer patients
+        - Requires patient ability to hold breath for ~20 seconds
+        - May also benefit patients with other thoracic treatments
+        
+        **Equipment Requirements:**
+        - Surface monitoring system (C-RAD or similar)
+        - Visual feedback system for patient breath-hold guidance
+        - Image guidance for verification
+        """)
         
         # Use tabs to organize the form
         treatment_tab, preview_tab = st.tabs([
