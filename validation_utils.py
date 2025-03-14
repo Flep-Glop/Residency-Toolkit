@@ -151,22 +151,60 @@ def validate_dose_fractionation(dose, fractions, site=None):
     if site:
         site = site.lower()
         
-        # Typical SRS fractionation for brain
-        if site == "brain" and fractions == 1:
-            if dose < 12 or dose > 24:
-                return False, f"Single fraction SRS for brain typically uses 12-24 Gy (got {dose} Gy)"
+        # Brain/SRS specific validation
+        if "brain" in site or any(region in site for region in ["frontal", "parietal", "temporal", "occipital", "cerebellum", "brainstem"]):
+            if fractions == 1:  # Single fraction SRS
+                if dose < 12:
+                    return True, f"Dose ({dose} Gy) is below typical single-fraction SRS range (12-24 Gy)"
+                if dose > 24:
+                    return False, f"Single fraction SRS dose ({dose} Gy) exceeds typical maximum of 24 Gy"
+                if dose > 15 and "brainstem" in site:
+                    return False, f"Single fraction SRS dose ({dose} Gy) exceeds typical maximum of 15 Gy for brainstem"
+            elif 2 <= fractions <= 5:  # Fractionated SRT
+                if dose < 18:
+                    return True, f"Dose ({dose} Gy) is below typical SRT range for {fractions} fractions"
+                if dose > 35:
+                    return False, f"SRT dose ({dose} Gy) exceeds typical maximum for {fractions} fractions"
         
-        # Typical SBRT fractionation for lung
-        elif site == "lung" and 3 <= fractions <= 5:
-            if dose < 45 or dose > 60:
-                return False, f"SBRT for lung typically uses 45-60 Gy in 3-5 fractions (got {dose} Gy)"
+        # Lung SBRT validation
+        elif "lung" in site:
+            if fractions <= 5:  # SBRT fractionation
+                if dose < 30:
+                    return True, f"Dose ({dose} Gy) is below typical lung SBRT range"
+                if dose > 60:
+                    return False, f"Lung SBRT dose ({dose} Gy) exceeds typical maximum of 60 Gy"
         
-        # Typical breast fractionation
-        elif site in ["breast", "left breast", "right breast"] and fractions > 10:
-            if dose_per_fraction < 1.8 or dose_per_fraction > 2.7:
-                return True, f"Breast dose/fraction ({dose_per_fraction:.2f} Gy) suggests {'hypofractionation' if dose_per_fraction > 2.0 else 'conventional fractionation'}"
+        # Breast validation
+        elif "breast" in site:
+            if fractions >= 15:  # Conventional or hypofractionated
+                if dose_per_fraction > 2.75:
+                    return False, f"Breast dose/fraction ({dose_per_fraction:.2f} Gy) exceeds typical maximum of 2.75 Gy/fraction"
+            elif 5 <= fractions < 15:  # Hypofractionated
+                if dose_per_fraction > 6.0:
+                    return False, f"Hypofractionated breast dose/fraction ({dose_per_fraction:.2f} Gy) exceeds typical maximum of 6.0 Gy/fraction"
+        
+        # Prostate validation
+        elif "prostate" in site:
+            if fractions <= 5:  # SBRT
+                if dose < 35:
+                    return True, f"Prostate SBRT dose ({dose} Gy) is below typical range"
+                if dose > 40:
+                    return False, f"Prostate SBRT dose ({dose} Gy) exceeds typical maximum of 40 Gy for {fractions} fractions"
+            elif fractions > 20:  # Conventional
+                if dose < 70:
+                    return True, f"Conventional prostate dose ({dose} Gy) is below typical range"
+                if dose > 80:
+                    return False, f"Conventional prostate dose ({dose} Gy) exceeds typical maximum of 80 Gy"
+        
+        # Liver SBRT validation  
+        elif "liver" in site:
+            if fractions <= 5:  # SBRT
+                if dose < 30:
+                    return True, f"Liver SBRT dose ({dose} Gy) is below typical range"
+                if dose > 60:
+                    return False, f"Liver SBRT dose ({dose} Gy) exceeds typical maximum of 60 Gy for {fractions} fractions"
     
-    # Provide fractionation schema description
+    # Provide fractionation schema description based on dose per fraction
     if dose_per_fraction <= 2.0:
         return True, "Conventional fractionation"
     elif 2.0 < dose_per_fraction <= 5.0:
@@ -175,3 +213,136 @@ def validate_dose_fractionation(dose, fractions, site=None):
         return True, "Hypofractionation (SBRT range)"
     else:
         return True, "Extreme hypofractionation (SRS/SBRT range)"
+
+
+def validate_treatment_site_consistency(treatment_site, dose, fractions):
+    """Validate that the treatment site is consistent with the dose/fractionation.
+    
+    Args:
+        treatment_site: The anatomical treatment site
+        dose: The total dose in Gy
+        fractions: The number of fractions
+        
+    Returns:
+        tuple: (is_valid, message) indicating if the combination is valid and why
+    """
+    treatment_site = treatment_site.lower() if isinstance(treatment_site, str) else ""
+    
+    # Calculate dose per fraction
+    dose_per_fraction = dose / fractions if fractions > 0 else 0
+    
+    # SRS/SRT (brain) validation
+    if any(site in treatment_site for site in ["brain", "frontal", "parietal", "temporal", "occipital", "cerebellum"]):
+        if fractions == 1 and dose < 12:
+            return False, f"Single fraction brain treatment with {dose} Gy is below typical SRS range (12-24 Gy)"
+            
+        if fractions > 5 and dose_per_fraction > 3:
+            return False, f"Brain treatments with >5 fractions typically use ≤3 Gy/fraction (got {dose_per_fraction:.2f} Gy)"
+    
+    # SBRT validation for non-brain sites
+    elif fractions <= 5 and dose_per_fraction >= 6:
+        if any(site in treatment_site for site in ["breast", "head and neck", "pelvis"]):
+            return False, f"SBRT with {dose_per_fraction:.2f} Gy/fraction is not typically used for {treatment_site}"
+    
+    # Conventional validation
+    elif fractions >= 25 and dose_per_fraction < 1.8:
+        if any(site in treatment_site for site in ["lung nodule", "liver metastasis", "bone metastasis"]):
+            return True, f"Consider hypofractionation for {treatment_site} instead of conventional fractionation"
+    
+    return True, ""
+
+
+class ClinicalValidationRules:
+    """Repository of clinical validation rules for different treatment scenarios."""
+    
+    @staticmethod
+    def get_organ_dose_constraints(organ, treatment_type="conventional"):
+        """Get dose constraints for specific organs at risk.
+        
+        Args:
+            organ: The organ name
+            treatment_type: The treatment type (conventional, sbrt, srs)
+            
+        Returns:
+            dict: Constraints for the organ
+        """
+        # Standardize inputs
+        organ = organ.lower()
+        treatment_type = treatment_type.lower()
+        
+        # Base constraints dictionary
+        constraints = {
+            # Brain/head & neck constraints
+            "brain": {
+                "conventional": {"mean": 45, "max": 60, "unit": "Gy"},
+                "srs": {"max": 12, "unit": "Gy"},
+            },
+            "brainstem": {
+                "conventional": {"max": 54, "unit": "Gy"},
+                "sbrt": {"max": 23, "unit": "Gy"},
+                "srs": {"max": 15, "unit": "Gy"},
+            },
+            "optic chiasm": {
+                "conventional": {"max": 54, "unit": "Gy"},
+                "srs": {"max": 10, "unit": "Gy"},
+            },
+            "optic nerve": {
+                "conventional": {"max": 54, "unit": "Gy"},
+                "srs": {"max": 10, "unit": "Gy"},
+            },
+            "cochlea": {
+                "conventional": {"mean": 45, "unit": "Gy"},
+            },
+            "parotid": {
+                "conventional": {"mean": 26, "unit": "Gy"},
+            },
+            
+            # Thoracic constraints
+            "heart": {
+                "conventional": {"mean": 26, "unit": "Gy"},
+                "sbrt": {"max": 30, "unit": "Gy"},
+            },
+            "lung": {
+                "conventional": {"v20": 30, "unit": "%"},
+                "sbrt": {"v20": 10, "unit": "%"},
+            },
+            "esophagus": {
+                "conventional": {"mean": 34, "unit": "Gy"},
+                "sbrt": {"max": 27, "unit": "Gy"},
+            },
+            "spinal cord": {
+                "conventional": {"max": 50, "unit": "Gy"},
+                "sbrt": {"max": 18, "unit": "Gy"},
+                "srs": {"max": 14, "unit": "Gy"},
+            },
+            
+            # Abdominal constraints
+            "liver": {
+                "conventional": {"mean": 30, "unit": "Gy"},
+                "sbrt": {"v15": 700, "unit": "cc"},
+            },
+            "kidney": {
+                "conventional": {"mean": 18, "unit": "Gy"},
+                "sbrt": {"v12": 25, "unit": "%"},
+            },
+            "bowel": {
+                "conventional": {"max": 50, "unit": "Gy"},
+                "sbrt": {"max": 27, "unit": "Gy"},
+            },
+            
+            # Pelvic constraints
+            "rectum": {
+                "conventional": {"v70": 20, "unit": "%"},
+                "sbrt": {"v36": 1, "unit": "cc"},
+            },
+            "bladder": {
+                "conventional": {"v70": 35, "unit": "%"},
+                "sbrt": {"v37": 10, "unit": "cc"},
+            },
+        }
+        
+        # Return the constraints if found
+        if organ in constraints and treatment_type in constraints[organ]:
+            return constraints[organ][treatment_type]
+        
+        return None

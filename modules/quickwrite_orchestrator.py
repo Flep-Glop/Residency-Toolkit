@@ -2,8 +2,8 @@ import streamlit as st
 from .templates import ConfigManager
 from .common_info_collector import collect_common_info
 from .module_selector import select_modules
-from .validation_utils import FormValidator
-from .download_utils import WriteUpDisplay
+from validation_utils import FormValidator
+from download_utils import WriteUpDisplay
 
 class QuickWriteOrchestrator:
     """Main controller for the QuickWrite workflow."""

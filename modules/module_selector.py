@@ -1,7 +1,7 @@
 import streamlit as st
 
 def select_modules(modules, existing_selections=None):
-    """Allow selection of which write-up modules to generate.
+    """Allow selection of which write-up modules to generate with enhanced visual feedback.
     
     Args:
         modules: Dict of module_id -> module_instance
@@ -65,6 +65,12 @@ def select_modules(modules, existing_selections=None):
         margin-top: 8px;
         background-color: rgba(var(--primary-color-rgb), 0.1);
         color: var(--primary-color);
+    }
+    .tooltip-icon {
+        color: var(--subtitle-color);
+        font-size: 0.8em;
+        cursor: help;
+        margin-left: 4px;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -132,14 +138,31 @@ def select_modules(modules, existing_selections=None):
         
         selections[module_id] = selected
         
-        # Add JavaScript to dynamically update card styling when checkbox changes
-        st.markdown(f"""
-        <script>
-            // This is a placeholder for JavaScript that would update the card styling
-            // Unfortunately, Streamlit doesn't allow custom JavaScript to access DOM elements
-            // So users will need to refresh the page to see updated styling
-        </script>
-        """, unsafe_allow_html=True)
+        # Add tooltip with more detailed information
+        with st.expander(f"About {module.get_module_name()}", expanded=False):
+            st.write(f"**Module Name:** {module.get_module_name()}")
+            st.write(f"**Description:** {module.get_module_description()}")
+            st.write(f"**Required Fields:** {', '.join(required_fields)}")
+            
+            # Example cases for each module type
+            if module.get_module_name() == "DIBH":
+                st.info("Typically used for left breast radiation therapy to reduce cardiac dose.")
+                st.write("**Example case:** Left breast cancer patient requiring radiation therapy with cardiac protection.")
+            elif module.get_module_name() == "Fusion":
+                st.info("Used when multiple imaging modalities need to be combined for target delineation.")
+                st.write("**Example case:** Head and neck cancer patient with PET/CT fusion for target volume definition.")
+            elif module.get_module_name() == "Prior Dose":
+                st.info("Important for retreatment cases to evaluate cumulative dose to critical structures.")
+                st.write("**Example case:** Patient with recurrent disease requiring evaluation of previous radiation exposure.")
+            elif module.get_module_name() == "Pacemaker":
+                st.info("Critical for patients with cardiac implantable electronic devices receiving radiation therapy.")
+                st.write("**Example case:** Patient with pacemaker requiring thoracic or nearby radiation treatment.")
+            elif module.get_module_name() == "SBRT":
+                st.info("Used for precise high-dose radiation to extracranial targets in fewer fractions.")
+                st.write("**Example case:** Patient with early-stage lung cancer treated with stereotactic body radiation therapy.")
+            elif module.get_module_name() == "SRS":
+                st.info("Specialized for precise single or few-fraction radiation to intracranial targets.")
+                st.write("**Example case:** Patient with brain metastases treated with stereotactic radiosurgery.")
     
     # Close the grid container
     st.markdown('</div>', unsafe_allow_html=True)
@@ -153,4 +176,16 @@ def select_modules(modules, existing_selections=None):
         st.success(f"You've selected {selected_count} write-up type{'s' if selected_count > 1 else ''}.")
     
     # Filter to only selected modules
-    return {k: v for k, v in selections.items() if v}
+    selected_modules = {k: v for k, v in selections.items() if v}
+    
+    # Show a summary of selected modules
+    if selected_modules:
+        st.markdown("### Selected Write-Up Types")
+        cols = st.columns(len(selected_modules) or 1)
+        for i, (module_id, _) in enumerate(selected_modules.items()):
+            module = modules[module_id]
+            with cols[i]:
+                st.markdown(f"**{module.get_module_name()}**")
+                st.caption(module.get_module_description())
+    
+    return selected_modules

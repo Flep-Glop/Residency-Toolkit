@@ -9,57 +9,122 @@ from .srs import SRSModule
 from .quickwrite_orchestrator import QuickWriteOrchestrator
 
 class QuickWriteModule:
+    """Main module for generating various medical physics write-ups.
+    
+    This module serves as a central entry point for all write-up generators,
+    handling both the legacy independent write-up interfaces and the new unified workflow.
+    """
+    
     def __init__(self):
-        """Initialize the Quick Write module."""
+        """Initialize the Quick Write module with all supported write-up types."""
         self.config_manager = ConfigManager()
         
-        # Initialize all modules - refactored ones use the base class
+        # Initialize all modules using the refactored architecture
         self.dibh_module = DIBHModule(self.config_manager)
         self.fusion_module = FusionModule(self.config_manager)
         self.prior_dose_module = PriorDoseModule(self.config_manager)
+        self.pacemaker_module = PacemakerModule(self.config_manager)
+        self.sbrt_module = SBRTModule(self.config_manager)
+        self.srs_module = SRSModule(self.config_manager)
         
-        # Legacy modules - will be refactored in future phases
-        self.pacemaker_module = PacemakerModule() 
-        self.sbrt_module = SBRTModule()
-        self.srs_module = SRSModule()
-        
-        # Create module dictionary for the orchestrator with refactored modules
+        # Create module dictionary for the orchestrator with all modules
         self.modules = {
             "dibh": self.dibh_module,
             "fusion": self.fusion_module,
             "prior_dose": self.prior_dose_module,
-            # Other modules will be added as they're refactored
+            "pacemaker": self.pacemaker_module,
+            "sbrt": self.sbrt_module,
+            "srs": self.srs_module
         }
         
-        # Initialize the orchestrator
+        # Initialize the orchestrator for the unified workflow
         self.orchestrator = QuickWriteOrchestrator(self.modules)
     
     def render_unified_workflow(self):
         """Render the unified workflow for multiple write-ups."""
-        return self.orchestrator.render_workflow()
+        try:
+            return self.orchestrator.render_workflow()
+        except Exception as e:
+            self._handle_error("Error in unified workflow", e)
+            return None
     
     # Legacy methods for backward compatibility - these will be gradually removed
-        
+    
     def render_dibh_form(self):
         """Delegate to the DIBHModule for DIBH write-ups."""
-        return self.dibh_module.render_dibh_form()
+        try:
+            return self.dibh_module.render_dibh_form()
+        except Exception as e:
+            self._handle_error("Error in DIBH module", e)
+            return None
 
     def render_fusion_form(self):
         """Delegate to the FusionModule for enhanced fusion write-ups."""
-        return self.fusion_module.render_fusion_form()
+        try:
+            return self.fusion_module.render_fusion_form()
+        except Exception as e:
+            self._handle_error("Error in Fusion module", e)
+            return None
     
     def render_prior_dose_form(self):
         """Delegate to the PriorDoseModule for prior dose write-ups."""
-        return self.prior_dose_module.render_prior_dose_form()
+        try:
+            return self.prior_dose_module.render_prior_dose_form()
+        except Exception as e:
+            self._handle_error("Error in Prior Dose module", e)
+            return None
     
     def render_pacemaker_form(self):
         """Delegate to the PacemakerModule for pacemaker write-ups."""
-        return self.pacemaker_module.render_pacemaker_form()
+        try:
+            return self.pacemaker_module.render_pacemaker_form()
+        except Exception as e:
+            self._handle_error("Error in Pacemaker module", e)
+            return None
     
     def render_sbrt_form(self):
         """Delegate to the SBRTModule for SBRT write-ups."""
-        return self.sbrt_module.render_sbrt_form()
+        try:
+            return self.sbrt_module.render_sbrt_form()
+        except Exception as e:
+            self._handle_error("Error in SBRT module", e)
+            return None
     
     def render_srs_form(self):
         """Delegate to the SRSModule for SRS write-ups."""
-        return self.srs_module.render_srs_form()
+        try:
+            return self.srs_module.render_srs_form()
+        except Exception as e:
+            self._handle_error("Error in SRS module", e)
+            return None
+    
+    def _handle_error(self, context, exception):
+        """Handle exceptions with user-friendly error messages.
+        
+        Args:
+            context: String describing where the error occurred
+            exception: The exception that was raised
+        """
+        import traceback
+        
+        # Log the full error for debugging
+        error_details = traceback.format_exc()
+        print(f"ERROR in {context}: {str(exception)}\n{error_details}")
+        
+        # Show a user-friendly error message
+        st.error(f"**{context}**: {str(exception)}")
+        
+        # In development mode, show full traceback
+        if st.session_state.get("developer_mode", False):
+            with st.expander("Error Details (Developer View)", expanded=False):
+                st.code(error_details)
+                
+        # Offer recovery options
+        st.info("You can try refreshing the page or contact support if the issue persists.")
+        
+        # Add a button to reset session state (as a last resort)
+        if st.button("Reset Application"):
+            for key in list(st.session_state.keys()):
+                if key != "developer_mode":  # Preserve developer mode setting
+                    del st.session_state[key]
+            st.rerun()
