@@ -63,9 +63,18 @@ if not st.session_state.show_landing_page:
         st.title("Quick Write Generator")
         
         # Sub-module selection for Quick Write
+        default_index = 0
+        if "active_write_up" in st.session_state:
+            try:
+                options = ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]
+                default_index = options.index(st.session_state.active_write_up)
+            except ValueError:
+                pass
+                
         write_up_type = st.sidebar.selectbox(
             "Select Write-Up Type",
-            ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]
+            ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
+            index=default_index
         )
         
         # Display the appropriate form based on selection
@@ -214,15 +223,15 @@ else:  # This is the landing page
             <div class='coming-soon-card'>
                 <h3>📊 QA Dashboard</h3>
                 <p>Interactive quality assurance tracking and visualization</p>
-                <div class='timeline'>Coming in Q2 2025</div>
+                <div class='timeline'>In development</div>
             </div>
             """, unsafe_allow_html=True)
         
         with col2:
             st.markdown("""
             <div class='coming-soon-card'>
-                <h3>📚 Part 3 Question Bank</h3>
-                <p>Practice questions for board certification preparation</p>
-                <div class='timeline'>Coming in Q3 2025</div>
+                <h3>📚 Rogue Resident </h3>
+                <p>Rogue-like study tool to sharpen your medical physics knowledge</p>
+                <div class='timeline'>In development</div>
             </div>
             """, unsafe_allow_html=True)
