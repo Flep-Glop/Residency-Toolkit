@@ -10,15 +10,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load main CSS (always loaded)
-load_css("assets/css/main.css")
+# Replace the load_css call
+from utils import debug_css_loading
+debug_css_loading("assets/css/main.css")
 
 # Initialize session state variables
 if 'show_landing_page' not in st.session_state:
     st.session_state.show_landing_page = True
 if 'active_module' not in st.session_state:
     st.session_state.active_module = None
-
+# Near the top of app.py, after initializing session state
+st.write(f"Debug - show_landing_page: {st.session_state.get('show_landing_page')}")
+# Add this near the top of app.py
+if st.sidebar.button("Reset Session"):
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    st.rerun()
 # Navigation functions
 def go_to_module(module_name):
     st.session_state.show_landing_page = False
