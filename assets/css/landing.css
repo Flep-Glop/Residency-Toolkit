@@ -86,30 +86,6 @@ h3 {
     border-left: 4px solid var(--primary-color);
 }
 
-/* Features pills */
-.features {
-    margin-bottom: 1.2rem;
-}
-
-.features span {
-    display: inline-block;
-    background-color: var(--feature-background) !important;
-    color: var(--feature-text) !important;
-    padding: 0.4rem 0.9rem;
-    border-radius: 30px;
-    margin: 0 0.5rem 0.5rem 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-/* Subtle hover effect on feature tags */
-.features span:hover {
-    background-color: var(--feature-hover) !important;
-    transform: translateY(-2px);
-    box-shadow: 0 2px 6px var(--feature-shadow);
-}
-
 /* Button styling to match QuickWrite */
 button {
     background-color: var(--primary-color) !important;

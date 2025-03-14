@@ -98,10 +98,8 @@ else:  # This is the landing page
     # Load landing-specific CSS with theme awareness
     load_theme_aware_css("assets/css/landing.css")
     
-    # Clean header with logo and title
+    # Clean header with title (removed emoji)
     col1, col2 = st.columns([1, 5])
-    with col1:
-        st.markdown("# 📋")
     with col2:
         st.title("Medical Physics Residency Toolkit")
         st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
@@ -114,24 +112,16 @@ else:  # This is the landing page
     with tools_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Main tools with clear descriptions
+        # Main tools with clear descriptions - removed feature tags that looked clickable
         st.markdown("""
         <div class='tool-card'>
             <h2>Quick Write Generator</h2>
-            <p>Generate standardized clinical documentation with guided forms</p>
-            <div class='features' id='quickwrite-features'>
-                <span>DIBH</span>
-                <span>Fusion</span>
-                <span>Prior Dose</span>
-                <span>Pacemaker</span>
-                <span>SBRT</span>
-                <span>SRS</span>
-            </div>
+            <p>Generate standardized clinical documentation with guided forms for DIBH, Fusion, Prior Dose, Pacemaker, SBRT, and SRS reports.</p>
         </div>
         """, unsafe_allow_html=True)
         
         # Direct navigation to specific write-up types - more condensed layout
-        st.markdown("<p>Quick Access:</p>", unsafe_allow_html=True)
+        st.markdown("<p><strong>Quick Access:</strong> Select a write-up type to begin</p>", unsafe_allow_html=True)
         
         # Use a container with flex display for the buttons
         st.markdown("""
@@ -216,7 +206,7 @@ else:  # This is the landing page
     with coming_soon_tab:
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Coming soon features in a more visual format
+        # Coming soon features - reduced to only first two items
         col1, col2 = st.columns(2)
         
         with col1:
@@ -227,32 +217,12 @@ else:  # This is the landing page
                 <div class='timeline'>Coming in Q2 2025</div>
             </div>
             """, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
+        
+        with col2:
             st.markdown("""
             <div class='coming-soon-card'>
                 <h3>📚 Part 3 Question Bank</h3>
                 <p>Practice questions for board certification preparation</p>
                 <div class='timeline'>Coming in Q3 2025</div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown("""
-            <div class='coming-soon-card'>
-                <h3>🧠 Competency Tracker</h3>
-                <p>Track and document clinical competencies for residency programs</p>
-                <div class='timeline'>Coming in Q2 2025</div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            st.markdown("""
-            <div class='coming-soon-card'>
-                <h3>📱 Mobile Support</h3>
-                <p>Fully responsive design for on-the-go documentation</p>
-                <div class='timeline'>Coming in Q4 2025</div>
             </div>
             """, unsafe_allow_html=True)
