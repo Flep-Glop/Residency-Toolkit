@@ -67,7 +67,7 @@ class QuickWriteOrchestrator:
             st.warning("Please fill in all required fields to continue.")
     
     def _render_module_selection_step(self):
-        """Render the module selection step."""
+        """Render the module selection step without saving previous selections."""
         st.markdown("## Select Write-Up Types")
         
         # Show summary of common information with edit option
@@ -81,11 +81,8 @@ class QuickWriteOrchestrator:
                     st.session_state.workflow_step = "basic_info"
                     st.rerun()
         
-        # Get existing selections if available
-        existing_selections = st.session_state.get("selected_modules", None)
-        
-        # Use the enhanced module selector
-        selected_modules = select_modules(self.modules, existing_selections)
+        # IMPORTANT: We're ignoring existing selections to avoid issues
+        selected_modules = select_modules(self.modules, existing_selections=None)
         
         # Navigation buttons
         col1, col2, col3 = st.columns([1, 3, 1])
@@ -100,9 +97,8 @@ class QuickWriteOrchestrator:
             if st.button("Continue", key="module_selection_continue", disabled=not can_proceed, type="primary"):
                 # Save selected modules to session state
                 st.session_state.selected_modules = selected_modules
-                # Initialize module data if not already present
-                if "module_data" not in st.session_state:
-                    st.session_state.module_data = {}
+                # IMPORTANT: Reset module data to clear old inputs
+                st.session_state.module_data = {}
                 # Advance to next step
                 st.session_state.workflow_step = "module_details"
                 st.rerun()
@@ -135,20 +131,39 @@ class QuickWriteOrchestrator:
         uncompleted_modules = []
         completed_modules_list = []
         
-        # Create a single container for module selection instead of multiple expanders
-        module_tabs = st.tabs([
-            self.modules[module_id].get_module_name() + (" ✅" if module_id in module_data else "")
-            for module_id in selected_modules if selected_modules[module_id]
-        ])
+        # Add a "Reset All Modules" button to clear all module data
+        if st.button("Reset All Module Data", key="reset_all_modules", type="secondary"):
+            # Clear all module data
+            st.session_state.module_data = {}
+            # Clear registrations and other module-specific state
+            if 'registrations' in st.session_state:
+                del st.session_state.registrations
+            # Clear editing state
+            st.session_state.current_editing_module = None
+            # Rerun to update UI
+            st.rerun()
+        
+        # Create a single container for module selection using tabs
+        tab_labels = []
+        valid_module_ids = []
+        
+        # Build the list of tab labels and valid module IDs
+        for module_id, selected in selected_modules.items():
+            if selected:
+                module = self.modules.get(module_id)
+                if module:
+                    tab_labels.append(module.get_module_name() + (" ✅" if module_id in module_data else ""))
+                    valid_module_ids.append(module_id)
+        
+        if not tab_labels:
+            st.warning("No modules selected. Please go back and select at least one module.")
+            return
+        
+        # Create tabs with the built lists
+        module_tabs = st.tabs(tab_labels)
         
         # Process each module in its own tab
-        for i, (module_id, selected) in enumerate([
-            (mid, sel) for mid, sel in selected_modules.items() if sel
-        ]):
-            # Skip unselected modules
-            if not selected:
-                continue
-                
+        for i, module_id in enumerate(valid_module_ids):
             # Get the module instance
             module = self.modules.get(module_id)
             if not module:
@@ -159,6 +174,20 @@ class QuickWriteOrchestrator:
             
             # Process module in its tab
             with module_tabs[i]:
+                # Add a reset button for this specific module
+                if is_completed:
+                    if st.button(f"Reset {module.get_module_name()} Data", key=f"reset_{module_id}"):
+                        # Remove this module's data
+                        if module_id in module_data:
+                            del module_data[module_id]
+                        # Clear module-specific state
+                        if module_id == "fusion" and 'registrations' in st.session_state:
+                            del st.session_state.registrations
+                        # Update session state
+                        st.session_state.module_data = module_data
+                        # Rerun to update UI
+                        st.rerun()
+                
                 # Handle edit mode or completed view
                 if st.session_state.current_editing_module == module_id or not is_completed:
                     # We're editing this module or it's not completed yet
@@ -180,6 +209,8 @@ class QuickWriteOrchestrator:
                         st.session_state.current_editing_module = None
                         # Success message
                         st.success(f"{module.get_module_name()} details saved successfully.")
+                        # Update session state
+                        st.session_state.module_data = module_data
                     else:
                         # Module is not complete
                         uncompleted_modules.append(module.get_module_name())
@@ -190,19 +221,14 @@ class QuickWriteOrchestrator:
                     # Show summary of entered data
                     self._display_module_data_summary(module_id, module_data[module_id])
                     
-                    # Add option to edit (using a checkbox instead of button)
-                    if st.checkbox(f"Edit {module.get_module_name()} Details", 
-                                key=f"edit_checkbox_{module_id}",
-                                value=False):
+                    # Add option to edit (using a button to avoid checkboxes that can cause weird behavior)
+                    if st.button(f"Edit {module.get_module_name()} Details", key=f"edit_{module_id}"):
                         # Set this module for editing in the next rerun
                         st.session_state.current_editing_module = module_id
                         # Force rerun to show edit view
                         st.rerun()
                     
                     completed_modules_list.append(module.get_module_name())
-        
-        # Update session state with any new module data
-        st.session_state.module_data = module_data
         
         # Navigation buttons
         col1, col2, col3 = st.columns([1, 3, 1])

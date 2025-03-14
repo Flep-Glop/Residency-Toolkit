@@ -2,12 +2,7 @@ import streamlit as st
 from .base_module import BaseWriteUpModule
 
 class FusionModule(BaseWriteUpModule):
-    """Fusion module for clinical documentation generation.
-    
-    This module handles the creation of documentation for image fusion in radiation therapy,
-    which is the process of aligning and combining multiple imaging modalities to improve
-    target delineation and treatment planning.
-    """
+    """Fusion module for clinical documentation generation."""
     
     def __init__(self, config_manager):
         """Initialize the Fusion module with configuration manager."""
@@ -56,6 +51,10 @@ class FusionModule(BaseWriteUpModule):
     
     def render_specialized_fields(self, physician, physicist, patient_age, patient_sex, patient_details):
         """Render Fusion-specific input fields and return the generated data."""
+        # Initialize session state for registrations if it doesn't exist
+        if 'registrations' not in st.session_state:
+            st.session_state.registrations = []
+        
         # Create tabs for Basic Info and Registration Details
         lesions_tab, registration_tab = st.tabs(["Lesion Information", "Registration Details"])
         
@@ -88,16 +87,16 @@ class FusionModule(BaseWriteUpModule):
             # Registration configuration 
             st.markdown("#### Current Registrations")
             
-            # Initialize session state for registrations if it doesn't exist
-            if 'registrations' not in st.session_state:
-                st.session_state.registrations = []
-                
             # Display current registrations
             if not st.session_state.registrations:
                 st.info("No registrations configured. Add a registration below.")
             else:
-                for i, reg in enumerate(st.session_state.registrations):
-                    with st.container():
+                # Create a container to hold all registrations
+                registration_container = st.container()
+                
+                # Display each registration in the container
+                with registration_container:
+                    for i, reg in enumerate(st.session_state.registrations):
                         cols = st.columns([3, 3, 2, 1])
                         with cols[0]:
                             st.write(f"**Primary**: {reg['primary']}")
@@ -106,13 +105,16 @@ class FusionModule(BaseWriteUpModule):
                         with cols[2]:
                             st.write(f"**Method**: {reg['method']}")
                         with cols[3]:
-                            if st.button("🗑️", key=f"delete_{i}"):
+                            # Use a unique key for each delete button
+                            if st.button("🗑️", key=f"delete_reg_{i}_{reg['secondary']}"):
                                 st.session_state.registrations.pop(i)
                                 st.rerun()
             
             # Add new registration
             st.markdown("#### Add New Registration")
-            with st.container():
+            
+            # Use a form to prevent auto-rerun
+            with st.form(key="add_registration_form"):
                 cols = st.columns([3, 3, 2, 1])
                 with cols[0]:
                     # Primary is always CT, so display text instead of dropdown
@@ -122,14 +124,18 @@ class FusionModule(BaseWriteUpModule):
                     new_secondary = st.selectbox("Secondary", self.modality_options, key="new_secondary")
                 with cols[2]:
                     new_method = st.selectbox("Method", self.registration_methods, key="new_method")
-                with cols[3]:
-                    if st.button("➕", key="add_registration"):
-                        st.session_state.registrations.append({
-                            "primary": new_primary,
-                            "secondary": new_secondary,
-                            "method": new_method
-                        })
-                        st.rerun()
+                
+                # Add a submit button to the form
+                submitted = st.form_submit_button("Add Registration")
+                
+                # Only process when form is submitted to prevent auto-reruns
+                if submitted:
+                    st.session_state.registrations.append({
+                        "primary": new_primary,
+                        "secondary": new_secondary,
+                        "method": new_method
+                    })
+                    st.rerun()  # Only rerun here, after form submission
         
         # Check if all required fields are filled
         required_fields_filled = True
@@ -156,6 +162,7 @@ class FusionModule(BaseWriteUpModule):
     
     def generate_write_up(self, common_info, module_data):
         """Generate the Fusion write-up based on common and module-specific data."""
+        # Implementation remains the same
         physician = common_info.get("physician", "")
         physicist = common_info.get("physicist", "")
         patient_details = common_info.get("patient_details", "")
@@ -182,6 +189,7 @@ class FusionModule(BaseWriteUpModule):
     
     def _generate_fusion_text(self, registrations, anatomical_region, lesion):
         """Generate the fusion description text based on the configured registrations."""
+        # Implementation remains the same
         # Count registrations by modality for summary
         modality_counts = {}
         for reg in registrations:
@@ -232,49 +240,3 @@ class FusionModule(BaseWriteUpModule):
         conclusion_text = " The fused images were used to improve the identification of critical structures and targets and to accurately contour them for treatment planning."
         
         return intro_text + reg_text + conclusion_text
-    
-    # Legacy method for backward compatibility
-    def render_fusion_form(self):
-        """Legacy method to maintain backward compatibility."""
-        # Staff information
-        st.markdown("#### Staff Information")
-        physician = st.selectbox("Physician Name", 
-                                self.config_manager.get_physicians(), 
-                                key="fusion_physician")
-        physicist = st.selectbox("Physicist Name", 
-                                self.config_manager.get_physicists(), 
-                                key="fusion_physicist")
-        
-        # Patient information
-        st.markdown("#### Patient Information")
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
-        with col2:
-            patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
-        
-        patient_details = f"a {patient_age}-year-old {patient_sex}"
-        
-        # Get module-specific data
-        module_data = self.render_specialized_fields(
-            physician, physicist, patient_age, patient_sex, patient_details
-        )
-        
-        # Generate button
-        generate_pressed = st.button("Generate Write-Up", type="primary", key="fusion_generate")
-        
-        # Generate write-up if button is pressed and all data is provided
-        if generate_pressed and module_data:
-            common_info = {
-                "physician": physician,
-                "physicist": physicist,
-                "patient_age": patient_age,
-                "patient_sex": patient_sex,
-                "patient_details": patient_details
-            }
-            
-            write_up = self.generate_write_up(common_info, module_data)
-            return write_up
-        
-        return None
