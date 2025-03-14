@@ -147,30 +147,36 @@ else:  # This is the landing page
         # Use a container with flex display for the buttons
         st.markdown("""
         <div class="quick-access-container">
-            <a href="#" class="quick-access-button" data-type="DIBH">DIBH</a>
-            <a href="#" class="quick-access-button" data-type="Fusion">Fusion</a>
-            <a href="#" class="quick-access-button" data-type="Prior Dose">Prior Dose</a>
-            <a href="#" class="quick-access-button" data-type="Pacemaker">Pacemaker</a>
-            <a href="#" class="quick-access-button" data-type="SBRT">SBRT</a>
-            <a href="#" class="quick-access-button" data-type="SRS">SRS</a>
+            <button class="quick-access-button" data-type="DIBH">DIBH</button>
+            <button class="quick-access-button" data-type="Fusion">Fusion</button>
+            <button class="quick-access-button" data-type="Prior Dose">Prior Dose</button>
+            <button class="quick-access-button" data-type="Pacemaker">Pacemaker</button>
+            <button class="quick-access-button" data-type="SBRT">SBRT</button>
+            <button class="quick-access-button" data-type="SRS">SRS</button>
         </div>
         """, unsafe_allow_html=True)
         
-        # Hidden buttons that will be triggered by JavaScript
-        for write_up_type in ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]:
-            if st.button(f"Go to {write_up_type}", key=f"{write_up_type.lower().replace(' ', '_')}_btn", visible=False):
-                go_to_module("Quick Write")
-                st.session_state.active_write_up = write_up_type
+        # Initialize write-up selection in query params
+        query_params = st.experimental_get_query_params()
         
-        # JavaScript to connect the custom buttons to the hidden Streamlit buttons
+        # Check if we need to navigate to a specific write-up (from button click)
+        if "write_up_type" in query_params:
+            write_up_type = query_params["write_up_type"][0]
+            # Clear the parameter after reading it
+            st.experimental_set_query_params()
+            # Navigate to QuickWrite with the selected write-up type
+            go_to_module("Quick Write")
+            st.session_state.active_write_up = write_up_type
+            st.rerun()
+        
+        # JavaScript to handle the custom buttons
         st.markdown("""
         <script>
-            // Function to click the corresponding hidden button
-            function clickHiddenButton(writeUpType) {
-                // Find the hidden button and click it
-                const buttonId = writeUpType.toLowerCase().replace(' ', '_') + '_btn';
-                const button = document.querySelector(`button[kind="secondary"][data-testid="baseButton-secondary"]:has(div:contains("Go to ${writeUpType}"))`);
-                if (button) button.click();
+            // Function to set query param and reload
+            function navigateToWriteUp(writeUpType) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('write_up_type', writeUpType);
+                window.location.href = url.toString();
             }
             
             // Add click listeners to all quick access buttons
@@ -178,7 +184,7 @@ else:  # This is the landing page
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
                     const writeUpType = this.getAttribute('data-type');
-                    clickHiddenButton(writeUpType);
+                    navigateToWriteUp(writeUpType);
                 });
             });
         </script>
