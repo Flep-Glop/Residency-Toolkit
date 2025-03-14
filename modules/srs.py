@@ -64,8 +64,7 @@ class SRSModule(BaseWriteUpModule):
         
         with basic_tab:
             # Add an information expander for SRS technique
-            with st.expander("ℹ️ About SRS/SRT Technique", expanded=False):
-                st.markdown("""
+            st.info("""
                 ### Stereotactic Radiosurgery (SRS) / Stereotactic Radiotherapy (SRT)
                 
                 **Clinical Purpose:**  
