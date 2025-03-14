@@ -1,0 +1,132 @@
+/* QuickWrite header and navigation styling */
+.quickwrite-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--card-border);
+}
+
+/* Tab navigation styling */
+.write-up-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    background-color: var(--secondary-background);
+    border-radius: 6px;
+    padding: 4px;
+}
+
+.write-up-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.write-up-tab.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.write-up-tab:not(.active) {
+    background-color: transparent;
+    color: var(--text-color);
+}
+
+.write-up-tab:not(.active):hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+/* Home button styling */
+.home-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background-color: var(--secondary-background);
+    color: var(--primary-color);
+    border-radius: 4px;
+    font-weight: 500;
+    margin-right: 15px;
+    transition: all 0.2s ease;
+}
+
+.home-button:hover {
+    background-color: var(--secondary-background-hover);
+    transform: translateX(-2px);
+}
+
+.home-button .icon {
+    margin-right: 6px;
+}
+
+/* Write-up type selector styling */
+[data-testid="stSelectbox"] > div > div {
+    background-color: var(--secondary-background);
+    border-color: var(--card-border);
+    border-radius: 4px;
+}
+
+[data-testid="stSelectbox"] > div > div:hover {
+    border-color: var(--primary-color);
+}
+
+/* Modern tab buttons for write-up types */
+[data-testid="stButton"] button[kind="secondary"] {
+    background-color: var(--secondary-background) !important;
+    color: var(--text-color) !important;
+    border: 1px solid var(--card-border) !important;
+    border-radius: 4px;
+    font-weight: 500;
+    box-shadow: none !important;
+}
+
+[data-testid="stButton"] button[kind="primary"] {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 4px;
+    font-weight: 500;
+    box-shadow: 0 2px 5px var(--button-shadow) !important;
+}
+
+[data-testid="stButton"] button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px var(--button-shadow) !important;
+}
+
+/* General padding and spacing improvements */
+.block-container {
+    padding-top: 2rem !important;
+    padding-bottom: 3rem !important;
+}
+
+/* Make forms feel less cluttered */
+[data-testid="stForm"] {
+    background-color: var(--card-background);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--card-border);
+}
+
+/* Style the generated output section */
+.stTextArea textarea {
+    background-color: var(--secondary-background);
+    border-color: var(--card-border);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-family: monospace;
+}
+
+/* Adjust styling for tabs to match the design */
+[data-baseweb="tab"] {
+    font-weight: 500;
+}
+
+[data-baseweb="tab"][aria-selected="true"] {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+}

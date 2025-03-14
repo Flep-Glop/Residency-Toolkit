@@ -8,7 +8,7 @@ st.set_page_config(
     page_title="Medical Physics Residency Toolkit",
     page_icon="📋",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"  # Changed to collapsed by default
 )
 
 # Inject theme-responsive CSS (this should be first before any UI is shown)
@@ -16,6 +16,9 @@ inject_theme_responsive_css()
 
 # Load main CSS (it will now use the theme variables)
 load_theme_aware_css("assets/css/main.css")
+
+# Load QuickWrite CSS
+load_theme_aware_css("assets/css/quickwrite.css")
 
 # Initialize session state variables
 if 'show_landing_page' not in st.session_state:
@@ -35,27 +38,8 @@ def go_to_landing_page():
 # Initialize modules
 quick_write = QuickWriteModule()
 
-# Sidebar for navigation when not on landing page
+# Main content area
 if not st.session_state.show_landing_page:
-    st.sidebar.title("Residency Toolkit")
-    
-    # Back to Home button
-    if st.sidebar.button("← Back to Home"):
-        go_to_landing_page()
-    
-    # Module selector
-    visible_modules = ["Quick Write"]
-    
-    selected_module = st.sidebar.selectbox(
-        "Select Module",
-        visible_modules
-    )
-    
-    # Switch to the selected module if changed
-    if selected_module != st.session_state.active_module:
-        st.session_state.active_module = selected_module
-        st.rerun()
-
     # Display selected module content
     active_module = st.session_state.active_module
     
@@ -63,20 +47,48 @@ if not st.session_state.show_landing_page:
         # Get the write-up type from session state or URL parameter, default to DIBH if not specified
         write_up_type = st.session_state.get("active_write_up", "DIBH")
         
-        # Show which module we're in
-        st.title(f"{write_up_type} Write-Up Generator")
+        # Create a modern header with navigation
+        col1, col2, col3 = st.columns([1, 3, 2])
         
-        # Add a dropdown to allow changing the form type
-        new_write_up_type = st.sidebar.selectbox(
-            "Change Write-Up Type",
-            ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
-            index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type)
-        )
+        with col1:
+            # Back to Home button styled as a modern button
+            if st.button("← Home", key="home_btn", use_container_width=True):
+                go_to_landing_page()
+                st.rerun()
         
-        # If the user changed the type using the dropdown, update and rerun
-        if new_write_up_type != write_up_type:
-            st.session_state.active_write_up = new_write_up_type
-            st.rerun()
+        with col2:
+            # Show which module we're in
+            st.title(f"{write_up_type} Write-Up Generator")
+        
+        with col3:
+            # Add a dropdown to allow changing the form type
+            new_write_up_type = st.selectbox(
+                "Change Write-Up Type",
+                ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
+                index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type),
+                key="write_up_type_selector"
+            )
+            
+            # If the user changed the type using the dropdown, update and rerun
+            if new_write_up_type != write_up_type:
+                st.session_state.active_write_up = new_write_up_type
+                st.rerun()
+        
+        # Add a horizontal divider
+        st.markdown("<hr style='margin: 0.5rem 0 1.5rem 0; border: none; height: 1px; background-color: var(--card-border);'>", unsafe_allow_html=True)
+        
+        # Add visual navigation tabs for quick access to different write-up types
+        # Only show this if you want an additional way to switch between forms
+        cols = st.columns(6)
+        write_up_types = ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]
+        
+        for i, wut in enumerate(write_up_types):
+            # Style the button to look like a tab - highlighted if active
+            button_style = "primary" if wut == write_up_type else "secondary"
+            if cols[i].button(wut, key=f"tab_{wut}", use_container_width=True, type=button_style):
+                if wut != write_up_type:
+                    st.session_state.active_write_up = wut
+                    st.rerun()
         
         # Display the appropriate form based on the write_up_type
         if write_up_type == "DIBH":
@@ -101,7 +113,17 @@ if not st.session_state.show_landing_page:
             st.info(f"The {write_up_type} write-up type is under development.")
 
     elif active_module in ["Competency Tracker", "Part 3 Bank"]:
-        st.title(f"{active_module}")
+        # Add navigation header
+        col1, col2 = st.columns([1, 5])
+        
+        with col1:
+            if st.button("← Home", key="home_btn", use_container_width=True):
+                go_to_landing_page()
+                st.rerun()
+        
+        with col2:
+            st.title(f"{active_module}")
+        
         st.info(f"The {active_module} module is under development.")
 
 else:  # This is the landing page
