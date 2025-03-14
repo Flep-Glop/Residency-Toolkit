@@ -60,30 +60,32 @@ if not st.session_state.show_landing_page:
     active_module = st.session_state.active_module
     
     if active_module == "Quick Write":
-        st.title("Quick Write Generator")
+        # Get the write-up type from session state, default to DIBH if not specified
+        write_up_type = st.session_state.get("active_write_up", "DIBH")
         
-        # Sub-module selection for Quick Write
-        default_index = 0
-        if "active_write_up" in st.session_state:
-            try:
-                options = ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"]
-                default_index = options.index(st.session_state.active_write_up)
-            except ValueError:
-                pass
-                
-        write_up_type = st.sidebar.selectbox(
-            "Select Write-Up Type",
+        # Show which module we're in
+        st.title(f"{write_up_type} Write-Up Generator")
+        
+        # Add a dropdown to allow changing the form type
+        new_write_up_type = st.sidebar.selectbox(
+            "Change Write-Up Type",
             ["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"],
-            index=default_index
+            index=["DIBH", "Fusion", "Prior Dose", "Pacemaker", "SBRT", "SRS"].index(write_up_type)
         )
         
-        # Display the appropriate form based on selection
+        # If the user changed the type using the dropdown, update and rerun
+        if new_write_up_type != write_up_type:
+            st.session_state.active_write_up = new_write_up_type
+            st.rerun()
+        
+        # Display the appropriate form based on the write_up_type
         if write_up_type == "DIBH":
             write_up = quick_write.render_dibh_form()
             quick_write.dibh_module.display_write_up(write_up)
         elif write_up_type == "Fusion":
             write_up = quick_write.render_fusion_form()
             quick_write.fusion_module.display_write_up(write_up)
+        # ...continue with the other elif conditions
         elif write_up_type == "Prior Dose":
             write_up = quick_write.render_prior_dose_form()
             quick_write.prior_dose_module.display_write_up(write_up)
