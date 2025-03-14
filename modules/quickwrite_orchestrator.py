@@ -137,7 +137,7 @@ class QuickWriteOrchestrator:
         
         # Create a single container for module selection instead of multiple expanders
         module_tabs = st.tabs([
-            modules[module_id].get_module_name() + (" ✅" if module_id in module_data else "")
+            self.modules[module_id].get_module_name() + (" ✅" if module_id in module_data else "")
             for module_id in selected_modules if selected_modules[module_id]
         ])
         
