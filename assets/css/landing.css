@@ -1,6 +1,4 @@
-/* Update landing.css with these improved styles */
-
-/* Dark mode compatibility */
+/* Dark mode colors with better contrast */
 :root {
     --background-color: #ffffff;
     --text-color: #2c3e50;
@@ -22,84 +20,66 @@
 }
 
 [data-theme="dark"] {
-    --background-color: #1e1e1e;
-    --text-color: #e2e8f0;
-    --subtitle-color: #a0aec0;
+    --background-color: #1a1a1a;
+    --text-color: #f8fafc;
+    --subtitle-color: #cbd5e1;
     --card-background: #2d3748;
     --card-border: #4a5568;
     --card-shadow: rgba(0, 0, 0, 0.3);
-    --primary-color: #4299e1;
-    --primary-color-hover: #3182ce;
-    --secondary-background: #2d3748;
-    --secondary-background-hover: #4a5568;
-    --feature-background: #2d3748;
-    --feature-text: #63b3ed;
-    --feature-hover: #4a5568;
-    --feature-shadow: rgba(99, 179, 237, 0.2);
-    --button-shadow: rgba(99, 179, 237, 0.4);
+    --primary-color: #60a5fa;
+    --primary-color-hover: #93c5fd;
+    --secondary-background: #374151;
+    --secondary-background-hover: #4b5563;
+    --feature-background: #374151;
+    --feature-text: #93c5fd;
+    --feature-hover: #4b5563;
+    --feature-shadow: rgba(147, 197, 253, 0.3);
+    --button-shadow: rgba(147, 197, 253, 0.4);
     --timeline-background: #2a4365;
-    --timeline-text: #63b3ed;
+    --timeline-text: #93c5fd;
+}
+
+/* Force text colors for dark mode */
+[data-theme="dark"] .stApp {
+    color: var(--text-color) !important;
+    background-color: var(--background-color) !important;
+}
+
+[data-theme="dark"] .stMarkdown p {
+    color: var(--text-color) !important;
+}
+
+[data-theme="dark"] .tool-card p,
+[data-theme="dark"] .info-card p,
+[data-theme="dark"] .coming-soon-card p {
+    color: var(--subtitle-color) !important;
 }
 
 /* Global typography */
 h1 {
-    color: var(--text-color);
+    color: var(--text-color) !important;
     margin-bottom: 0.2rem;
     font-weight: 600;
 }
 
 .subtitle {
-    color: var(--subtitle-color);
+    color: var(--subtitle-color) !important;
     font-size: 1.2rem;
     margin-top: 0;
     font-weight: 300;
 }
 
 h2 {
-    color: var(--text-color);
+    color: var(--text-color) !important;
     margin-top: 0;
     font-size: 1.8rem;
     font-weight: 500;
 }
 
 h3 {
-    color: var(--primary-color);
+    color: var(--primary-color) !important;
     margin-bottom: 1rem;
     font-weight: 500;
-}
-
-/* Features pills */
-.features {
-    margin-bottom: 1.2rem;
-}
-
-.features span {
-    display: inline-block;
-    background-color: var(--feature-background);
-    color: var(--feature-text);
-    padding: 0.4rem 0.9rem;
-    border-radius: 30px;
-    margin: 0 0.5rem 0.5rem 0;
-    font-size: 0.9rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-}
-
-/* Subtle hover effect on feature tags */
-.features span:hover {
-    background-color: var(--feature-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 2px 6px var(--feature-shadow);
-}
-
-.timeline {
-    display: inline-block;
-    background-color: #dbeafe;
-    color: #3b82f6;
-    padding: 0.3rem 0.8rem;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
 }
 
 /* Tab styling - matched to QuickWrite style */
@@ -119,24 +99,13 @@ h3 {
     border-bottom: 2px solid var(--primary-color);
 }
 
-/* Version badge */
-.version {
-    display: inline-block;
-    background-color: #3b82f6;
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 500;
-}
-
 /* Card styling */
 .tool-card {
-    background-color: var(--card-background);
+    background-color: var(--card-background) !important;
     border-radius: 12px;
     padding: 1.8rem;
     margin: 1rem 0;
-    border: 1px solid var(--card-border);
+    border: 1px solid var(--card-border) !important;
     box-shadow: 0 4px 16px var(--card-shadow);
     transition: transform 0.2s, box-shadow 0.2s;
 }
@@ -147,32 +116,152 @@ h3 {
 }
 
 .tool-card p {
-    color: var(--subtitle-color);
+    color: var(--subtitle-color) !important;
     margin-bottom: 1.2rem;
     font-size: 1.1rem;
     line-height: 1.5;
 }
 
 .info-card, .coming-soon-card {
-    background-color: var(--card-background);
+    background-color: var(--card-background) !important;
     border-radius: 12px;
     padding: 1.5rem;
     height: 100%;
-    border: 1px solid var(--card-border);
+    border: 1px solid var(--card-border) !important;
     box-shadow: 0 4px 12px var(--card-shadow);
 }
 
 .info-card h3, .coming-soon-card h3 {
     margin-top: 0;
+    color: var(--primary-color) !important;
 }
 
 .coming-soon-card {
     border-left: 4px solid var(--primary-color);
 }
 
+/* Features pills */
+.features {
+    margin-bottom: 1.2rem;
+}
+
+.features span {
+    display: inline-block;
+    background-color: var(--feature-background) !important;
+    color: var(--feature-text) !important;
+    padding: 0.4rem 0.9rem;
+    border-radius: 30px;
+    margin: 0 0.5rem 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+/* Subtle hover effect on feature tags */
+.features span:hover {
+    background-color: var(--feature-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px var(--feature-shadow);
+}
+
+/* Button styling to match QuickWrite */
+button {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    border-radius: 4px !important;
+    font-weight: 500 !important;
+    padding: 0.4rem 0.8rem !important;
+    height: auto !important;
+    transition: all 0.2s ease !important;
+}
+
+button:hover {
+    background-color: var(--primary-color-hover) !important;
+    box-shadow: 0 4px 12px var(--button-shadow) !important;
+}
+
+/* Smaller buttons for quick access */
+[data-testid="stButton"] > button[kind="secondary"] {
+    background-color: var(--secondary-background) !important;
+    color: var(--primary-color) !important;
+    border: 1px solid var(--card-border) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 8px !important;
+}
+
+[data-testid="stButton"] > button[kind="secondary"]:hover {
+    background-color: var(--secondary-background-hover) !important; 
+    color: var(--primary-color-hover) !important;
+}
+
+/* Main launch button */
+#quickwrite_btn {
+    font-size: 1.1rem !important;
+    padding: 0.6rem 1rem !important;
+    margin-top: 10px !important;
+}
+
+/* Version badge */
+.version {
+    display: inline-block;
+    background-color: var(--primary-color) !important;
+    color: white !important;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Timeline */
+.timeline {
+    display: inline-block;
+    background-color: var(--timeline-background) !important;
+    color: var(--timeline-text) !important;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+/* Quick access buttons */
+.quick-access-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.quick-access-button {
+    display: inline-block;
+    background-color: var(--secondary-background) !important;
+    color: var(--primary-color) !important;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    border: 1px solid var(--card-border);
+    text-align: center;
+    flex: 1 1 calc(33.333% - 10px);
+    min-width: 100px;
+    cursor: pointer;
+}
+
+.quick-access-button:hover {
+    background-color: var(--secondary-background-hover) !important;
+    color: var(--primary-color-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 6px var(--button-shadow);
+}
+
 /* Responsive adjustments */
 @media screen and (max-width: 768px) {
     .tool-card, .info-card, .coming-soon-card {
         padding: 1.2rem;
+    }
+    
+    .quick-access-button {
+        flex: 1 1 calc(50% - 10px);
     }
 }

@@ -101,11 +101,35 @@ else:  # This is the landing page
     # Load landing-specific CSS
     load_css("assets/css/landing.css")
     
-    # Add theme detection
+    # Add theme detection and force CSS application for dark mode
     theme = st.get_option("theme.base")
     st.markdown(f"""
+    <style>
+        /* Force dark mode colors */
+        body[data-theme="dark"] {{
+            color: #f8fafc !important;
+        }}
+        body[data-theme="dark"] p, 
+        body[data-theme="dark"] span, 
+        body[data-theme="dark"] h1, 
+        body[data-theme="dark"] h2,
+        body[data-theme="dark"] h3 {{
+            color: #f8fafc !important;
+        }}
+        body[data-theme="dark"] .tool-card {{
+            background-color: #2d3748 !important;
+            border: 1px solid #4a5568 !important;
+        }}
+        body[data-theme="dark"] .tool-card p {{
+            color: #cbd5e1 !important;
+        }}
+        body[data-theme="dark"] .features span {{
+            background-color: #374151 !important;
+            color: #93c5fd !important;
+        }}
+    </style>
     <script>
-        document.documentElement.setAttribute('data-theme', '{theme}');
+        document.body.setAttribute('data-theme', '{theme}');
     </script>
     """, unsafe_allow_html=True)
     
@@ -156,14 +180,11 @@ else:  # This is the landing page
         </div>
         """, unsafe_allow_html=True)
         
-        # Initialize write-up selection in query params
-        query_params = st.experimental_get_query_params()
-        
-        # Check if we need to navigate to a specific write-up (from button click)
-        if "write_up_type" in query_params:
-            write_up_type = query_params["write_up_type"][0]
+        # Initialize write-up selection from query params
+        if "write_up_type" in st.query_params:
+            write_up_type = st.query_params["write_up_type"]
             # Clear the parameter after reading it
-            st.experimental_set_query_params()
+            st.query_params.clear()
             # Navigate to QuickWrite with the selected write-up type
             go_to_module("Quick Write")
             st.session_state.active_write_up = write_up_type
