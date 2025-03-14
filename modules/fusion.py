@@ -1,10 +1,17 @@
 import streamlit as st
-from .templates import ConfigManager
+from .base_module import BaseWriteUpModule
 
-class FusionModule:
-    def __init__(self):
-        """Initialize the Fusion module with registration presets and modality options."""
-        self.config_manager = ConfigManager()
+class FusionModule(BaseWriteUpModule):
+    """Fusion module for clinical documentation generation.
+    
+    This module handles the creation of documentation for image fusion in radiation therapy,
+    which is the process of aligning and combining multiple imaging modalities to improve
+    target delineation and treatment planning.
+    """
+    
+    def __init__(self, config_manager):
+        """Initialize the Fusion module with configuration manager."""
+        super().__init__(config_manager)
         
         # Mapping of lesions to anatomical regions
         self.lesion_to_region = {
@@ -34,47 +41,25 @@ class FusionModule:
         
         # Registration method options
         self.registration_methods = ["Rigid", "Deformable"]
-        
-        # Updated registration presets
-        self.registration_presets = {
-            "MRI/CT": [{"primary": "CT", "secondary": "MRI", "method": "Rigid"}],
-            "PET/CT rigid": [{"primary": "CT", "secondary": "PET/CT", "method": "Rigid"}],
-            "PET/CT deformable": [{"primary": "CT", "secondary": "PET/CT", "method": "Deformable"}],
-            "CT/CT rigid": [{"primary": "CT", "secondary": "CT", "method": "Rigid"}],
-            "CT/CT deformable": [{"primary": "CT", "secondary": "CT", "method": "Deformable"}],
-            "Custom": []  # For custom registration configurations
-        }
     
-    def render_fusion_form(self):
-        """Render the enhanced form for fusion write-ups with modular registration configuration."""
-                
+    def get_module_name(self):
+        """Return the display name of this module."""
+        return "Fusion"
+    
+    def get_module_description(self):
+        """Return a brief description of this module."""
+        return "Image fusion for improved target delineation in radiation therapy"
+    
+    def get_required_fields(self):
+        """Return a list of required field names for this module."""
+        return ["lesion", "registrations"]
+    
+    def render_specialized_fields(self, physician, physicist, patient_age, patient_sex, patient_details):
+        """Render Fusion-specific input fields and return the generated data."""
         # Create tabs for Basic Info and Registration Details
-        basic_tab, registration_tab = st.tabs(["Basic Information", "Registration Details"])
+        lesions_tab, registration_tab = st.tabs(["Lesion Information", "Registration Details"])
         
-        with basic_tab:
-            # Staff information
-            st.markdown("#### Staff Information")
-            physician = st.selectbox("Physician Name", 
-                                    self.config_manager.get_physicians(), 
-                                    key="fusion_physician")
-            physicist = st.selectbox("Physicist Name", 
-                                    self.config_manager.get_physicists(), 
-                                    key="fusion_physicist")
-            
-            # Patient information
-            st.markdown("#### Patient Information")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
-            with col2:
-                patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
-            
-            patient_details = f"a {patient_age}-year-old {patient_sex}"
-        
-        with registration_tab:
-            # Lesion and anatomical region - moved from basic tab
-            st.markdown("#### Lesion Information")
+        with lesions_tab:
             col1, col2 = st.columns(2)
             
             with col1:
@@ -98,8 +83,9 @@ class FusionModule:
                     lesion = selected_lesion
                     # Get the anatomical region based on the selected lesion (hidden from user)
                     anatomical_region = self.lesion_to_region.get(lesion, "")
-            
-            # Registration configuration - removed presets, kept only Current Registrations and Add New
+        
+        with registration_tab:
+            # Registration configuration 
             st.markdown("#### Current Registrations")
             
             # Initialize session state for registrations if it doesn't exist
@@ -145,58 +131,54 @@ class FusionModule:
                         })
                         st.rerun()
         
-        # Generate button
-        generate_pressed = st.button("Generate Write-Up", type="primary", key="fusion_generate")
-        
         # Check if all required fields are filled
-        required_fields = [physician, physicist, patient_age]
+        required_fields_filled = True
+        
         # Additional validation for custom lesion
         if selected_lesion == "Other (specify)" and not custom_lesion:
-            custom_lesion_filled = False
-        else:
-            custom_lesion_filled = True
+            required_fields_filled = False
         
         # Check if any registrations are configured
         registrations_configured = len(st.session_state.registrations) > 0
-            
-        all_fields_filled = all(str(field) != "" and str(field) != "0" for field in required_fields) and \
-            custom_lesion_filled and registrations_configured
         
-        # Show warnings for missing fields
-        if generate_pressed and not all_fields_filled:
-            st.error("Please fill in all required fields before generating the write-up.")
-            for i, field in enumerate([physician, physicist, patient_age]):
-                if str(field) == "" or str(field) == "0":
-                    field_names = ["Physician Name", "Physicist Name", "Patient Age"]
-                    st.warning(f"Missing required field: {field_names[i]}")
-            
-            # Check for custom lesion specifically
-            if selected_lesion == "Other (specify)" and not custom_lesion:
-                st.warning("Missing required field: Custom Lesion")
-                
-            # Check for registrations
-            if not registrations_configured:
-                st.warning("Please add at least one registration in the Registration Details tab.")
+        if not registrations_configured:
+            required_fields_filled = False
         
-        # Generate write-up if all fields are filled and button is pressed
-        if generate_pressed and all_fields_filled:
-            # Generate fusion description text based on the registrations
-            fusion_type_text = self._generate_fusion_text(st.session_state.registrations, anatomical_region, lesion)
-            
-            # Use the in-module function to generate write-up
-            write_up = self._generate_fusion_write_up(
-                physician=physician,
-                physicist=physicist,
-                patient_details=patient_details,
-                patient_age=patient_age,
-                patient_sex=patient_sex,
-                lesion=lesion,
-                fusion_type_text=fusion_type_text
-            )
-            
-            return write_up
+        # If all required fields are filled, return the module data
+        if required_fields_filled:
+            return {
+                "lesion": lesion,
+                "anatomical_region": anatomical_region,
+                "registrations": st.session_state.registrations
+            }
         
         return None
+    
+    def generate_write_up(self, common_info, module_data):
+        """Generate the Fusion write-up based on common and module-specific data."""
+        physician = common_info.get("physician", "")
+        physicist = common_info.get("physicist", "")
+        patient_details = common_info.get("patient_details", "")
+        
+        lesion = module_data.get("lesion", "")
+        anatomical_region = module_data.get("anatomical_region", "")
+        registrations = module_data.get("registrations", [])
+        
+        # Generate fusion description text based on the registrations
+        fusion_type_text = self._generate_fusion_text(registrations, anatomical_region, lesion)
+        
+        # Generate the write-up
+        write_up = f"Dr. {physician} requested a medical physics consultation for --- to perform a multimodality image fusion. "
+        write_up += f"The patient is {patient_details}. "
+        write_up += "The patient was scanned in our CT simulator in the treatment position. "
+        write_up += "The CT study was then exported to the Velocity imaging registration software.\n\n"
+        
+        write_up += f"{fusion_type_text}\n\n"
+        
+        write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
+        write_up += f"Dr. {physician}, and the medical physicist, Dr. {physicist}."
+        
+        return write_up
     
     def _generate_fusion_text(self, registrations, anatomical_region, lesion):
         """Generate the fusion description text based on the configured registrations."""
@@ -251,38 +233,48 @@ class FusionModule:
         
         return intro_text + reg_text + conclusion_text
     
-    def _generate_fusion_write_up(self, physician, physicist, patient_details, patient_age, patient_sex, lesion, fusion_type_text):
-        """Generate the fusion write-up based on the inputs."""
+    # Legacy method for backward compatibility
+    def render_fusion_form(self):
+        """Legacy method to maintain backward compatibility."""
+        # Staff information
+        st.markdown("#### Staff Information")
+        physician = st.selectbox("Physician Name", 
+                                self.config_manager.get_physicians(), 
+                                key="fusion_physician")
+        physicist = st.selectbox("Physicist Name", 
+                                self.config_manager.get_physicists(), 
+                                key="fusion_physicist")
         
-        write_up = f"Dr. {physician} requested a medical physics consultation for --- to perform a multimodality image fusion. "
-        write_up += f"The patient is {patient_details}. "
-        write_up += "The patient was scanned in our CT simulator in the treatment position. "
-        write_up += "The CT study was then exported to the Velocity imaging registration software.\n\n"
+        # Patient information
+        st.markdown("#### Patient Information")
+        col1, col2 = st.columns(2)
         
-        write_up += f"{fusion_type_text}\n\n"
+        with col1:
+            patient_age = st.number_input("Patient Age", min_value=0, max_value=120, key="fusion_age")
+        with col2:
+            patient_sex = st.selectbox("Patient Sex", ["male", "female", "other"], key="fusion_sex")
         
-        write_up += f"The fusion of the image sets was reviewed and approved by both the prescribing radiation oncologist, "
-        write_up += f"Dr. {physician}, and the medical physicist, Dr. {physicist}."
+        patient_details = f"a {patient_age}-year-old {patient_sex}"
         
-        return write_up
-    
-    def display_write_up(self, write_up):
-        """Display the generated write-up with a copy button."""
-        if write_up:
-            st.markdown("### Generated Write-Up")
+        # Get module-specific data
+        module_data = self.render_specialized_fields(
+            physician, physicist, patient_age, patient_sex, patient_details
+        )
+        
+        # Generate button
+        generate_pressed = st.button("Generate Write-Up", type="primary", key="fusion_generate")
+        
+        # Generate write-up if button is pressed and all data is provided
+        if generate_pressed and module_data:
+            common_info = {
+                "physician": physician,
+                "physicist": physicist,
+                "patient_age": patient_age,
+                "patient_sex": patient_sex,
+                "patient_details": patient_details
+            }
             
-            # Create a container with custom styling for better visibility
-            with st.container():
-                # Display in text area for viewing/editing
-                st.text_area("", write_up, height=300, key="result", label_visibility="collapsed")
-                
-                # Add a tooltip with copy instructions
-                st.info("💡 To copy: Click inside the text box, use Ctrl+A (or Cmd+A on Mac) to select all, then Ctrl+C (or Cmd+C) to copy.")
-                
-                # Optional: Add download button
-                st.download_button(
-                    label="Download as Text File",
-                    data=write_up,
-                    file_name="fusion_write_up.txt",
-                    mime="text/plain"
-                )
+            write_up = self.generate_write_up(common_info, module_data)
+            return write_up
+        
+        return None

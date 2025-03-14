@@ -2,6 +2,8 @@ import streamlit as st
 from .templates import ConfigManager
 from .common_info_collector import collect_common_info
 from .module_selector import select_modules
+from .validation_utils import FormValidator
+from .download_utils import WriteUpDisplay
 
 class QuickWriteOrchestrator:
     """Main controller for the QuickWrite workflow."""
@@ -82,7 +84,7 @@ class QuickWriteOrchestrator:
         # Get existing selections if available
         existing_selections = st.session_state.get("selected_modules", None)
         
-        # Use the module selector
+        # Use the enhanced module selector
         selected_modules = select_modules(self.modules, existing_selections)
         
         # Navigation buttons
@@ -117,9 +119,17 @@ class QuickWriteOrchestrator:
         selected_modules = st.session_state.get("selected_modules", {})
         module_data = st.session_state.get("module_data", {})
         
+        # Show progress indicators
+        total_modules = len(selected_modules)
+        completed_modules = sum(1 for module_id in selected_modules if module_id in module_data)
+        
+        progress_percentage = completed_modules / total_modules if total_modules > 0 else 0
+        st.progress(progress_percentage)
+        st.markdown(f"**Progress:** {completed_modules}/{total_modules} modules completed")
+        
         # Collect data for any uncompleted modules
         uncompleted_modules = []
-        completed_modules = []
+        completed_modules_list = []
         
         for module_id, selected in selected_modules.items():
             if selected:
@@ -128,9 +138,17 @@ class QuickWriteOrchestrator:
                 if not module:
                     continue
                 
-                with st.expander(f"{module.get_module_name()} Details", expanded=module_id not in module_data):
+                # Determine if this module is completed
+                is_completed = module_id in module_data
+                
+                # Create expander with appropriate styling
+                expander_label = f"{module.get_module_name()} Details"
+                if is_completed:
+                    expander_label += " ✅"
+                
+                with st.expander(expander_label, expanded=not is_completed):
                     # Render the module-specific fields
-                    if module_id not in module_data:
+                    if not is_completed:
                         # Pass common information to the module
                         result = module.render_specialized_fields(
                             common_info.get("physician", ""),
@@ -152,13 +170,16 @@ class QuickWriteOrchestrator:
                         # Show summary of completed module
                         st.success(f"{module.get_module_name()} details completed")
                         
+                        # Show summary of entered data
+                        self._display_module_data_summary(module_id, module_data[module_id])
+                        
                         # Add option to edit
                         if st.button(f"Edit {module.get_module_name()} Details", key=f"edit_{module_id}"):
                             # Remove this module's data to force re-rendering
                             del module_data[module_id]
                             st.rerun()
                         
-                        completed_modules.append(module.get_module_name())
+                        completed_modules_list.append(module.get_module_name())
         
         # Update session state with any new module data
         st.session_state.module_data = module_data
@@ -172,7 +193,7 @@ class QuickWriteOrchestrator:
                 st.rerun()
         
         with col3:
-            can_proceed = len(uncompleted_modules) == 0 and len(completed_modules) > 0
+            can_proceed = len(uncompleted_modules) == 0 and len(completed_modules_list) > 0
             if st.button("Generate Write-Ups", key="generate_write_ups", disabled=not can_proceed, type="primary"):
                 # Generate all write-ups
                 results = {}
@@ -186,7 +207,7 @@ class QuickWriteOrchestrator:
                         # Generate the write-up
                         write_up = module.generate_write_up(common_info, module_data[module_id])
                         if write_up:
-                            results[module_id] = write_up
+                            results[module.get_module_name()] = write_up
                 
                 # Save results to session state
                 st.session_state.results = results
@@ -196,7 +217,9 @@ class QuickWriteOrchestrator:
                 st.rerun()
         
         if not can_proceed:
-            st.warning(f"Please complete details for: {', '.join(uncompleted_modules)}")
+            st.warning(f"Please complete details for all selected modules to continue.")
+            if uncompleted_modules:
+                st.info(f"Modules needing completion: {', '.join(uncompleted_modules)}")
     
     def _render_results_step(self):
         """Render the results display step."""
@@ -204,6 +227,7 @@ class QuickWriteOrchestrator:
         
         # Get results from session state
         results = st.session_state.get("results", {})
+        common_info = st.session_state.get("common_info", {})
         
         if not results:
             st.error("No write-ups were generated. Please go back and try again.")
@@ -212,35 +236,20 @@ class QuickWriteOrchestrator:
                 st.rerun()
             return
         
-        # Create tabs for each generated write-up
-        tab_labels = []
-        for module_id in results.keys():
-            # Get the module instance
-            module = self.modules.get(module_id)
-            if module:
-                tab_labels.append(module.get_module_name())
-            else:
-                tab_labels.append(module_id.replace('_', ' ').title())
+        # Display a summary of the patient for context
+        patient_details = common_info.get("patient_details", "")
+        physician = common_info.get("physician", "")
+        physicist = common_info.get("physicist", "")
         
-        tabs = st.tabs(tab_labels)
+        st.info(f"**Patient:** {patient_details}  \n**Physician:** Dr. {physician}  \n**Physicist:** Dr. {physicist}")
         
-        # Populate each tab with the corresponding write-up
-        for i, (module_id, write_up) in enumerate(results.items()):
-            with tabs[i]:
-                # Get the module instance
-                module = self.modules.get(module_id)
-                if module:
-                    # Use the module's display method
-                    module.display_write_up(write_up)
-                else:
-                    # Fallback display method
-                    st.text_area("Generated Write-Up", write_up, height=300)
-                    st.download_button(
-                        label="Download as Text File",
-                        data=write_up,
-                        file_name=f"{module_id}_write_up.txt",
-                        mime="text/plain"
-                    )
+        # Use the WriteUpDisplay to show all write-ups
+        # Extract the patient name for filenames if available
+        patient_age = common_info.get("patient_age", "")
+        patient_sex = common_info.get("patient_sex", "")
+        patient_name = f"{patient_age}yo_{patient_sex}"
+        
+        WriteUpDisplay.display_multiple_write_ups(results, patient_name)
         
         # Navigation buttons
         col1, col2, col3 = st.columns([1, 3, 1])
@@ -261,3 +270,45 @@ class QuickWriteOrchestrator:
         for key in ['workflow_step', 'common_info', 'selected_modules', 'module_data', 'results']:
             if key in st.session_state:
                 del st.session_state[key]
+    
+    def _display_module_data_summary(self, module_id, module_data):
+        """Display a summary of entered module data.
+        
+        Args:
+            module_id: The ID of the module
+            module_data: The module-specific data
+        """
+        # Create a formatted summary based on module type
+        if module_id == "dibh":
+            st.write(f"**Treatment Site:** {module_data.get('treatment_site', '')}")
+            st.write(f"**Dose:** {module_data.get('dose', 0)} Gy in {module_data.get('fractions', 0)} fractions")
+            st.write(f"**Immobilization:** {module_data.get('immobilization_device', '')}")
+            
+        elif module_id == "fusion":
+            st.write(f"**Lesion:** {module_data.get('lesion', '')}")
+            st.write(f"**Anatomical Region:** {module_data.get('anatomical_region', '')}")
+            
+            registrations = module_data.get('registrations', [])
+            if registrations:
+                st.write(f"**Registrations:** {len(registrations)}")
+                for reg in registrations[:2]:  # Show first two registrations
+                    st.write(f"- {reg.get('primary', '')} to {reg.get('secondary', '')} ({reg.get('method', '')})")
+                if len(registrations) > 2:
+                    st.write(f"- Plus {len(registrations) - 2} more...")
+                    
+        elif module_id == "prior_dose":
+            st.write(f"**Current Treatment:** {module_data.get('current_dose', 0)} Gy in {module_data.get('current_fractions', 0)} fractions to {module_data.get('current_site', '')}")
+            
+            prior_treatments = module_data.get('prior_treatments', [])
+            if prior_treatments:
+                st.write(f"**Prior Treatments:** {len(prior_treatments)}")
+                for treatment in prior_treatments[:2]:  # Show first two treatments
+                    st.write(f"- {treatment.get('site', '')}: {treatment.get('dose', 0)} Gy in {treatment.get('fractions', 0)} fx ({treatment.get('month', '')} {treatment.get('year', '')})")
+                if len(prior_treatments) > 2:
+                    st.write(f"- Plus {len(prior_treatments) - 2} more...")
+            
+            st.write(f"**Overlap:** {module_data.get('has_overlap', 'No')}")
+            
+        else:
+            # Generic summary for other module types
+            st.write("Module data entered successfully.")

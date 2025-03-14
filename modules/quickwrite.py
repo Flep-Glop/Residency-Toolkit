@@ -13,17 +13,21 @@ class QuickWriteModule:
         """Initialize the Quick Write module."""
         self.config_manager = ConfigManager()
         
-        # Initialize all modules - for now, only DIBH is refactored
+        # Initialize all modules - refactored ones use the base class
         self.dibh_module = DIBHModule(self.config_manager)
-        self.fusion_module = FusionModule()
-        self.prior_dose_module = PriorDoseModule()
-        self.pacemaker_module = PacemakerModule()
+        self.fusion_module = FusionModule(self.config_manager)
+        self.prior_dose_module = PriorDoseModule(self.config_manager)
+        
+        # Legacy modules - will be refactored in future phases
+        self.pacemaker_module = PacemakerModule() 
         self.sbrt_module = SBRTModule()
         self.srs_module = SRSModule()
         
-        # Create module dictionary for the orchestrator
+        # Create module dictionary for the orchestrator with refactored modules
         self.modules = {
             "dibh": self.dibh_module,
+            "fusion": self.fusion_module,
+            "prior_dose": self.prior_dose_module,
             # Other modules will be added as they're refactored
         }
         
