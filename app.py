@@ -118,10 +118,10 @@ else:  # This is the landing page
     # Load landing-specific CSS with theme awareness
     load_theme_aware_css("assets/css/landing.css")
     
-    # Clean header with title (removed emoji)
+    # Clean header with title
     col1, col2 = st.columns([1, 5])
     with col2:
-        st.title("Medical Physics Residency Toolkit")
+        st.markdown("<h1 class='landing-page-title'>Medical Physics Residency Toolkit</h1>", unsafe_allow_html=True)
         st.markdown("<p class='subtitle'>Streamlining documentation for radiation oncology workflows</p>", unsafe_allow_html=True)
     
     # Main content tabs - matching QuickWrite styling
