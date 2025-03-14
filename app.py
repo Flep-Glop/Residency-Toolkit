@@ -90,75 +90,87 @@ if not st.session_state.show_landing_page:
         st.title(f"{active_module}")
         st.info(f"The {active_module} module is under development.")
 
-else:  # This is the landing page
-    # Load landing-specific CSS
-    load_css("assets/css/landing.css")
-    
-    # Header section with gradient background
-    st.markdown("""
-    <div class="landing-header">
-        <h1>Medical Physics Residency Toolkit</h1>
-        <p>Streamlining documentation for clinical workflows in radiation oncology</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Main tools section
-    st.markdown("## Available Tools")
-    
-    # Use columns for tool modules
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("### 📝 QuickWrite")
-        st.markdown("""
-        Generate professional documentation for DIBH, Fusion, Prior Dose, 
-        Pacemaker, SBRT, and SRS clinical scenarios.
-        """)
-        if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
-            go_to_module("Quick Write")
-    
-    with col2:
-        st.markdown("### 🔍 Coming Soon")
-        st.markdown("""
-        More tools are under development! We're working on additional features 
-        to help streamline your clinical workflows.
-        """)
-        st.button("In Development", disabled=True, use_container_width=True)
-    
-    # About section in a card
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div class="info-card">
-        <h3>About This Tool <span class="version-badge">Beta v0.9</span></h3>
-        <p>The <strong>Medical Physics Residency Toolkit</strong> is designed to help radiation oncology 
-        residents and physicists create standardized, professional documentation quickly and efficiently.</p>
+    # Update this section in app.py to replace the current landing page code
+
+    else:  # This is the landing page
+        # Load landing-specific CSS
+        load_css("assets/css/landing.css")
         
-        <p>This toolkit streamlines workflows for common clinical scenarios, reducing documentation time and 
-        ensuring consistency. Current functionality focuses on template-based report generation.</p>
-        
-        <p>This tool is under active development, and we welcome your feedback to improve future versions.</p>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    # Feedback section
-    with st.expander("📝 Provide Feedback", expanded=False):
+        # Clean, minimal header
         st.markdown("""
-        <div class="feedback-card">
-            Help us improve the toolkit by sharing your experience and suggestions!
+        <div class="landing-header">
+            <h1>Medical Physics Residency Toolkit</h1>
+            <p>Streamlining documentation for radiation oncology workflows</p>
         </div>
         """, unsafe_allow_html=True)
         
-        feedback_type = st.selectbox(
-            "Feedback Type", 
-            ["Bug Report", "Feature Request", "Usability Issue", "General Feedback"]
-        )
+        # Primary Card - Most important tool front and center
+        st.markdown("""
+        <div class="primary-card">
+            <div class="card-content">
+                <div class="card-icon">📝</div>
+                <div class="card-text">
+                    <h2>QuickWrite</h2>
+                    <p>Generate standardized documentation for clinical scenarios</p>
+                    <ul class="feature-list">
+                        <li>DIBH Reports</li>
+                        <li>Fusion Documentation</li>
+                        <li>Prior Dose Analysis</li>
+                        <li>Pacemaker, SBRT & SRS Documentation</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-action" id="quickwrite-btn-container"></div>
+        </div>
+        """, unsafe_allow_html=True)
         
-        feedback_text = st.text_area(
-            "Your Feedback", 
-            height=100, 
-            placeholder="Please describe your experience, issues, or suggestions..."
-        )
+        # Place the button in the container
+        button_col = st.container()
+        with button_col:
+            if st.button("Launch QuickWrite", key="quickwrite_btn", use_container_width=True):
+                go_to_module("Quick Write")
         
-        if st.button("Submit Feedback", use_container_width=True):
-            # In a full implementation, send this feedback to a database or email
-            st.success("Thank you for your feedback! We'll use it to improve the tool.")
+        # Secondary information in collapsible sections
+        with st.expander("ℹ️ About This Tool", expanded=False):
+            st.markdown("""
+            <div class="info-content">
+                <p>The <strong>Medical Physics Residency Toolkit</strong> helps radiation oncology residents and physicists create standardized documentation efficiently.</p>
+                <p>Current version: <span class="version-badge">Beta v0.9</span></p>
+                <p>This toolkit streamlines workflows for common clinical scenarios, reducing documentation time and ensuring consistency.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # Bottom section with minimal visual weight
+        st.markdown("""
+        <div class="footer-section">
+            <h3>Coming Soon</h3>
+            <div class="coming-soon-grid">
+                <div class="coming-soon-item">
+                    <div class="soon-icon">🧠</div>
+                    <div>Competency Tracker</div>
+                </div>
+                <div class="coming-soon-item">
+                    <div class="soon-icon">📊</div>
+                    <div>QA Dashboard</div>
+                </div>
+                <div class="coming-soon-item">
+                    <div class="soon-icon">📚</div>
+                    <div>Part 3 Bank</div>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Minimal footer with feedback option
+        st.markdown("<hr class='footer-divider'>", unsafe_allow_html=True)
+        
+        feedback_col1, feedback_col2 = st.columns([3, 1])
+        with feedback_col2:
+            with st.expander("Provide Feedback", expanded=False):
+                feedback_type = st.selectbox(
+                    "Type", 
+                    ["Bug Report", "Feature Request", "Usability", "General"]
+                )
+                feedback_text = st.text_area("Details", height=100)
+                if st.button("Submit", use_container_width=True):
+                    st.success("Thank you for your feedback!")
