@@ -1,0 +1,97 @@
+.main {
+    background-color: #f8f9fa;
+}
+.stApp {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+h1, h2, h3 {
+    color: #2c3e50;
+}
+.stButton button {
+    background-color: #3498db;
+    color: white;
+}
+.stButton button:hover {
+    background-color: #2980b9;
+}
+
+/* Module card styles */
+.module-card {
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+.module-icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+.module-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+.module-desc {
+    font-size: 0.9em;
+}
+
+/* Additional styling for P&P and other modules */
+.checklist-item {
+    padding: 8px 15px;
+    margin: 5px 0;
+    border-left: 3px solid #3498db;
+    background-color: #eaf2f8;
+}
+.objective-box {
+    background-color: #f9f9f9;
+    border-left: 3px solid #27ae60;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+.frequency-box {
+    background-color: #f9f9f9;
+    border-left: 3px solid #e74c3c;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+/* Inventory-specific styling */
+.equipment-card {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.equipment-available {
+    background-color: #d4edda;
+    border-left: 3px solid #28a745;
+    padding: 5px 10px;
+}
+.equipment-unavailable {
+    background-color: #f8d7da;
+    border-left: 3px solid #dc3545;
+    padding: 5px 10px;
+}
+.training-status {
+    background-color: #e2f0fb;
+    border-left: 3px solid #3498db;
+    padding: 5px 10px;
+}
+/* Print-specific styling */
+@media print {
+    .stButton, .stSidebar, header {
+        display: none !important;
+    }
+    .main .block-container {
+        max-width: 100% !important;
+        padding-top: 0px !important;
+    }
+}
