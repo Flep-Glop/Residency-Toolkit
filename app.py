@@ -12,6 +12,21 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Initialize session state variables
+if 'show_landing_page' not in st.session_state:
+    st.session_state.show_landing_page = True
+if 'active_module' not in st.session_state:
+    st.session_state.active_module = None
+
+# Make sure your navigation functions are defined:
+def go_to_module(module_name):
+    st.session_state.show_landing_page = False
+    st.session_state.active_module = module_name
+
+def go_to_landing_page():
+    st.session_state.show_landing_page = True
+    st.session_state.active_module = None
+
 # Custom CSS for better appearance
 st.markdown("""
 <style>
@@ -117,24 +132,7 @@ st.markdown("""
 
 # Initialize modules
 quick_write = QuickWriteModule()
-qa_bank = QABankModule()
-pnp_module = PnPModule()
-inventory_module = InventoryModule()
 
-# Set up session state for navigation
-if 'show_landing_page' not in st.session_state:
-    st.session_state.show_landing_page = True
-if 'active_module' not in st.session_state:
-    st.session_state.active_module = None
-
-# Functions to navigate
-def go_to_module(module_name):
-    st.session_state.show_landing_page = False
-    st.session_state.active_module = module_name
-
-def go_to_landing_page():
-    st.session_state.show_landing_page = True
-    st.session_state.active_module = None
 
 # Sidebar for navigation when not on landing page
 if not st.session_state.show_landing_page:
@@ -226,18 +224,6 @@ else:
             quick_write.srs_module.display_write_up(write_up)
         else:
             st.info(f"The {write_up_type} write-up type is under development.")
-
-    elif active_module == "QA Bank":
-        # Render the QA Bank module UI
-        qa_bank.render_qa_bank()
-
-    elif active_module == "P&Ps":
-        # Render the P&Ps module UI
-        pnp_module.render_pp_module()
-
-    elif active_module == "Inventory":
-        # Render the Inventory module UI
-        inventory_module.render_inventory_module()
 
             
     elif active_module in ["Competency Tracker", "Part 3 Bank"]:
