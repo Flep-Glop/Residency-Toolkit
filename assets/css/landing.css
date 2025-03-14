@@ -1,10 +1,70 @@
-/* Replace all content in assets/css/landing.css with this */
+/* Replace the content in assets/css/landing.css with this: */
 
-/* Simple styles that shouldn't interfere with Streamlit */
+/* Typography */
 h1 {
-    color: #1e293b;
+    color: #2c3e50;
+    margin-bottom: 0.2rem;
 }
 
-h2, h3 {
-    color: #334155;
+.subtitle {
+    color: #64748b;
+    font-size: 1.2rem;
+    margin-top: 0;
+}
+
+h2 {
+    color: #2c3e50;
+    margin-top: 0;
+    font-size: 1.8rem;
+}
+
+h3 {
+    color: #3b82f6;
+    margin-bottom: 1rem;
+}
+
+/* Card styling */
+.tool-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.tool-card p {
+    color: #64748b;
+    margin-bottom: 1rem;
+}
+
+/* Features pills */
+.features {
+    margin-bottom: 1rem;
+}
+
+.features span {
+    display: inline-block;
+    background-color: #f1f5f9;
+    color: #3b82f6;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    margin: 0 0.5rem 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+/* Version badge */
+.version {
+    display: inline-block;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.2rem 0.7rem;
+    border-radius: 30px;
+    font-size: 0.8rem;
+}
+
+/* Button styling override */
+button {
+    background-color: #3b82f6 !important;
+    color: white !important;
 }
