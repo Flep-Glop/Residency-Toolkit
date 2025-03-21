@@ -51,6 +51,17 @@ class PriorDoseModule(BaseWriteUpModule):
                                         sorted(self.treatment_sites),
                                         key="current_site")
                 
+                # Add lesion details field
+                lesion_details = st.text_input("Lesion Details (optional)", 
+                                          key="lesion_details")
+                
+                # Add specific location for spine treatments
+                if current_site == "spine":
+                    spine_location = st.text_input("Spine Location (e.g., C7, T1-5)", 
+                                               key="spine_location")
+                else:
+                    spine_location = ""
+                
                 current_month = st.selectbox("Current Month", 
                                         ["January", "February", "March", "April", 
                                             "May", "June", "July", "August", 
@@ -88,9 +99,12 @@ class PriorDoseModule(BaseWriteUpModule):
                     with st.container():
                         cols = st.columns([3, 2, 1, 2, 1])
                         with cols[0]:
-                            st.write(f"**Site**: {treatment['site']}")
+                            site_display = treatment['site']
+                            if treatment.get('spine_location'):
+                                site_display += f" ({treatment['spine_location']})"
+                            st.write(f"**Site**: {site_display}")
                         with cols[1]:
-                            st.write(f"**Dose**: {treatment['dose']} Gy / {treatment['fractions']} fx")
+                            st.write(f"**Dose**: {treatment['dose']} Gy in {treatment['fractions']} fx")
                         with cols[2]:
                             st.write(f"**Date**: {treatment['month']} {treatment['year']}")
                         with cols[3]:
@@ -112,6 +126,13 @@ class PriorDoseModule(BaseWriteUpModule):
                 prior_site = st.selectbox("Treatment Site", 
                                         sorted(self.treatment_sites),
                                         key="prior_site")
+                
+                # Add specific location for spine treatments
+                if prior_site == "spine":
+                    prior_spine_location = st.text_input("Spine Location (e.g., C7, T1-5)", 
+                                                    key="prior_spine_location")
+                else:
+                    prior_spine_location = ""
                 
                 prior_month = st.selectbox("Month", 
                                         ["January", "February", "March", "April", 
@@ -137,13 +158,19 @@ class PriorDoseModule(BaseWriteUpModule):
                 
                 add_treatment = st.button("Add Treatment", key="add_prior_treatment", type="primary")
                 if add_treatment:
-                    st.session_state.prior_treatments.append({
+                    new_treatment = {
                         "site": prior_site,
                         "dose": prior_dose,
                         "fractions": prior_fractions,
                         "month": prior_month,
                         "year": prior_year
-                    })
+                    }
+                    
+                    # Add spine location if applicable
+                    if prior_site == "spine" and prior_spine_location:
+                        new_treatment["spine_location"] = prior_spine_location
+                        
+                    st.session_state.prior_treatments.append(new_treatment)
                     st.rerun()
             
             # Options for the write-up
@@ -161,11 +188,19 @@ class PriorDoseModule(BaseWriteUpModule):
                 if has_overlap == "Yes":
                     dose_calc_method = st.radio(
                         "Dose Calculation Method",
-                        ["Raw Dose", "EQD2 (Equivalent Dose in 2 Gy fractions)"],
+                        ["Raw Dose", "BED (Biologically Effective Dose)", "EQD2 (Equivalent Dose in 2 Gy fractions)"],
                         key="dose_calc_method"
+                    )
+                    
+                    # Field for critical structures
+                    critical_structures = st.text_area(
+                        "Critical Structures (one per line)",
+                        placeholder="Spinal cord\nBrain stem\nOptic chiasm",
+                        key="critical_structures"
                     )
                 else:
                     dose_calc_method = "Not Applicable"
+                    critical_structures = ""
         
         with constraints_tab:
             # Dynamic dose constraint information based on selected treatments
@@ -208,15 +243,24 @@ class PriorDoseModule(BaseWriteUpModule):
         
         # If all required fields are filled, return the module data
         if required_fields_filled:
+            # Process critical structures if provided
+            critical_structures_list = []
+            if has_overlap == "Yes" and critical_structures:
+                critical_structures_list = [s.strip() for s in critical_structures.split("\n") if s.strip()]
+            
             return {
                 "current_site": current_site,
                 "current_dose": current_dose,
                 "current_fractions": current_fractions,
                 "current_month": current_month,
                 "current_year": current_year,
+                "lesion_details": lesion_details,
+                "spine_location": spine_location if current_site == "spine" else "",
                 "prior_treatments": st.session_state.prior_treatments,
                 "has_overlap": has_overlap,
-                "dose_calc_method": dose_calc_method
+                "dose_calc_method": dose_calc_method,
+                "planning_system": "Velocity",  # Fixed to always be Velocity
+                "critical_structures": critical_structures_list
             }
         
         return None
@@ -232,21 +276,39 @@ class PriorDoseModule(BaseWriteUpModule):
         current_fractions = module_data.get("current_fractions", 0)
         current_month = module_data.get("current_month", "")
         current_year = module_data.get("current_year", 0)
+        lesion_details = module_data.get("lesion_details", "")
+        spine_location = module_data.get("spine_location", "")
         prior_treatments = module_data.get("prior_treatments", [])
         has_overlap = module_data.get("has_overlap", "No")
         dose_calc_method = module_data.get("dose_calc_method", "")
+        planning_system = module_data.get("planning_system", "Velocity")
+        critical_structures = module_data.get("critical_structures", [])
+        
+        # Clean up integers by removing .0
+        current_dose_display = int(current_dose) if current_dose == int(current_dose) else current_dose
+        current_fractions_display = int(current_fractions)
+        
+        # Format site with spine location if applicable
+        current_site_display = current_site
+        if current_site == "spine" and spine_location:
+            current_site_display = f"{spine_location} spine"
         
         # Format current treatment info
-        current_date = f"{current_month} {current_year}"
-        current_treatment = f"{current_dose} Gy in {current_fractions} fractions"
+        current_treatment = f"{current_dose_display} Gy in {current_fractions_display} fractions"
         
-        # Begin write-up
-        write_up = f"Dr. {physician} requested a medical physics consultation for --- for evaluation of prior radiation dose. "
-        write_up += f"The patient is {patient_details}. "
-        write_up += f"The patient is currently being planned for {current_treatment} to the {current_site}.\n\n"
+        # Begin write-up (with Bold headers instead of markdown)
+        write_up = f"**Prior Dose** Dr. {physician} requested a medical physics consultation for --- for evaluation of prior radiation dose. "
+        
+        # Add lesion details to patient description
+        if lesion_details:
+            write_up += f"The patient is {patient_details} with a {lesion_details}. "
+        else:
+            write_up += f"The patient is {patient_details}. "
+            
+        write_up += f"The patient is currently being planned for {current_treatment} to the {current_site_display}.\n \n"
         
         # Prior treatments section
-        write_up += "### Prior Radiation Treatment History\n\n"
+        write_up += "**Prior Radiation Treatment History**\n"
         
         for i, treatment in enumerate(prior_treatments):
             site = treatment.get("site", "")
@@ -254,41 +316,53 @@ class PriorDoseModule(BaseWriteUpModule):
             fractions = treatment.get("fractions", 0)
             month = treatment.get("month", "")
             year = treatment.get("year", 0)
+            spine_loc = treatment.get("spine_location", "")
             
-            write_up += f"**Treatment {i+1}:** {month} {year}\n"
-            write_up += f"- Site: {site}\n"
-            write_up += f"- Dose: {dose} Gy in {fractions} fractions ({dose/fractions:.2f} Gy per fraction)\n\n"
+            # Clean up integers
+            dose_display = int(dose) if dose == int(dose) else dose
+            fractions_display = int(fractions)
+            
+            # Add spine location if applicable
+            site_display = site
+            if site == "spine" and spine_loc:
+                site_display = f"{spine_loc} spine"
+            
+            write_up += f"Treatment {i+1}: {month} {year}\n"
+            write_up += f"- Site: {site_display}\n"
+            write_up += f"- Dose: {dose_display} Gy in {fractions_display} fractions "
+            write_up += f"({dose/fractions:.2f} Gy per fraction)\n \n"
         
         # Overlap assessment
-        write_up += "### Overlap Assessment\n\n"
+        write_up += "**Overlap Assessment**\n"
         
         if has_overlap == "Yes":
-            write_up += "There is overlap between the current and prior treatment fields. "
-            write_up += f"The {dose_calc_method} method was used to estimate the cumulative dose to overlapping critical structures. "
-            write_up += "A composite plan was created in the treatment planning system to assess the total dose distribution.\n\n"
+            # Get the appropriate dose method terminology
+            if dose_calc_method.startswith("BED"):
+                method_abbreviation = "BED"
+            elif dose_calc_method.startswith("EQD2"):
+                method_abbreviation = "EQD2"
+            else:
+                method_abbreviation = "Raw Dose"
+                
+            write_up += f"There is overlap between the current and prior treatment fields. "
+            write_up += f"The {method_abbreviation} method was used to estimate the cumulative dose to overlapping critical structures. "
+            write_up += f"A composite plan was created in Velocity to assess the total dose distribution.\n \n"
             
-            write_up += "The following critical structures in the overlapping region were evaluated for cumulative dose:\n"
-            write_up += "- List of critical structures will be added during review\n"
-            write_up += "- For each structure, both physical and biological equivalent doses were calculated\n\n"
+            if critical_structures:
+                write_up += "The following critical structures in the overlapping region were evaluated for cumulative dose:\n"
+                for structure in critical_structures:
+                    write_up += f"- {structure} which received XXXX\n \n"
+            else:
+                write_up += "Critical structures in the overlapping region were evaluated for cumulative dose.\n \n"
             
-            write_up += "Based on this analysis, the current treatment plan was deemed acceptable with respect to cumulative dose constraints."
+            write_up += f"Based on this analysis, the current treatment plan was deemed acceptable with respect to cumulative dose constraints. "
+            write_up += f"This evaluation was reviewed and approved by the radiation oncologist, Dr. {physician}, and the medical physicist, Dr. {physicist}."
         else:
             write_up += "Review of the prior treatment fields and current treatment plan indicates minimal to no overlap "
             write_up += "between treatment volumes. The distance between field edges is sufficient to ensure that "
-            write_up += "critical structures will not receive excessive cumulative dose.\n\n"
-        
-        # Conclusion
-        write_up += "### Conclusion\n\n"
-        write_up += f"The proposed treatment of {current_treatment} to the {current_site} "
-        
-        if has_overlap == "Yes":
-            write_up += "can proceed with careful attention to the cumulative dose to the identified overlapping structures. "
-            write_up += "Regular imaging and clinical assessment during treatment is recommended to monitor for increased toxicity."
-        else:
-            write_up += "can proceed as planned with standard toxicity monitoring. "
-            write_up += "No additional dose constraints are required based on the prior radiation history."
-        
-        write_up += f"\n\nThis evaluation was reviewed and approved by Dr. {physician} (Radiation Oncologist) and Dr. {physicist} (Medical Physicist)."
+            write_up += "critical structures will not receive excessive cumulative dose.\n \n"
+            write_up += f"The proposed treatment of {current_treatment} to the {current_site_display} can proceed as planned with standard toxicity monitoring. "
+            write_up += f"This evaluation was reviewed and approved by the radiation oncologist, Dr. {physician}, and the medical physicist, Dr. {physicist}."
         
         return write_up
     
@@ -311,8 +385,83 @@ class PriorDoseModule(BaseWriteUpModule):
                 "Larynx": "Mean < 45 Gy",
                 "Mandible": "D0.03cc < 70 Gy"
             },
-            # Additional constraints for other sites
-            # (truncated for brevity)
+            "thorax": {
+                "Spinal Cord": "D0.03cc < 50 Gy",
+                "Heart": "Mean < 26 Gy",
+                "Lungs": "V20 < 30-35%, Mean < 20 Gy",
+                "Esophagus": "Mean < 34 Gy, V60 < 17%",
+                "Brachial Plexus": "D0.03cc < 66 Gy"
+            },
+            "breast": {
+                "Heart": "V25 < 10%, Mean < 4 Gy (left-sided)",
+                "Lungs": "V20 < 30-35%, Mean < 15 Gy",
+                "Contralateral Breast": "Mean < 3 Gy"
+            },
+            "lung": {
+                "Spinal Cord": "D0.03cc < 50 Gy",
+                "Heart": "V25 < 10%, Mean < 20 Gy",
+                "Normal Lung (both lungs - GTV)": "V20 < 30-35%, Mean < 20 Gy",
+                "Esophagus": "Mean < 34 Gy, V60 < 17%",
+                "Brachial Plexus": "D0.03cc < 66 Gy"
+            },
+            "liver": {
+                "Normal Liver": "Mean < 30 Gy, V30 < 40%",
+                "Spinal Cord": "D0.03cc < 45 Gy",
+                "Kidney": "Mean < 18 Gy",
+                "Bowel": "D0.03cc < 55 Gy"
+            },
+            "pancreas": {
+                "Spinal Cord": "D0.03cc < 45 Gy",
+                "Kidney": "Mean < 18 Gy",
+                "Liver": "Mean < 30 Gy",
+                "Bowel": "D0.03cc < 55 Gy",
+                "Stomach": "D0.03cc < 55 Gy"
+            },
+            "abdomen": {
+                "Spinal Cord": "D0.03cc < 45 Gy",
+                "Kidney": "Mean < 18 Gy",
+                "Liver": "Mean < 30 Gy",
+                "Bowel": "D0.03cc < 55 Gy",
+                "Stomach": "D0.03cc < 55 Gy"
+            },
+            "pelvis": {
+                "Bladder": "V80 < 15%, V75 < 25%, V70 < 35%, V65 < 50%",
+                "Rectum": "V75 < 15%, V70 < 25%, V65 < 35%, V60 < 50%",
+                "Bowel": "V52 < 5%, V45 < 195cc",
+                "Femoral Heads": "V52 < 5%",
+                "Spinal Cord": "D0.03cc < 50 Gy"
+            },
+            "prostate": {
+                "Bladder": "V80 < 15%, V75 < 25%, V70 < 35%, V65 < 50%",
+                "Rectum": "V75 < 15%, V70 < 25%, V65 < 35%, V60 < 50%",
+                "Femoral Heads": "V52 < 5%",
+                "Penile Bulb": "Mean < 50 Gy"
+            },
+            "endometrium": {
+                "Bladder": "V80 < 15%, V75 < 25%, V70 < 35%, V65 < 50%",
+                "Rectum": "V75 < 15%, V70 < 25%, V65 < 35%, V60 < 50%",
+                "Bowel": "V52 < 5%, V45 < 195cc",
+                "Femoral Heads": "V52 < 5%"
+            },
+            "cervix": {
+                "Bladder": "V80 < 15%, V75 < 25%, V70 < 35%, V65 < 50%",
+                "Rectum": "V75 < 15%, V70 < 25%, V65 < 35%, V60 < 50%",
+                "Bowel": "V52 < 5%, V45 < 195cc",
+                "Femoral Heads": "V52 < 5%"
+            },
+            "rectum": {
+                "Bladder": "V65 < 50%",
+                "Bowel": "V52 < 5%, V45 < 195cc",
+                "Femoral Heads": "V52 < 5%"
+            },
+            "spine": {
+                "Spinal Cord": "D0.03cc < 50 Gy (cumulative), < 10 Gy (single fraction)",
+                "Cauda Equina": "D0.03cc < 60 Gy (cumulative), < 14 Gy (single fraction)"
+            },
+            "extremity": {
+                "Skin": "D0.03cc < 70 Gy",
+                "Joint": "Mean < 36 Gy"
+            }
         }
         
         return constraints.get(site.lower(), {})
