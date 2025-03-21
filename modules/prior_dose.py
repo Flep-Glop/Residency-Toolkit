@@ -23,6 +23,7 @@ class PriorDoseModule(BaseWriteUpModule):
         
         # Current year for default year selection
         self.current_year = datetime.now().year
+        self.current_month = datetime.now().strftime("%B")  # Get current month name
     
     def get_module_name(self):
         """Return the display name of this module."""
@@ -51,10 +52,6 @@ class PriorDoseModule(BaseWriteUpModule):
                                         sorted(self.treatment_sites),
                                         key="current_site")
                 
-                # Add lesion details field
-                lesion_details = st.text_input("Lesion Details (optional)", 
-                                          key="lesion_details")
-                
                 # Add specific location for spine treatments
                 if current_site == "spine":
                     spine_location = st.text_input("Spine Location (e.g., C7, T1-5)", 
@@ -62,16 +59,12 @@ class PriorDoseModule(BaseWriteUpModule):
                 else:
                     spine_location = ""
                 
-                current_month = st.selectbox("Current Month", 
-                                        ["January", "February", "March", "April", 
-                                            "May", "June", "July", "August", 
-                                            "September", "October", "November", "December"],
-                                        key="current_month")
-                current_year = st.number_input("Current Year", 
-                                            min_value=2000, 
-                                            max_value=2100,
-                                            value=self.current_year,
-                                            key="current_year")
+                # Auto-populate current month and year (hidden from user)
+                current_month = self.current_month
+                current_year = self.current_year
+                
+                # Optional: Display the current date as information only
+                st.info(f"Current date: {current_month} {current_year}")
             
             with col2:
                 current_dose = st.number_input("Current Dose (Gy)", 
@@ -189,6 +182,7 @@ class PriorDoseModule(BaseWriteUpModule):
                     dose_calc_method = st.radio(
                         "Dose Calculation Method",
                         ["Raw Dose", "BED (Biologically Effective Dose)", "EQD2 (Equivalent Dose in 2 Gy fractions)"],
+                        index=1,  # Default to BED
                         key="dose_calc_method"
                     )
                     
@@ -254,7 +248,6 @@ class PriorDoseModule(BaseWriteUpModule):
                 "current_fractions": current_fractions,
                 "current_month": current_month,
                 "current_year": current_year,
-                "lesion_details": lesion_details,
                 "spine_location": spine_location if current_site == "spine" else "",
                 "prior_treatments": st.session_state.prior_treatments,
                 "has_overlap": has_overlap,
@@ -274,9 +267,6 @@ class PriorDoseModule(BaseWriteUpModule):
         current_site = module_data.get("current_site", "")
         current_dose = module_data.get("current_dose", 0)
         current_fractions = module_data.get("current_fractions", 0)
-        current_month = module_data.get("current_month", "")
-        current_year = module_data.get("current_year", 0)
-        lesion_details = module_data.get("lesion_details", "")
         spine_location = module_data.get("spine_location", "")
         prior_treatments = module_data.get("prior_treatments", [])
         has_overlap = module_data.get("has_overlap", "No")
@@ -297,14 +287,16 @@ class PriorDoseModule(BaseWriteUpModule):
         current_treatment = f"{current_dose_display} Gy in {current_fractions_display} fractions"
         
         # Begin write-up (with Bold headers instead of markdown)
-        write_up = f"**Prior Dose** Dr. {physician} requested a medical physics consultation for --- for evaluation of prior radiation dose. "
+        write_up = f"**Prior Dose** Dr. {physician} requested a medical physics consultation for ---. "
+        write_up += f"The consultation is for a dosimetric analysis for planning guidance, given that the patient had previously received radiation. "
         
-        # Add lesion details to patient description
-        if lesion_details:
-            write_up += f"The patient is {patient_details} with a {lesion_details}. "
-        else:
-            write_up += f"The patient is {patient_details}. "
+        # Always add "with a [site] lesion" to patient description
+        lesion_type = current_site
+        if current_site == "spine" and spine_location:
+            lesion_type = f"{spine_location} spine"
             
+        # Modified patient details with lesion
+        write_up += f"The patient is {patient_details} with a {lesion_type} lesion. "
         write_up += f"The patient is currently being planned for {current_treatment} to the {current_site_display}.\n \n"
         
         # Prior treatments section
